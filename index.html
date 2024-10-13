@@ -3,100 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng Chụp Ảnh và Nhận Diện Biển Báo Giao Thông</title>
+    <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f2f2f2;
+        /* Reset CSS */
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
         #video, #capturedImage {
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            width: 80%;
+            border: 4px solid #4CAF50;
+            border-radius: 15px;
+            width: 100%;
             max-width: 600px;
             height: auto;
             margin-bottom: 20px;
-            transition: opacity 0.5s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: opacity 0.5s ease, transform 0.3s ease;
         }
+
         #capturedImage {
             display: none;
             opacity: 0;
         }
+
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
             margin-bottom: 20px;
         }
+
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            min-width: 150px;
-            transition: opacity 0.3s ease;
+            min-width: 160px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: #fff;
         }
+
         #captureButton {
             background-color: #28a745;
-            color: white;
         }
+
         #downloadButton {
             background-color: #007bff;
-            color: white;
             display: none;
         }
+
         #retakeButton {
             background-color: #ffc107;
-            color: white;
             display: none;
+            color: #333;
         }
+
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
-        button:hover:not(:disabled) {
-            opacity: 0.8;
-        }
+
         @media (max-width: 600px) {
             button {
                 width: 100%;
-                max-width: 200px;
+                max-width: 220px;
             }
         }
+
         #predictionResult {
             margin-top: 20px;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
+            color: #333;
             min-height: 50px;
+            text-align: center;
         }
+
         #loadingModel, #loadingPrediction {
             margin-top: 20px;
-            font-size: 16px;
+            font-size: 18px;
             color: #555;
+        }
+
+        /* Additional Styling for Enhanced Aesthetics */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .footer {
+            margin-top: auto;
+            font-size: 14px;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
-    <h1>Ứng dụng Chụp Ảnh và Nhận Diện Biển Báo Giao Thông</h1>
-    <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
-    <img id="capturedImage" alt="Ảnh đã chụp">
-    <canvas id="canvas" style="display: none;"></canvas>
+    <div class="container">
+        <h1>Nhận Diện Biển Báo Giao Thông</h1>
+        <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
+        <img id="capturedImage" alt="Ảnh đã chụp">
+        <canvas id="canvas" style="display: none;"></canvas>
 
-    <div class="button-container">
-        <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
-        <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
-        <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
+        <div class="button-container">
+            <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
+            <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
+            <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
+        </div>
+
+        <div id="loadingModel">Đang tải mô hình...</div>
+        <div id="loadingPrediction" style="display: none;">Đang nhận diện...</div>
+        <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
     </div>
 
-    <div id="loadingModel">Đang tải mô hình...</div>
-    <div id="loadingPrediction" style="display: none;">Đang nhận diện...</div>
-    <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
+    <div class="footer">
+        &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+    </div>
 
     <!-- TensorFlow.js và Teachable Machine -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -220,13 +271,9 @@
                 if (prediction.length > 0) {
                     // Sắp xếp các dự đoán theo xác suất giảm dần
                     prediction.sort((a, b) => b.probability - a.probability);
-                    // Hiển thị top 3 dự đoán
-                    let results = "Kết quả nhận diện:<br>";
-                    for (let i = 0; i < Math.min(3, prediction.length); i++) {
-                        const p = prediction[i];
-                        results += `${i + 1}. ${p.className} (${(p.probability * 100).toFixed(2)}%)<br>`;
-                    }
-                    predictionResult.innerHTML = results;
+                    // Lấy top prediction
+                    const topPrediction = prediction[0];
+                    predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
                 }
