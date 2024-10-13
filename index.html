@@ -39,23 +39,41 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* Để overlay nằm trên video */
         }
 
+        /* Điều chỉnh chiều cao video cho thiết bị di động */
         #video, #capturedImage {
             border: 4px solid #4CAF50;
             border-radius: 15px;
             width: 100%;
             max-width: 600px;
             height: auto;
+            max-height: 400px; /* Giảm chiều cao tối đa */
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: opacity 0.5s ease, transform 0.3s ease;
             object-fit: cover;
+            position: relative;
         }
 
         #capturedImage {
             display: none;
             opacity: 0;
+        }
+
+        /* Overlay để tạo khung mờ */
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            border: 4px dashed rgba(76, 175, 80, 0.7);
+            background-color: rgba(0, 0, 0, 0.2); /* Màu mờ */
+            pointer-events: none; /* Không can thiệp vào các sự kiện */
+            border-radius: 15px;
         }
 
         .button-container {
@@ -210,7 +228,10 @@
 
     <div class="container">
         <h1>Nhận Diện Biển Báo Giao Thông</h1>
-        <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
+        <div style="position: relative; width: 100%; max-width: 600px;">
+            <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
+            <div class="overlay"></div>
+        </div>
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
 
