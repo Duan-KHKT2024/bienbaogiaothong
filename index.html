@@ -352,24 +352,41 @@
         };
 
         /**
+         * Hàm kiểm tra thiết bị di động
+         */
+        function isMobileDevice() {
+            return /Mobi|Android/i.test(navigator.userAgent);
+        }
+
+        /**
          * Hàm khởi chạy camera
          */
         async function startCamera() {
+            const isMobile = isMobileDevice();
+            const facingMode = isMobile ? "environment" : "user";
+            const constraints = {
+                video: {
+                    facingMode: facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
+                console.log(`Đang truy cập camera với facingMode: ${facingMode}`);
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+
                 video.onloadedmetadata = () => {
-                    video.play();
+                    video.play().then(() => {
+                        video.style.opacity = 1;
+                        overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
+                        console.log("Webcam đã được thiết lập và video đang chạy.");
+                    }).catch((error) => {
+                        console.error("Lỗi khi chạy video: ", error);
+                        alert("Không thể chạy video. Vui lòng kiểm tra kết nối thiết bị.");
+                    });
                 };
-                video.style.opacity = 1;
-                overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
                 alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
@@ -382,6 +399,8 @@
         function stopCamera() {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                console.log("Webcam đã được dừng.");
             }
             overlay.style.display = 'none'; // Ẩn overlay khi dừng camera
         }
@@ -451,6 +470,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            console.log("Hình ảnh đã được tải xuống thành công.");
         }
 
         /**
@@ -598,6 +618,7 @@
             const voices = synth.getVoices();
             // Lưu trữ giọng nói tiếng Việt vào một biến global nếu cần
             window.vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+            console.log("Danh sách giọng nói đã được tải.");
         }
 
         // Thêm sự kiện khi danh sách giọng nói thay đổi
@@ -607,7 +628,7 @@
         window.addEventListener('load', async () => {
             populateVoices(); // Lấy giọng nói ngay khi trang tải
             await loadModel();
-            startCamera();
+            await startCamera();
         });
 
         // Dừng camera khi rời khỏi trang
