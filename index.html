@@ -337,11 +337,9 @@
         const speakButton = document.getElementById('speakButton'); // Nút nghe lại ý nghĩa
         let stream = null;
         let isProcessing = false; // Flag to prevent multiple processing
-        let webcam = null;
 
         // Thông tin mô hình Teachable Machine
-        // Đảm bảo rằng bạn đã tải mô hình và đặt đúng đường dẫn tới thư mục mô hình
-        const MODEL_URL = "./my_model/"; // Thay đổi nếu cần
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
 
         let model, maxPredictions;
 
@@ -354,32 +352,24 @@
         };
 
         /**
-         * Hàm kiểm tra thiết bị di động
-         */
-        function isMobileDevice() {
-            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        }
-
-        /**
          * Hàm khởi chạy camera
          */
         async function startCamera() {
-            const isMobile = isMobileDevice();
-            const facingMode = isMobile ? "environment" : "user"; // Mobile: back camera, Desktop: front camera
-            const flip = !isMobile; // Flip ảnh chỉ khi dùng camera trước (desktop)
-
-            // Khởi tạo webcam với các thiết lập phù hợp
-            webcam = new tmImage.Webcam(640, 480, flip); // Tăng độ phân giải cho máy tính
             try {
-                await webcam.setup(); // Không truyền tham số vào setup()
-                await webcam.play();
-                window.requestAnimationFrame(loop);
-
-                // Thêm webcam vào DOM
-                document.getElementById("webcam-container").appendChild(webcam.canvas);
-                captureButton.disabled = false; // Bật nút chụp ảnh sau khi webcam hoạt động
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                };
+                video.style.opacity = 1;
                 overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
-                console.log("Webcam đã được thiết lập và đang chạy.");
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
                 alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
@@ -390,10 +380,8 @@
          * Hàm dừng camera
          */
         function stopCamera() {
-            if (webcam) {
-                webcam.stop(); // Dừng webcam sử dụng API của Teachable Machine
-                webcam = null;
-                console.log("Webcam đã được dừng.");
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
             }
             overlay.style.display = 'none'; // Ẩn overlay khi dừng camera
         }
@@ -409,8 +397,8 @@
             try {
                 const context = canvas.getContext('2d');
                 const zoom = parseFloat(zoomSlider.value);
-                const videoWidth = webcam.canvas.width;
-                const videoHeight = webcam.canvas.height;
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
 
                 if (videoWidth === 0 || videoHeight === 0) {
                     throw new Error("Video chưa sẵn sàng.");
@@ -424,14 +412,15 @@
 
                 canvas.width = videoWidth;
                 canvas.height = videoHeight;
-                context.drawImage(webcam.canvas, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
+                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
 
                 const imageDataURL = canvas.toDataURL('image/png');
                 capturedImage.src = imageDataURL;
                 capturedImage.style.display = 'block';
                 capturedImage.style.opacity = 1;
-                webcam.canvas.style.opacity = 0;
-                webcam.canvas.style.display = 'none';
+                video.style.opacity = 0;
+                video.style.display = 'none';
+                overlay.style.display = 'none'; // Ẩn overlay khi chụp ảnh
                 downloadButton.style.display = 'inline-block';
                 retakeButton.style.display = 'inline-block';
                 captureButton.style.display = 'none';
@@ -462,7 +451,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            console.log("Hình ảnh đã được tải xuống thành công.");
         }
 
         /**
@@ -471,8 +459,8 @@
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
-            webcam.canvas.style.display = 'block';
-            webcam.canvas.style.opacity = 1;
+            video.style.display = 'block';
+            video.style.opacity = 1;
             downloadButton.style.display = 'none';
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
@@ -610,19 +598,16 @@
             const voices = synth.getVoices();
             // Lưu trữ giọng nói tiếng Việt vào một biến global nếu cần
             window.vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
-            console.log("Danh sách giọng nói đã được tải.");
         }
 
         // Thêm sự kiện khi danh sách giọng nói thay đổi
         window.speechSynthesis.onvoiceschanged = populateVoices;
 
-        /**
-         * Khởi chạy camera và tải mô hình khi trang được tải
-         */
+        // Khởi chạy camera và tải mô hình khi trang được tải
         window.addEventListener('load', async () => {
             populateVoices(); // Lấy giọng nói ngay khi trang tải
             await loadModel();
-            await startCamera();
+            startCamera();
         });
 
         // Dừng camera khi rời khỏi trang
