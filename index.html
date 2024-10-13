@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng Chụp Ảnh bằng Camera</title>
+    <title>Ứng dụng Chụp Ảnh và Nhận Diện Biển Báo Giao Thông</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,15 +19,18 @@
             max-width: 600px;
             height: auto;
             margin-bottom: 20px;
+            transition: opacity 0.5s ease;
         }
         #capturedImage {
             display: none;
+            opacity: 0;
         }
         .button-container {
             display: flex;
             justify-content: center;
             gap: 10px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
         }
         button {
             padding: 10px 20px;
@@ -36,6 +39,7 @@
             border-radius: 5px;
             cursor: pointer;
             min-width: 150px;
+            transition: opacity 0.3s ease;
         }
         #captureButton {
             background-color: #28a745;
@@ -51,7 +55,11 @@
             color: white;
             display: none;
         }
-        button:hover {
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
             opacity: 0.8;
         }
         @media (max-width: 600px) {
@@ -60,20 +68,39 @@
                 max-width: 200px;
             }
         }
+        #predictionResult {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 50px;
+        }
+        #loadingModel, #loadingPrediction {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Ứng dụng Chụp Ảnh bằng Camera</h1>
+    <h1>Ứng dụng Chụp Ảnh và Nhận Diện Biển Báo Giao Thông</h1>
     <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
     <img id="capturedImage" alt="Ảnh đã chụp">
     <canvas id="canvas" style="display: none;"></canvas>
 
     <div class="button-container">
-        <button id="captureButton" aria-label="Chụp ảnh">Chụp Ảnh</button>
+        <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
         <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
         <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
     </div>
+
+    <div id="loadingModel">Đang tải mô hình...</div>
+    <div id="loadingPrediction" style="display: none;">Đang nhận diện...</div>
+    <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
+
+    <!-- TensorFlow.js và Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
     <script>
         // Lấy các phần tử từ DOM
@@ -83,12 +110,20 @@
         const downloadButton = document.getElementById('downloadButton');
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
+        const predictionResult = document.getElementById('predictionResult');
+        const loadingModel = document.getElementById('loadingModel');
+        const loadingPrediction = document.getElementById('loadingPrediction');
         let stream = null;
+
+        // Thông tin mô hình Teachable Machine
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
+
+        let model, maxPredictions;
 
         // Hàm khởi chạy camera
         async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
                 video.srcObject = stream;
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
@@ -104,7 +139,7 @@
         }
 
         // Hàm chụp ảnh
-        function capturePhoto() {
+        async function capturePhoto() {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -112,10 +147,15 @@
             const imageDataURL = canvas.toDataURL('image/png');
             capturedImage.src = imageDataURL;
             capturedImage.style.display = 'block';
+            capturedImage.style.opacity = 1;
+            video.style.opacity = 0;
             video.style.display = 'none';
             downloadButton.style.display = 'inline-block';
             retakeButton.style.display = 'inline-block';
             captureButton.style.display = 'none';
+            predictionResult.textContent = "";
+            loadingPrediction.style.display = 'block';
+            await predictImage();
         }
 
         // Hàm tải ảnh xuống
@@ -131,10 +171,13 @@
         // Hàm chụp lại
         function retakePhoto() {
             capturedImage.style.display = 'none';
+            capturedImage.style.opacity = 0;
             video.style.display = 'block';
+            video.style.opacity = 1;
             downloadButton.style.display = 'none';
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
+            predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
         }
 
         // Sự kiện khi nhấn nút chụp ảnh
@@ -146,8 +189,60 @@
         // Sự kiện khi nhấn nút chụp lại
         retakeButton.addEventListener('click', retakePhoto);
 
-        // Khởi chạy camera khi trang được tải
-        window.addEventListener('load', startCamera);
+        // Hàm tải mô hình Teachable Machine
+        async function loadModel() {
+            const modelURLFull = MODEL_URL + "model.json";
+            const metadataURL = MODEL_URL + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURLFull, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                console.log("Mô hình đã được tải thành công.");
+                loadingModel.style.display = 'none';
+                captureButton.disabled = false;
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình: ", err);
+                alert("Không thể tải mô hình nhận diện. Vui lòng kiểm tra kết nối mạng hoặc URL mô hình.");
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
+
+        // Hàm nhận diện hình ảnh
+        async function predictImage() {
+            if (!model) {
+                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            try {
+                const prediction = await model.predict(canvas);
+                if (prediction.length > 0) {
+                    // Sắp xếp các dự đoán theo xác suất giảm dần
+                    prediction.sort((a, b) => b.probability - a.probability);
+                    // Hiển thị top 3 dự đoán
+                    let results = "Kết quả nhận diện:<br>";
+                    for (let i = 0; i < Math.min(3, prediction.length); i++) {
+                        const p = prediction[i];
+                        results += `${i + 1}. ${p.className} (${(p.probability * 100).toFixed(2)}%)<br>`;
+                    }
+                    predictionResult.innerHTML = results;
+                } else {
+                    predictionResult.textContent = "Không có kết quả nhận diện.";
+                }
+            } catch (err) {
+                console.error("Lỗi khi nhận diện hình ảnh: ", err);
+                predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
+            } finally {
+                loadingPrediction.style.display = 'none';
+            }
+        }
+
+        // Khởi chạy camera và tải mô hình khi trang được tải
+        window.addEventListener('load', async () => {
+            await loadModel();
+            startCamera();
+        });
 
         // Dừng camera khi rời khỏi trang
         window.addEventListener('beforeunload', stopCamera);
