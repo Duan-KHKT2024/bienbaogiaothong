@@ -155,6 +155,7 @@
 
     // Select device type
     function selectDevice(device) {
+      stopWebcam();
       document.getElementById('webcam-container').style.display = 'none';
       document.getElementById('file-container').style.display = 'none';
       document.getElementById('camera-controls').style.display = 'none';
@@ -170,14 +171,23 @@
       }
     }
 
+    // Stop the webcam stream
+    function stopWebcam() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      if (webcam) {
+        webcam.stop();
+      }
+    }
+
     // Setup webcam with selected camera
     async function setupWebcam() {
         const cameraSelect = document.getElementById('cameraSelect');
         const cameraId = cameraSelect.value;
         
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-        }
+        stopWebcam();
 
         const constraints = {
           video: {
@@ -211,14 +221,16 @@
 
     // Predict from the webcam stream
     async function predict() {
-        const prediction = await model.predict(webcam.canvas);
+        if (webcam) {
+          const prediction = await model.predict(webcam.canvas);
 
-        // Display predictions
-        labelContainer = document.getElementById("label-container");
-        labelContainer.innerHTML = ""; // Clear existing predictions
-        for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
-            labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
+          // Display predictions
+          labelContainer = document.getElementById("label-container");
+          labelContainer.innerHTML = ""; // Clear existing predictions
+          for (let i = 0; i < maxPredictions; i++) {
+              const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
+              labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
+          }
         }
     }
 
