@@ -30,14 +30,18 @@
             font-size: 16px;
             cursor: pointer;
         }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
 
     <video id="video" autoplay playsinline></video>
     <div class="controls">
-        <button id="frontCamera">Camera Trước</button>
-        <button id="rearCamera">Camera Sau</button>
+        <button id="frontCamera" disabled>Camera Trước</button>
+        <button id="rearCamera" disabled>Camera Sau</button>
     </div>
 
     <script>
@@ -46,18 +50,18 @@
         const rearCameraButton = document.getElementById('rearCamera');
 
         let currentStream = null;
+        let frontCameraId = null;
+        let rearCameraId = null;
 
-        // Hàm để khởi động camera với chế độ được chọn
-        async function startCamera(facingMode) {
+        // Hàm để khởi động camera bằng deviceId
+        async function startCamera(deviceId) {
             if (currentStream) {
                 // Dừng các track hiện tại trước khi khởi động lại
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
             const constraints = {
-                video: {
-                    facingMode: facingMode
-                },
+                video: deviceId ? { deviceId: { exact: deviceId } } : true,
                 audio: false
             };
 
@@ -71,19 +75,85 @@
             }
         }
 
+        // Hàm để liệt kê các thiết bị video và gán deviceId cho các nút
+        async function enumerateDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length === 0) {
+                    alert('Không tìm thấy camera nào trên thiết bị của bạn.');
+                    return;
+                }
+
+                // Nếu chỉ có một camera, chỉ bật nút Camera Trước
+                if (videoDevices.length === 1) {
+                    frontCameraId = videoDevices[0].deviceId;
+                    frontCameraButton.disabled = false;
+                    rearCameraButton.disabled = true;
+                } else {
+                    // Nếu có nhiều hơn một camera, phân loại dựa trên label hoặc vị trí
+                    // Lưu ý: Trên một số trình duyệt, label chỉ xuất hiện sau khi người dùng đã cấp quyền truy cập camera
+                    videoDevices.forEach(device => {
+                        if (device.label.toLowerCase().includes('front') || device.label === '') {
+                            frontCameraId = device.deviceId;
+                        } else if (device.label.toLowerCase().includes('back') || device.label === '') {
+                            rearCameraId = device.deviceId;
+                        }
+                    });
+
+                    // Nếu không thể phân loại dựa trên label, phân bổ theo thứ tự
+                    if (!frontCameraId) frontCameraId = videoDevices[0].deviceId;
+                    if (!rearCameraId && videoDevices.length > 1) rearCameraId = videoDevices[1].deviceId;
+
+                    frontCameraButton.disabled = false;
+                    rearCameraButton.disabled = false;
+                }
+
+                // Bật camera mặc định (Camera Trước nếu có, ngược lại camera đầu tiên)
+                if (frontCameraId) {
+                    startCamera(frontCameraId);
+                } else {
+                    startCamera(videoDevices[0].deviceId);
+                }
+
+            } catch (error) {
+                console.error('Lỗi khi liệt kê thiết bị: ', error);
+                alert('Không thể liệt kê thiết bị. Vui lòng kiểm tra quyền truy cập hoặc trình duyệt của bạn.');
+            }
+        }
+
         // Sự kiện khi nhấn nút Camera Trước
         frontCameraButton.addEventListener('click', () => {
-            startCamera('user');
+            if (frontCameraId) {
+                startCamera(frontCameraId);
+            } else {
+                alert('Không tìm thấy Camera Trước.');
+            }
         });
 
         // Sự kiện khi nhấn nút Camera Sau
         rearCameraButton.addEventListener('click', () => {
-            startCamera('environment');
+            if (rearCameraId) {
+                startCamera(rearCameraId);
+            } else {
+                alert('Không tìm thấy Camera Sau.');
+            }
         });
 
-        // Khởi động camera mặc định khi tải trang (Camera Trước)
+        // Khởi động camera và liệt kê thiết bị khi tải trang
         window.addEventListener('load', () => {
-            startCamera('user');
+            // Yêu cầu quyền truy cập camera trước khi liệt kê thiết bị để có thể lấy label
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                    // Dừng stream ngay lập tức sau khi đã lấy thông tin thiết bị
+                    stream.getTracks().forEach(track => track.stop());
+                    enumerateDevices();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi truy cập camera để liệt kê thiết bị: ', error);
+                    alert('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.');
+                });
         });
     </script>
 
