@@ -355,7 +355,7 @@
          * Hàm kiểm tra thiết bị di động
          */
         function isMobileDevice() {
-            return /Mobi|Android/i.test(navigator.userAgent);
+            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         }
 
         /**
@@ -363,30 +363,27 @@
          */
         async function startCamera() {
             const isMobile = isMobileDevice();
-            const facingMode = isMobile ? "environment" : "user";
-            const constraints = {
-                video: {
-                    facingMode: facingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
-                audio: false
-            };
-            try {
-                console.log(`Đang truy cập camera với facingMode: ${facingMode}`);
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
+            const facingMode = isMobile ? "environment" : "user"; // Mobile: back camera, Desktop: front camera
+            const flip = !isMobile; // Flip ảnh chỉ khi dùng camera trước (desktop)
 
-                video.onloadedmetadata = () => {
-                    video.play().then(() => {
-                        video.style.opacity = 1;
-                        overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
-                        console.log("Webcam đã được thiết lập và video đang chạy.");
-                    }).catch((error) => {
-                        console.error("Lỗi khi chạy video: ", error);
-                        alert("Không thể chạy video. Vui lòng kiểm tra kết nối thiết bị.");
-                    });
-                };
+            // Khởi tạo webcam với các thiết lập phù hợp
+            webcam = new tmImage.Webcam(640, 480, flip); // Tăng độ phân giải cho máy tính
+            try {
+                await webcam.setup({
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                }); // Yêu cầu quyền truy cập webcam
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+
+                // Thêm webcam vào DOM
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                captureButton.disabled = false; // Bật nút chụp ảnh sau khi webcam hoạt động
+                overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
+                console.log("Webcam đã được thiết lập và đang chạy.");
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
                 alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
@@ -397,9 +394,9 @@
          * Hàm dừng camera
          */
         function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+            if (webcam) {
+                webcam.stop(); // Dừng webcam sử dụng API của Teachable Machine
+                webcam = null;
                 console.log("Webcam đã được dừng.");
             }
             overlay.style.display = 'none'; // Ẩn overlay khi dừng camera
@@ -416,8 +413,8 @@
             try {
                 const context = canvas.getContext('2d');
                 const zoom = parseFloat(zoomSlider.value);
-                const videoWidth = video.videoWidth;
-                const videoHeight = video.videoHeight;
+                const videoWidth = webcam.canvas.width;
+                const videoHeight = webcam.canvas.height;
 
                 if (videoWidth === 0 || videoHeight === 0) {
                     throw new Error("Video chưa sẵn sàng.");
@@ -431,15 +428,14 @@
 
                 canvas.width = videoWidth;
                 canvas.height = videoHeight;
-                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
+                context.drawImage(webcam.canvas, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
 
                 const imageDataURL = canvas.toDataURL('image/png');
                 capturedImage.src = imageDataURL;
                 capturedImage.style.display = 'block';
                 capturedImage.style.opacity = 1;
-                video.style.opacity = 0;
-                video.style.display = 'none';
-                overlay.style.display = 'none'; // Ẩn overlay khi chụp ảnh
+                webcam.canvas.style.opacity = 0;
+                webcam.canvas.style.display = 'none';
                 downloadButton.style.display = 'inline-block';
                 retakeButton.style.display = 'inline-block';
                 captureButton.style.display = 'none';
@@ -479,8 +475,8 @@
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
-            video.style.display = 'block';
-            video.style.opacity = 1;
+            webcam.canvas.style.display = 'block';
+            webcam.canvas.style.opacity = 1;
             downloadButton.style.display = 'none';
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
@@ -624,7 +620,9 @@
         // Thêm sự kiện khi danh sách giọng nói thay đổi
         window.speechSynthesis.onvoiceschanged = populateVoices;
 
-        // Khởi chạy camera và tải mô hình khi trang được tải
+        /**
+         * Khởi chạy camera và tải mô hình khi trang được tải
+         */
         window.addEventListener('load', async () => {
             populateVoices(); // Lấy giọng nói ngay khi trang tải
             await loadModel();
