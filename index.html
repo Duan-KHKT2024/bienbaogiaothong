@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Traffic Sign Recognition</title>
   <style>
     body {
@@ -11,122 +12,95 @@
     }
     h1 {
       font-size: 2em;
+      margin-bottom: 20px;
     }
-    p {
-      font-size: 1.2em;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      cursor: pointer;
     }
     #webcam-container {
-      width: 100%;
-      max-width: 600px;
-      height: auto;
-      margin: 0 auto;
+      margin: 20px auto;
     }
     #label-container {
       margin-top: 20px;
       font-size: 1.2em;
     }
-    #error-message {
-      color: red;
-      margin-top: 20px;
-    }
-
-    /* Make the layout responsive */
-    @media screen and (max-width: 600px) {
-      h1 {
-        font-size: 1.5em;
-      }
-      p {
-        font-size: 1em;
-      }
-      #label-container {
-        font-size: 1em;
-      }
+    #label-container div {
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Traffic Sign Recognition</h1>
-  <p>Allow camera access to start recognizing traffic signs.</p>
-
-  <!-- Webcam container -->
+  <h1>Teachable Machine Traffic Sign Recognition</h1>
+  <button type="button" onclick="init()">Start</button>
+  
+  <!-- Container to display the webcam -->
   <div id="webcam-container"></div>
   
-  <!-- Display prediction -->
+  <!-- Container to display predictions -->
   <div id="label-container"></div>
 
-  <!-- Display error messages -->
-  <div id="error-message"></div>
+  <!-- Include the necessary libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-  <!-- Teachable Machine Model URL and Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script type="text/javascript">
-    const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/"; // Thay thế với URL mô hình thực tế của bạn
+    // Teachable Machine model URL
+    const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
 
     let model, webcam, labelContainer, maxPredictions;
 
-    // Load the image model and setup the webcam
+    // Load the model and setup the webcam
     async function init() {
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
 
-      try {
-        // Load the model
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
-      } catch (error) {
-        displayError("Không thể tải mô hình: " + error);
-        return;
-      }
+        try {
+          // Load the model and metadata
+          model = await tmImage.load(modelURL, metadataURL);
+          maxPredictions = model.getTotalClasses();
 
-      try {
-        // Setup the webcam
-        const flip = true; // whether to flip the webcam
-        webcam = new tmImage.Webcam(600, 400, flip); // width, height, flip
-        await webcam.setup(); // request access to the webcam
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-      } catch (error) {
-        displayError("Không thể truy cập webcam: " + error);
-        return;
-      }
+          // Setup webcam
+          const flip = true; // Flip the webcam horizontally
+          webcam = new tmImage.Webcam(400, 400, flip); // width, height, flip
+          await webcam.setup(); // Request webcam access
+          await webcam.play();
+          window.requestAnimationFrame(loop);
 
-      // Append webcam canvas
-      document.getElementById("webcam-container").appendChild(webcam.canvas);
+          // Append webcam canvas to the DOM
+          document.getElementById("webcam-container").appendChild(webcam.canvas);
 
-      // Create label container
-      labelContainer = document.getElementById("label-container");
-      labelContainer.innerHTML = ""; // Clear existing
-      for (let i = 0; i < maxPredictions; i++) { // create elements to hold prediction labels
-        labelContainer.appendChild(document.createElement("div"));
-      }
+          // Create containers for prediction labels
+          labelContainer = document.getElementById("label-container");
+          labelContainer.innerHTML = ""; // Clear existing content
+          for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+          }
+        } catch (error) {
+          console.error("Error loading model or webcam: ", error);
+          alert("Error loading model or webcam. Please check the console for more details.");
+        }
     }
 
+    // Run the webcam and predict
     async function loop() {
-      webcam.update();
-      await predict();
-      window.requestAnimationFrame(loop);
+        webcam.update(); // Update the webcam frame
+        await predict(); // Run predictions
+        window.requestAnimationFrame(loop);
     }
 
-    // Run the image through the model
+    // Predict from the webcam stream
     async function predict() {
-      try {
         const prediction = await model.predict(webcam.canvas);
 
+        // Display predictions
         for (let i = 0; i < maxPredictions; i++) {
-          const classPrediction = prediction[i].className + ": " + Math.round(prediction[i].probability * 100) + "%";
-          labelContainer.childNodes[i].innerHTML = classPrediction;
+            const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
+            labelContainer.childNodes[i].innerHTML = classPrediction;
         }
-      } catch (error) {
-        displayError("Lỗi trong quá trình dự đoán: " + error);
-      }
     }
-
-    function displayError(message) {
-      const errorMessage = document.getElementById("error-message");
-      errorMessage.innerHTML = message;
-    }
-
-    window.onload = init;
   </script>
 </body>
 </html>
