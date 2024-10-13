@@ -30,17 +30,36 @@
     #label-container div {
       margin: 5px;
     }
+    #file-container {
+      margin: 20px auto;
+    }
+    select {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <h1>Teachable Machine Traffic Sign Recognition</h1>
-  <button type="button" onclick="init()">Start</button>
+  <button type="button" onclick="init()">Start Webcam</button>
   
+  <!-- List camera devices -->
+  <div>
+    <label for="cameraSelect">Chọn camera:</label>
+    <select id="cameraSelect"></select>
+  </div>
+
   <!-- Container to display the webcam -->
   <div id="webcam-container"></div>
   
   <!-- Container to display predictions -->
   <div id="label-container"></div>
+
+  <!-- Allow user to select an image file from computer -->
+  <div id="file-container">
+    <input type="file" id="imageUpload" accept="image/*">
+    <button type="button" onclick="predictFromImage()">Dự đoán từ ảnh</button>
+  </div>
 
   <!-- Include the necessary libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -50,7 +69,7 @@
     // Teachable Machine model URL
     const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
 
-    let model, webcam, labelContainer, maxPredictions;
+    let model, webcam, labelContainer, maxPredictions, currentStream;
 
     // Load the model and setup the webcam
     async function init() {
@@ -62,15 +81,21 @@
           model = await tmImage.load(modelURL, metadataURL);
           maxPredictions = model.getTotalClasses();
 
-          // Setup webcam
-          const flip = true; // Flip the webcam horizontally
-          webcam = new tmImage.Webcam(400, 400, flip); // width, height, flip
-          await webcam.setup(); // Request webcam access
-          await webcam.play();
-          window.requestAnimationFrame(loop);
+          // Setup camera options
+          const cameraSelect = document.getElementById('cameraSelect');
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-          // Append webcam canvas to the DOM
-          document.getElementById("webcam-container").appendChild(webcam.canvas);
+          cameraSelect.innerHTML = '';
+          videoDevices.forEach((device, index) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Camera ${index + 1}`;
+            cameraSelect.appendChild(option);
+          });
+
+          // Setup webcam
+          setupWebcam();
 
           // Create containers for prediction labels
           labelContainer = document.getElementById("label-container");
@@ -81,6 +106,37 @@
         } catch (error) {
           console.error("Error loading model or webcam: ", error);
           alert("Error loading model or webcam. Please check the console for more details.");
+        }
+    }
+
+    // Setup webcam with selected camera
+    async function setupWebcam() {
+        const cameraSelect = document.getElementById('cameraSelect');
+        const cameraId = cameraSelect.value;
+        
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+
+        const constraints = {
+          video: {
+            deviceId: cameraId ? { exact: cameraId } : undefined,
+            width: 400,
+            height: 400
+          }
+        };
+
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (!webcam) {
+            webcam = new tmImage.Webcam(400, 400, false);
+          }
+          await webcam.setup({ facingMode: 'environment', video: currentStream });
+          await webcam.play();
+          window.requestAnimationFrame(loop);
+          document.getElementById("webcam-container").appendChild(webcam.canvas);
+        } catch (error) {
+          console.error("Error accessing webcam: ", error);
         }
     }
 
@@ -100,6 +156,28 @@
             const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
             labelContainer.childNodes[i].innerHTML = classPrediction;
         }
+    }
+
+    // Predict from an uploaded image
+    async function predictFromImage() {
+        const imageUpload = document.getElementById('imageUpload');
+        const file = imageUpload.files[0];
+        if (!file) {
+          alert("Vui lòng chọn một ảnh trước.");
+          return;
+        }
+
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = async function () {
+          const prediction = await model.predict(img);
+
+          // Display predictions
+          for (let i = 0; i < maxPredictions; i++) {
+              const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
+              labelContainer.childNodes[i].innerHTML = classPrediction;
+          }
+        };
     }
   </script>
 </body>
