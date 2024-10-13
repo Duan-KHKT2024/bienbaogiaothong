@@ -379,7 +379,7 @@
 
   <script type="text/javascript">
     // URL mô hình Teachable Machine
-    const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
 
     let model, maxPredictions;
     let videoStream = null;
@@ -397,12 +397,12 @@
     // Tải mô hình và thiết lập
     async function loadModel() {
       showLoading(true);
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
+      const modelURLPath = MODEL_URL + "model.json";
+      const metadataURLPath = MODEL_URL + "metadata.json";
 
       try {
         // Tải mô hình và metadata
-        model = await tmImage.load(modelURL, metadataURL);
+        model = await tmImage.load(modelURLPath, metadataURLPath);
         maxPredictions = model.getTotalClasses();
         console.log("Mô hình đã được tải thành công!");
       } catch (error) {
