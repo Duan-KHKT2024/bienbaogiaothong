@@ -112,7 +112,10 @@
   </div>
 
   <!-- Container to display the webcam -->
-  <div id="webcam-container"></div>
+  <div id="webcam-container">
+    <button id="captureButton" onclick="captureImage()" style="display:none; margin-top: 20px;">Chụp Hình</button>
+    <canvas id="capturedCanvas" style="display:none;"></canvas>
+  </div>
 
   <!-- Allow user to select an image file from computer -->
   <div id="file-container">
@@ -159,6 +162,7 @@
       document.getElementById('webcam-container').style.display = 'none';
       document.getElementById('file-container').style.display = 'none';
       document.getElementById('camera-controls').style.display = 'none';
+      document.getElementById('captureButton').style.display = 'none';
 
       if (device === 'computer') {
         document.getElementById('controls-container').style.display = 'block';
@@ -204,7 +208,7 @@
           }
           await webcam.setup({ facingMode: 'environment', video: currentStream });
           await webcam.play();
-          window.requestAnimationFrame(loop);
+          document.getElementById("captureButton").style.display = 'block';
           document.getElementById("webcam-container").style.display = 'block';
           document.getElementById("webcam-container").appendChild(webcam.canvas);
         } catch (error) {
@@ -212,26 +216,28 @@
         }
     }
 
-    // Run the webcam and predict
-    async function loop() {
-        webcam.update(); // Update the webcam frame
-        await predict(); // Run predictions
-        window.requestAnimationFrame(loop);
+    // Capture image from webcam
+    function captureImage() {
+      const capturedCanvas = document.getElementById("capturedCanvas");
+      capturedCanvas.width = webcam.canvas.width;
+      capturedCanvas.height = webcam.canvas.height;
+      const ctx = capturedCanvas.getContext("2d");
+      ctx.drawImage(webcam.canvas, 0, 0);
+      capturedCanvas.style.display = 'block';
+      predictFromCapturedImage(capturedCanvas);
     }
 
-    // Predict from the webcam stream
-    async function predict() {
-        if (webcam) {
-          const prediction = await model.predict(webcam.canvas);
+    // Predict from the captured image
+    async function predictFromCapturedImage(capturedCanvas) {
+      const prediction = await model.predict(capturedCanvas);
 
-          // Display predictions
-          labelContainer = document.getElementById("label-container");
-          labelContainer.innerHTML = ""; // Clear existing predictions
-          for (let i = 0; i < maxPredictions; i++) {
-              const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
-              labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
-          }
-        }
+      // Display predictions
+      labelContainer = document.getElementById("label-container");
+      labelContainer.innerHTML = ""; // Clear existing predictions
+      for (let i = 0; i < maxPredictions; i++) {
+          const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
+          labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
+      }
     }
 
     // Predict from an uploaded image
