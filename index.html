@@ -426,7 +426,8 @@
       document.getElementById('captureButton').style.display = 'none';
       // Xóa canvas webcam
       const webcamCanvas = document.getElementById('webcamCanvas');
-      webcamCanvas.getContext('2d').clearRect(0, 0, webcamCanvas.width, webcamCanvas.height);
+      const ctx = webcamCanvas.getContext('2d');
+      ctx.clearRect(0, 0, webcamCanvas.width, webcamCanvas.height);
     }
 
     // Liệt kê các camera và điền vào dropdown
@@ -447,9 +448,10 @@
           const option = document.createElement('option');
           option.value = device.deviceId;
           // Kiểm tra label để xác định camera trước hoặc sau
-          if (device.label.toLowerCase().includes('trước')) {
+          const label = device.label.toLowerCase();
+          if (label.includes('front') || label.includes('trước')) {
             option.text = `Camera trước (${index + 1})`;
-          } else if (device.label.toLowerCase().includes('sau')) {
+          } else if (label.includes('back') || label.includes('sau')) {
             option.text = `Camera sau (${index + 1})`;
           } else {
             option.text = device.label || `Camera ${index + 1}`;
@@ -493,8 +495,8 @@
       const constraints = {
         video: {
           deviceId: cameraId ? { exact: cameraId } : undefined,
-          width: { ideal: 400 },
-          height: { ideal: 400 }
+          width: { ideal: 500 },
+          height: { ideal: 500 }
         }
       };
 
@@ -510,7 +512,18 @@
         document.getElementById("captureButton").style.display = 'block';
         const webcamCanvas = document.getElementById('webcamCanvas');
         webcamCanvas.style.display = 'block';
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        const ctx = webcamCanvas.getContext('2d');
+        // Đảm bảo canvas có kích thước đúng
+        webcamCanvas.width = webcam.width;
+        webcamCanvas.height = webcam.height;
+        // Vẽ video lên canvas
+        function drawWebcam() {
+          if (webcam && webcam.canvas) {
+            ctx.drawImage(webcam.canvas, 0, 0, webcamCanvas.width, webcamCanvas.height);
+          }
+          requestAnimationFrame(drawWebcam);
+        }
+        drawWebcam();
       } catch (error) {
         console.error("Lỗi khi truy cập webcam: ", error);
         alert("Không thể truy cập webcam. Vui lòng kiểm tra quyền truy cập và kết nối thiết bị.");
@@ -536,11 +549,11 @@
       const ctx = capturedCanvas.getContext("2d");
 
       // Đảm bảo capturedCanvas có cùng kích thước với webcam.canvas
-      capturedCanvas.width = webcam.canvas.width;
-      capturedCanvas.height = webcam.canvas.height;
+      capturedCanvas.width = webcam.width;
+      capturedCanvas.height = webcam.height;
 
       // Vẽ khung hình hiện tại từ webcam vào capturedCanvas
-      ctx.drawImage(webcam.canvas, 0, 0);
+      ctx.drawImage(webcam.canvas, 0, 0, capturedCanvas.width, capturedCanvas.height);
       capturedCanvas.style.display = 'block';
 
       // Dừng webcam để tránh chụp nhiều hình
@@ -603,7 +616,7 @@
           tempCanvas.width = img.width;
           tempCanvas.height = img.height;
           ctx.drawImage(img, 0, 0);
-          
+
           const prediction = await model.predict(tempCanvas);
 
           // Hiển thị dự đoán
