@@ -240,19 +240,6 @@
             text-align: right;
         }
 
-        /* Khung Mờ Cho Ý Nghĩa Biển Báo */
-        .meaning-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.3); /* Màu mờ */
-            border-radius: 8px;
-            z-index: -1;
-            display: none; /* Ẩn mặc định */
-        }
-
         /* Button để nghe lại ý nghĩa */
         #speakButton {
             background-color: #17a2b8;
@@ -305,7 +292,6 @@
         <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
         <div id="signMeaning" aria-live="polite">
             <!-- Khung mờ cho ý nghĩa -->
-            <div class="meaning-overlay"></div>
         </div>
         <!-- Nút để nghe lại ý nghĩa biển báo -->
         <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
@@ -358,9 +344,8 @@
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        // facingMode: "user" // Thay đổi này để sử dụng camera trước
+                        // Để linh hoạt hơn, không đặt facingMode để trình duyệt chọn camera mặc định
                     },
                     audio: false
                 });
@@ -549,9 +534,10 @@
                         speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
                         speakText(meaningText); // Đọc ra ý nghĩa biển báo
                     } else {
-                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        const meaningText = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        signMeaning.textContent = meaningText;
                         speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
-                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
+                        speakText(meaningText);
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
@@ -568,28 +554,6 @@
             }
         }
 
-        // Sự kiện khi nhấn nút chụp ảnh
-        captureButton.addEventListener('click', capturePhoto);
-
-        // Sự kiện khi nhấn nút tải ảnh xuống
-        downloadButton.addEventListener('click', downloadPhoto);
-
-        // Sự kiện khi nhấn nút chụp lại
-        retakeButton.addEventListener('click', retakePhoto);
-
-        // Sự kiện khi thay đổi zoom
-        zoomSlider.addEventListener('input', () => {
-            zoomValue.textContent = `${zoomSlider.value}x`;
-        });
-
-        // Sự kiện khi nhấn nút nghe lại ý nghĩa biển báo
-        speakButton.addEventListener('click', () => {
-            const text = signMeaning.textContent || "";
-            if (text) {
-                speakText(text);
-            }
-        });
-
         /**
          * Tải danh sách giọng nói khi chúng đã sẵn sàng
          */
@@ -605,13 +569,22 @@
 
         // Khởi chạy camera và tải mô hình khi trang được tải
         window.addEventListener('load', async () => {
-            populateVoices(); // Lấy giọng nói ngay khi trang tải
+            // Đợi danh sách giọng nói được tải
+            populateVoices();
             await loadModel();
             startCamera();
         });
 
         // Dừng camera khi rời khỏi trang
         window.addEventListener('beforeunload', stopCamera);
+
+        // Sự kiện khi nhấn nút nghe lại ý nghĩa biển báo
+        speakButton.addEventListener('click', () => {
+            const text = signMeaning.textContent || "";
+            if (text) {
+                speakText(text);
+            }
+        });
     </script>
 
 </body>
