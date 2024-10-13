@@ -337,9 +337,11 @@
         const speakButton = document.getElementById('speakButton'); // Nút nghe lại ý nghĩa
         let stream = null;
         let isProcessing = false; // Flag to prevent multiple processing
+        let webcam = null;
 
         // Thông tin mô hình Teachable Machine
-        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
+        // Đảm bảo rằng bạn đã tải mô hình và đặt đúng đường dẫn tới thư mục mô hình
+        const MODEL_URL = "./my_model/"; // Thay đổi nếu cần
 
         let model, maxPredictions;
 
@@ -369,13 +371,7 @@
             // Khởi tạo webcam với các thiết lập phù hợp
             webcam = new tmImage.Webcam(640, 480, flip); // Tăng độ phân giải cho máy tính
             try {
-                await webcam.setup({
-                    video: {
-                        facingMode: facingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                }); // Yêu cầu quyền truy cập webcam
+                await webcam.setup(); // Không truyền tham số vào setup()
                 await webcam.play();
                 window.requestAnimationFrame(loop);
 
