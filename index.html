@@ -8,20 +8,44 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      background-color: #f0f0f0;
       margin: 20px;
+      color: #333;
     }
     h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
+      font-size: 2.5em;
+      color: #333;
+      margin-bottom: 30px;
     }
     button {
       padding: 10px 20px;
       font-size: 16px;
-      margin-bottom: 20px;
+      margin: 10px;
       cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #controls-container {
+      margin-bottom: 30px;
+    }
+    #controls-container label,
+    #controls-container select {
+      font-size: 16px;
+      margin-bottom: 10px;
     }
     #webcam-container {
       margin: 20px auto;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
     }
     #label-container {
       margin-top: 20px;
@@ -29,37 +53,61 @@
     }
     #label-container div {
       margin: 5px;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      display: inline-block;
+      min-width: 100px;
     }
     #file-container {
-      margin: 20px auto;
+      margin: 30px auto;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
     }
-    select {
-      margin-bottom: 20px;
+    #file-container input[type="file"] {
+      display: none;
+    }
+    #file-container label {
+      cursor: pointer;
+      padding: 10px 20px;
       font-size: 16px;
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    #file-container label:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <h1>Teachable Machine Traffic Sign Recognition</h1>
-  <button type="button" onclick="init()">Start Webcam</button>
-  
-  <!-- List camera devices -->
-  <div>
-    <label for="cameraSelect">Chọn camera:</label>
-    <select id="cameraSelect"></select>
+
+  <!-- Controls container -->
+  <div id="controls-container">
+    <button type="button" onclick="init()">Start Webcam</button>
+    <div>
+      <label for="cameraSelect">Chọn camera:</label>
+      <select id="cameraSelect"></select>
+    </div>
   </div>
 
   <!-- Container to display the webcam -->
   <div id="webcam-container"></div>
-  
-  <!-- Container to display predictions -->
-  <div id="label-container"></div>
 
   <!-- Allow user to select an image file from computer -->
   <div id="file-container">
-    <input type="file" id="imageUpload" accept="image/*">
-    <button type="button" onclick="predictFromImage()">Dự đoán từ ảnh</button>
+    <label for="imageUpload">Chọn một ảnh từ máy</label>
+    <input type="file" id="imageUpload" accept="image/*" onchange="predictFromImage()">
   </div>
+
+  <!-- Container to display predictions -->
+  <div id="label-container"></div>
 
   <!-- Include the necessary libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -113,7 +161,7 @@
     async function setupWebcam() {
         const cameraSelect = document.getElementById('cameraSelect');
         const cameraId = cameraSelect.value;
-        
+
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
         }
@@ -173,9 +221,10 @@
           const prediction = await model.predict(img);
 
           // Display predictions
+          labelContainer.innerHTML = ""; // Clear existing predictions
           for (let i = 0; i < maxPredictions; i++) {
               const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
-              labelContainer.childNodes[i].innerHTML = classPrediction;
+              labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
           }
         };
     }
