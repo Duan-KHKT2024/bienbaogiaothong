@@ -224,7 +224,13 @@
       const ctx = capturedCanvas.getContext("2d");
       ctx.drawImage(webcam.canvas, 0, 0);
       capturedCanvas.style.display = 'block';
-      predictFromCapturedImage(capturedCanvas);
+      capturedCanvas.toBlob((blob) => {
+        if (blob) {
+          predictFromCapturedImage(capturedCanvas);
+        } else {
+          console.error("Error capturing image.");
+        }
+      });
     }
 
     // Predict from the captured image
