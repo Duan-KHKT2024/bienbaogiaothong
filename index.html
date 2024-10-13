@@ -17,7 +17,10 @@
       color: #333;
       margin-bottom: 30px;
     }
-    button {
+    #menu {
+      margin-bottom: 30px;
+    }
+    #menu button {
       padding: 10px 20px;
       font-size: 16px;
       margin: 10px;
@@ -28,18 +31,15 @@
       border-radius: 5px;
       transition: background-color 0.3s;
     }
-    button:hover {
+    #menu button:hover {
       background-color: #0056b3;
     }
     #controls-container {
+      display: none;
       margin-bottom: 30px;
     }
-    #controls-container label,
-    #controls-container select {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
     #webcam-container {
+      display: none;
       margin: 20px auto;
       background-color: #fff;
       padding: 15px;
@@ -47,20 +47,8 @@
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
       max-width: 500px;
     }
-    #label-container {
-      margin-top: 20px;
-      font-size: 1.2em;
-    }
-    #label-container div {
-      margin: 5px;
-      padding: 10px;
-      background: #007bff;
-      color: #fff;
-      border-radius: 5px;
-      display: inline-block;
-      min-width: 100px;
-    }
     #file-container {
+      display: none;
       margin: 30px auto;
       padding: 15px;
       background-color: #fff;
@@ -83,17 +71,43 @@
     #file-container label:hover {
       background-color: #218838;
     }
+    #label-container {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    #label-container div {
+      margin: 5px;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      display: inline-block;
+      min-width: 100px;
+    }
   </style>
 </head>
 <body>
   <h1>Teachable Machine Traffic Sign Recognition</h1>
 
+  <!-- Menu -->
+  <div id="menu">
+    <button onclick="showInstructions()">Hướng Dẫn</button>
+    <button onclick="selectDevice('computer')">Máy Tính</button>
+    <button onclick="selectDevice('phone')">Điện Thoại</button>
+    <button onclick="selectDevice('file')">Chọn File Ảnh</button>
+  </div>
+
+  <!-- Instructions -->
+  <div id="instructions" style="display:none; margin-bottom: 20px;">
+    <p>Chọn "Máy Tính" để sử dụng webcam của máy tính. Chọn "Điện Thoại" để sử dụng camera trước hoặc sau của điện thoại. Chọn "Chọn File Ảnh" để tải lên một ảnh từ thiết bị của bạn.</p>
+  </div>
+
   <!-- Controls container -->
   <div id="controls-container">
-    <button type="button" onclick="init()">Start Webcam</button>
-    <div>
+    <div id="camera-controls" style="display:none;">
       <label for="cameraSelect">Chọn camera:</label>
       <select id="cameraSelect"></select>
+      <button type="button" onclick="setupWebcam()">Start Webcam</button>
     </div>
   </div>
 
@@ -128,40 +142,39 @@
           // Load the model and metadata
           model = await tmImage.load(modelURL, metadataURL);
           maxPredictions = model.getTotalClasses();
-
-          // Setup camera options
-          const cameraSelect = document.getElementById('cameraSelect');
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-          cameraSelect.innerHTML = '';
-          videoDevices.forEach((device, index) => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Camera ${index + 1}`;
-            cameraSelect.appendChild(option);
-          });
-
-          // Setup webcam
-          setupWebcam();
-
-          // Create containers for prediction labels
-          labelContainer = document.getElementById("label-container");
-          labelContainer.innerHTML = ""; // Clear existing content
-          for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.appendChild(document.createElement("div"));
-          }
         } catch (error) {
-          console.error("Error loading model or webcam: ", error);
-          alert("Error loading model or webcam. Please check the console for more details.");
+          console.error("Error loading model: ", error);
+          alert("Error loading model. Please check the console for more details.");
         }
+    }
+
+    // Show instructions
+    function showInstructions() {
+      document.getElementById('instructions').style.display = 'block';
+    }
+
+    // Select device type
+    function selectDevice(device) {
+      document.getElementById('webcam-container').style.display = 'none';
+      document.getElementById('file-container').style.display = 'none';
+      document.getElementById('camera-controls').style.display = 'none';
+
+      if (device === 'computer') {
+        document.getElementById('controls-container').style.display = 'block';
+        document.getElementById('camera-controls').style.display = 'block';
+      } else if (device === 'phone') {
+        document.getElementById('controls-container').style.display = 'block';
+        document.getElementById('camera-controls').style.display = 'block';
+      } else if (device === 'file') {
+        document.getElementById('file-container').style.display = 'block';
+      }
     }
 
     // Setup webcam with selected camera
     async function setupWebcam() {
         const cameraSelect = document.getElementById('cameraSelect');
         const cameraId = cameraSelect.value;
-
+        
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
         }
@@ -182,6 +195,7 @@
           await webcam.setup({ facingMode: 'environment', video: currentStream });
           await webcam.play();
           window.requestAnimationFrame(loop);
+          document.getElementById("webcam-container").style.display = 'block';
           document.getElementById("webcam-container").appendChild(webcam.canvas);
         } catch (error) {
           console.error("Error accessing webcam: ", error);
@@ -200,9 +214,11 @@
         const prediction = await model.predict(webcam.canvas);
 
         // Display predictions
+        labelContainer = document.getElementById("label-container");
+        labelContainer.innerHTML = ""; // Clear existing predictions
         for (let i = 0; i < maxPredictions; i++) {
             const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
-            labelContainer.childNodes[i].innerHTML = classPrediction;
+            labelContainer.appendChild(document.createElement("div")).innerHTML = classPrediction;
         }
     }
 
@@ -221,6 +237,7 @@
           const prediction = await model.predict(img);
 
           // Display predictions
+          labelContainer = document.getElementById("label-container");
           labelContainer.innerHTML = ""; // Clear existing predictions
           for (let i = 0; i < maxPredictions; i++) {
               const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
@@ -228,6 +245,9 @@
           }
         };
     }
+
+    // Initialize model on page load
+    window.onload = init;
   </script>
 </body>
 </html>
