@@ -240,6 +240,19 @@
             text-align: right;
         }
 
+        /* Khung Mờ Cho Ý Nghĩa Biển Báo */
+        .meaning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3); /* Màu mờ */
+            border-radius: 8px;
+            z-index: -1;
+            display: none; /* Ẩn mặc định */
+        }
+
         /* Button để nghe lại ý nghĩa */
         #speakButton {
             background-color: #17a2b8;
@@ -292,6 +305,7 @@
         <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
         <div id="signMeaning" aria-live="polite">
             <!-- Khung mờ cho ý nghĩa -->
+            <div class="meaning-overlay"></div>
         </div>
         <!-- Nút để nghe lại ý nghĩa biển báo -->
         <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
@@ -342,26 +356,23 @@
          */
         async function startCamera() {
             try {
-                const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-                const constraints = {
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: isMobile ? "environment" : "user",
+                        facingMode: "environment",
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
                     audio: false
-                };
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                });
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
                 };
                 video.style.opacity = 1;
-                overlay.style.display = 'block'; // Show overlay when camera starts
-                console.log("Camera started. Device type:", isMobile ? "Mobile (back camera)" : "Desktop (front camera)");
+                overlay.style.display = 'block'; // Hiển thị overlay khi camera mở
             } catch (err) {
-                console.error("Cannot access camera: ", err);
-                alert("Cannot access camera. Please check your permissions or device.");
+                console.error("Không thể truy cập camera: ", err);
+                alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
             }
         }
 
@@ -373,7 +384,6 @@
                 stream.getTracks().forEach(track => track.stop());
             }
             overlay.style.display = 'none'; // Ẩn overlay khi dừng camera
-            console.log("Camera stopped.");
         }
 
         /**
@@ -383,16 +393,12 @@
             if (isProcessing) return; // Prevent multiple clicks
             isProcessing = true;
             captureButton.disabled = true;
-            console.log("Capture photo button clicked.");
 
             try {
                 const context = canvas.getContext('2d');
                 const zoom = parseFloat(zoomSlider.value);
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
-
-                console.log("Video dimensions:", videoWidth, videoHeight);
-                console.log("Zoom level:", zoom);
 
                 if (videoWidth === 0 || videoHeight === 0) {
                     throw new Error("Video chưa sẵn sàng.");
@@ -403,9 +409,6 @@
                 const scaledHeight = videoHeight / zoom;
                 const sx = (videoWidth - scaledWidth) / 2;
                 const sy = (videoHeight - scaledHeight) / 2;
-
-                console.log("Canvas dimensions:", videoWidth, videoHeight);
-                console.log("Drawing image on canvas:", { sx, sy, scaledWidth, scaledHeight, dx: 0, dy: 0, dWidth: videoWidth, dHeight: videoHeight });
 
                 canvas.width = videoWidth;
                 canvas.height = videoHeight;
@@ -425,10 +428,9 @@
                 signMeaning.textContent = "";
                 speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp ảnh
                 loadingPrediction.style.display = 'flex';
-                console.log("Image captured and displayed.");
                 await predictImage();
             } catch (error) {
-                console.error("Error capturing photo:", error);
+                console.error("Lỗi khi chụp ảnh: ", error);
                 alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
             } finally {
                 isProcessing = false;
@@ -449,7 +451,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            console.log("Image downloaded.");
         }
 
         /**
@@ -467,12 +468,10 @@
             signMeaning.textContent = "";
             speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp lại
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
-            console.log("Retake photo button clicked.");
 
             // Clear canvas
             const context = canvas.getContext('2d');
             context.clearRect(0, 0, canvas.width, canvas.height);
-            console.log("Canvas cleared.");
         }
 
         /**
@@ -501,7 +500,6 @@
             }
 
             synth.speak(utterThis);
-            console.log("Speaking text:", text);
         }
 
         /**
@@ -514,11 +512,11 @@
             try {
                 model = await tmImage.load(modelURLFull, metadataURL);
                 maxPredictions = model.getTotalClasses();
-                console.log("Model loaded successfully.");
+                console.log("Mô hình đã được tải thành công.");
                 loadingModel.style.display = 'none';
                 captureButton.disabled = false;
             } catch (err) {
-                console.error("Error loading model:", err);
+                console.error("Lỗi khi tải mô hình: ", err);
                 alert("Không thể tải mô hình nhận diện. Vui lòng kiểm tra kết nối mạng hoặc URL mô hình.");
                 loadingModel.textContent = "Không thể tải mô hình.";
             }
@@ -536,8 +534,6 @@
 
             try {
                 const prediction = await model.predict(canvas);
-                console.log("Predictions:", prediction);
-
                 if (prediction.length > 0) {
                     // Sắp xếp các dự đoán theo xác suất giảm dần
                     prediction.sort((a, b) => b.probability - a.probability);
@@ -547,29 +543,23 @@
 
                     // Trích xuất mã biển báo từ kết quả nhận diện
                     const signCode = topPrediction.className.substring(0, 5).toUpperCase(); // Đảm bảo mã là chữ hoa
-                    console.log("Sign code extracted:", signCode);
-
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
                         speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
                         speakText(meaningText); // Đọc ra ý nghĩa biển báo
-                        console.log("Sign meaning found:", meaningText);
                     } else {
-                        const meaningText = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
-                        signMeaning.textContent = meaningText;
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
-                        speakText(meaningText);
-                        console.log("Sign meaning not found.");
+                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
                     signMeaning.textContent = "";
                     speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu không có kết quả
-                    console.log("No predictions found.");
                 }
             } catch (err) {
-                console.error("Error predicting image:", err);
+                console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
                 signMeaning.textContent = "";
                 speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu có lỗi
@@ -578,34 +568,19 @@
             }
         }
 
-        /**
-         * Hàm tải danh sách giọng nói tiếng Việt
-         */
-        function populateVoices() {
-            const synth = window.speechSynthesis;
-            const voices = synth.getVoices();
-            // Lưu trữ giọng nói tiếng Việt vào một biến global nếu cần
-            window.vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
-            console.log("Voices populated. Vietnamese voices:", window.vietnameseVoices);
-        }
+        // Sự kiện khi nhấn nút chụp ảnh
+        captureButton.addEventListener('click', capturePhoto);
 
-        // Thêm sự kiện khi danh sách giọng nói thay đổi
-        window.speechSynthesis.onvoiceschanged = populateVoices;
+        // Sự kiện khi nhấn nút tải ảnh xuống
+        downloadButton.addEventListener('click', downloadPhoto);
 
-        // Khởi chạy camera và tải mô hình khi trang được tải
-        window.addEventListener('load', async () => {
-            console.log("Page loaded. Populating voices.");
-            // Đợi danh sách giọng nói được tải
-            // Note: speechSynthesis.getVoices() may return an empty array initially
-            // So, it's better to wait a short time before checking
-            await new Promise(resolve => setTimeout(resolve, 100));
-            populateVoices();
-            await loadModel();
-            startCamera();
+        // Sự kiện khi nhấn nút chụp lại
+        retakeButton.addEventListener('click', retakePhoto);
+
+        // Sự kiện khi thay đổi zoom
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = `${zoomSlider.value}x`;
         });
-
-        // Dừng camera khi rời khỏi trang
-        window.addEventListener('beforeunload', stopCamera);
 
         // Sự kiện khi nhấn nút nghe lại ý nghĩa biển báo
         speakButton.addEventListener('click', () => {
@@ -614,6 +589,29 @@
                 speakText(text);
             }
         });
+
+        /**
+         * Tải danh sách giọng nói khi chúng đã sẵn sàng
+         */
+        function populateVoices() {
+            const synth = window.speechSynthesis;
+            const voices = synth.getVoices();
+            // Lưu trữ giọng nói tiếng Việt vào một biến global nếu cần
+            window.vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+        }
+
+        // Thêm sự kiện khi danh sách giọng nói thay đổi
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+
+        // Khởi chạy camera và tải mô hình khi trang được tải
+        window.addEventListener('load', async () => {
+            populateVoices(); // Lấy giọng nói ngay khi trang tải
+            await loadModel();
+            startCamera();
+        });
+
+        // Dừng camera khi rời khỏi trang
+        window.addEventListener('beforeunload', stopCamera);
     </script>
 
 </body>
