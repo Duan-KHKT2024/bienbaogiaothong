@@ -26,6 +26,7 @@
             color: #333;
             margin-bottom: 20px;
             font-size: 2em;
+            text-align: center;
         }
 
         .container {
@@ -49,6 +50,7 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: opacity 0.5s ease, transform 0.3s ease;
+            object-fit: cover;
         }
 
         #capturedImage {
@@ -102,6 +104,21 @@
         }
 
         @media (max-width: 600px) {
+            .zoom-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .zoom-container label,
+            .zoom-container span {
+                text-align: left;
+                width: auto;
+            }
+
+            .zoom-container input[type="range"] {
+                width: 100%;
+            }
+
             button {
                 width: 100%;
                 max-width: 220px;
@@ -255,6 +272,9 @@
                     audio: false
                 });
                 video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                };
                 video.style.opacity = 1;
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
