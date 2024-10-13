@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sử Dụng Camera Trên Các Thiết Bị</title>
+    <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
     <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f4f8;
@@ -60,34 +67,264 @@
             font-weight: bold;
             text-align: center;
         }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            min-width: 160px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: #fff;
+        }
+
+        #captureButton {
+            background-color: #28a745;
+        }
+
+        #downloadButton {
+            background-color: #007bff;
+            display: none;
+        }
+
+        #retakeButton {
+            background-color: #ffc107;
+            display: none;
+            color: #333;
+        }
+
+        #speakButton {
+            background-color: #17a2b8;
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #predictionResult {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            min-height: 50px;
+            text-align: center;
+        }
+
+        #signMeaning {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            max-width: 600px;
+            position: relative;
+        }
+
+        /* Khung mờ cho ý nghĩa biển báo */
+        #signMeaning::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.1); /* Màu mờ */
+            backdrop-filter: blur(5px); /* Hiệu ứng mờ */
+            border-radius: 8px;
+            z-index: -1;
+        }
+
+        /* Loading Spinner Styles */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingModel, #loadingPrediction {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* Zoom Control Styling */
+        .zoom-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .zoom-container label {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+        }
+
+        .zoom-container input[type="range"] {
+            flex: 1 1 auto;
+        }
+
+        .zoom-container span {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+            width: 40px;
+            text-align: right;
+        }
+
+        /* Button để nghe lại ý nghĩa */
+        #speakButton {
+            background-color: #17a2b8;
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #speakButton:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        #speakButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Sử Dụng Camera Trên Các Thiết Bị</h1>
+    <h1>Nhận Diện Biển Báo Giao Thông</h1>
 
     <div id="video-container">
-        <video id="video" autoplay playsinline></video>
+        <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
     </div>
 
     <div id="cameraSelectContainer">
         <label for="cameraSelect">Chọn Camera:</label>
         <select id="cameraSelect">
-            <option value="user">Camera Trước</option>
-            <option value="environment">Camera Sau</option>
+            <!-- Tùy chọn sẽ được thêm bởi JavaScript -->
         </select>
     </div>
 
+    <div class="button-container">
+        <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
+        <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
+        <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
+    </div>
+
+    <div class="zoom-container">
+        <label for="zoomSlider">Zoom:</label>
+        <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+        <span id="zoomValue">1x</span>
+    </div>
+
+    <div id="loadingModel">
+        Đang tải mô hình...
+        <div class="spinner"></div>
+    </div>
+    <div id="loadingPrediction" style="display: none;">
+        Đang nhận diện...
+        <div class="spinner"></div>
+    </div>
+    <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
+    <div id="signMeaning" aria-live="polite">
+        <!-- Khung mờ cho ý nghĩa -->
+        <div class="meaning-overlay"></div>
+    </div>
+    <!-- Nút để nghe lại ý nghĩa biển báo -->
+    <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+    <img id="capturedImage" alt="Ảnh đã chụp" style="display: none;">
+
     <div id="errorMsg"></div>
 
-    <!-- JavaScript -->
+    <div class="footer">
+        &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+    </div>
+
+    <!-- TensorFlow.js và Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
     <script>
+        // Lấy các phần tử từ DOM
         const video = document.getElementById('video');
-        const cameraSelect = document.getElementById('cameraSelect');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('captureButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const retakeButton = document.getElementById('retakeButton');
+        const capturedImage = document.getElementById('capturedImage');
+        const predictionResult = document.getElementById('predictionResult');
+        const signMeaning = document.getElementById('signMeaning');
+        const loadingModel = document.getElementById('loadingModel');
+        const loadingPrediction = document.getElementById('loadingPrediction');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
+        const overlay = document.querySelector('.overlay'); // Lấy phần tử overlay
+        const speakButton = document.getElementById('speakButton'); // Nút nghe lại ý nghĩa
         const cameraSelectContainer = document.getElementById('cameraSelectContainer');
+        const cameraSelect = document.getElementById('cameraSelect');
         const errorMsg = document.getElementById('errorMsg');
 
         let currentStream = null;
+        let model, maxPredictions;
+        let isProcessing = false; // Flag để ngăn chặn việc xử lý nhiều lần
+        let signMeanings = {
+            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn trong trường hợp người tham gia giao thông khó quan sát thấy đèn để kịp thời xử lý.",
+            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên khi qua nơi giao nhau (trừ các loại xe được quyền ưu tiên theo quy định).",
+            // Thêm các mã biển báo khác ở đây
+            "S.101": "Biển báo STOP - Dừng lại hoàn toàn trước vạch dừng.",
+            "C.201": "Biển báo chặn xe ô tô từ bên trái.",
+            // ...
+        };
 
         /**
          * Kiểm tra xem thiết bị có phải di động hay không
@@ -130,19 +367,21 @@
             }
 
             const constraints = {
-                video: {
-                    facingMode: facingMode
-                },
-                audio: false
+                video: {}
             };
+
+            if (facingMode) {
+                constraints.video.facingMode = facingMode;
+            }
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 currentStream = stream;
                 video.srcObject = stream;
+                video.play();
                 errorMsg.textContent = '';
             } catch (err) {
-                console.error('Lỗi khi truy cập camera:', err);
+                console.error('Không thể truy cập camera:', err);
                 if (err.name === 'NotAllowedError') {
                     displayError('Bạn đã từ chối quyền truy cập camera.');
                 } else if (err.name === 'NotFoundError') {
@@ -170,9 +409,15 @@
                 if (videoDevices.length > 1) {
                     // Nếu có nhiều hơn một camera, hiển thị tùy chọn
                     cameraSelect.innerHTML = videoDevices.map(device => {
-                        return `<option value="${device.label.toLowerCase().includes('front') ? 'user' : 'environment'}">
-                                    ${device.label.toLowerCase().includes('front') ? 'Camera Trước' : 'Camera Sau'}
-                                </option>`;
+                        // Dựa trên label để xác định loại camera
+                        const label = device.label.toLowerCase();
+                        let optionValue = 'user'; // Mặc định là camera trước
+                        let optionText = 'Camera Trước';
+                        if (label.includes('back') || label.includes('rear') || label.includes('environment')) {
+                            optionValue = 'environment';
+                            optionText = 'Camera Sau';
+                        }
+                        return `<option value="${optionValue}">${optionText}</option>`;
                     }).join('');
                 } else if (videoDevices.length === 1) {
                     // Chỉ có một camera, không cần hiển thị tùy chọn
@@ -189,12 +434,321 @@
 
             } else {
                 // Máy tính sử dụng camera mặc định
-                startCamera('user'); // Hoặc 'environment' nếu muốn sử dụng camera sau
+                startCamera(); // Không đặt facingMode
             }
         }
 
-        // Khởi chạy khi trang tải xong
-        window.addEventListener('load', initCamera);
+        /**
+         * Hàm để nói văn bản tiếng Việt
+         * @param {string} text - Văn bản cần nói
+         */
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
+
+            // Lấy danh sách giọng nói
+            const voices = synth.getVoices();
+
+            // Chọn giọng nói tiếng Việt
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
+            } else {
+                console.warn('Không tìm thấy giọng nói tiếng Việt. Sử dụng giọng mặc định.');
+            }
+
+            synth.speak(utterThis);
+        }
+
+        /**
+         * Hàm tải mô hình Teachable Machine
+         */
+        async function loadModel() {
+            const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
+
+            const modelURLFull = MODEL_URL + "model.json";
+            const metadataURL = MODEL_URL + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURLFull, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                console.log("Mô hình đã được tải thành công.");
+                loadingModel.style.display = 'none';
+                captureButton.disabled = false;
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình:", err);
+                alert("Không thể tải mô hình nhận diện. Vui lòng kiểm tra kết nối mạng hoặc URL mô hình.");
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
+
+        /**
+         * Hàm nhận diện hình ảnh
+         */
+        async function predictImage() {
+            if (!model) {
+                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            try {
+                const prediction = await model.predict(canvas);
+                if (prediction.length > 0) {
+                    // Sắp xếp các dự đoán theo xác suất giảm dần
+                    prediction.sort((a, b) => b.probability - a.probability);
+                    // Lấy top prediction
+                    const topPrediction = prediction[0];
+                    predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
+
+                    // Trích xuất mã biển báo từ kết quả nhận diện
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase(); // Đảm bảo mã là chữ hoa
+                    if (signMeanings.hasOwnProperty(signCode)) {
+                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                        signMeaning.textContent = meaningText;
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText(meaningText); // Đọc ra ý nghĩa biển báo
+                    } else {
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
+                    }
+                } else {
+                    predictionResult.textContent = "Không có kết quả nhận diện.";
+                    signMeaning.textContent = "";
+                    speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu không có kết quả
+                }
+            } catch (err) {
+                console.error("Lỗi khi nhận diện hình ảnh:", err);
+                predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
+                signMeaning.textContent = "";
+                speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu có lỗi
+            } finally {
+                loadingPrediction.style.display = 'none';
+            }
+        }
+
+        /**
+         * Hàm chụp ảnh với zoom
+         */
+        async function capturePhoto() {
+            if (isProcessing) return; // Prevent multiple clicks
+            isProcessing = true;
+            captureButton.disabled = true;
+
+            try {
+                const context = canvas.getContext('2d');
+                const zoom = parseFloat(zoomSlider.value);
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
+
+                if (videoWidth === 0 || videoHeight === 0) {
+                    throw new Error("Video chưa sẵn sàng.");
+                }
+
+                // Tính toán kích thước và vị trí cắt dựa trên zoom
+                const scaledWidth = videoWidth / zoom;
+                const scaledHeight = videoHeight / zoom;
+                const sx = (videoWidth - scaledWidth) / 2;
+                const sy = (videoHeight - scaledHeight) / 2;
+
+                canvas.width = videoWidth;
+                canvas.height = videoHeight;
+                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
+
+                const imageDataURL = canvas.toDataURL('image/png');
+                capturedImage.src = imageDataURL;
+                capturedImage.style.display = 'block';
+                video.style.display = 'none';
+                downloadButton.style.display = 'inline-block';
+                retakeButton.style.display = 'inline-block';
+                captureButton.style.display = 'none';
+                predictionResult.textContent = "";
+                signMeaning.textContent = "";
+                speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp ảnh
+                loadingPrediction.style.display = 'flex';
+                await predictImage();
+            } catch (error) {
+                console.error("Lỗi khi chụp ảnh:", error);
+                alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
+            } finally {
+                isProcessing = false;
+                if (model) {
+                    captureButton.disabled = false;
+                }
+            }
+        }
+
+        /**
+         * Hàm tải ảnh xuống
+         */
+        function downloadPhoto() {
+            if (!capturedImage.src) return; // Prevent download if no image
+            const link = document.createElement('a');
+            link.href = capturedImage.src;
+            link.download = 'anh-chup.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Hình ảnh đã được tải xuống thành công.");
+        }
+
+        /**
+         * Hàm chụp lại
+         */
+        function retakePhoto() {
+            capturedImage.style.display = 'none';
+            video.style.display = 'block';
+            downloadButton.style.display = 'none';
+            retakeButton.style.display = 'none';
+            captureButton.style.display = 'inline-block';
+            predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
+            signMeaning.textContent = "";
+            speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp lại
+
+            // Clear canvas
+            const context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /**
+         * Hàm để nói văn bản tiếng Việt
+         * @param {string} text - Văn bản cần nói
+         */
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
+
+            // Lấy danh sách giọng nói
+            const voices = synth.getVoices();
+
+            // Chọn giọng nói tiếng Việt
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
+            } else {
+                console.warn('Không tìm thấy giọng nói tiếng Việt. Sử dụng giọng mặc định.');
+            }
+
+            synth.speak(utterThis);
+        }
+
+        /**
+         * Hàm tải mô hình Teachable Machine
+         */
+        async function loadModel() {
+            const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
+
+            const modelURLFull = MODEL_URL + "model.json";
+            const metadataURL = MODEL_URL + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURLFull, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                console.log("Mô hình đã được tải thành công.");
+                loadingModel.style.display = 'none';
+                captureButton.disabled = false;
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình:", err);
+                alert("Không thể tải mô hình nhận diện. Vui lòng kiểm tra kết nối mạng hoặc URL mô hình.");
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
+
+        /**
+         * Hàm nhận diện hình ảnh
+         */
+        async function predictImage() {
+            if (!model) {
+                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            try {
+                const prediction = await model.predict(canvas);
+                if (prediction.length > 0) {
+                    // Sắp xếp các dự đoán theo xác suất giảm dần
+                    prediction.sort((a, b) => b.probability - a.probability);
+                    // Lấy top prediction
+                    const topPrediction = prediction[0];
+                    predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
+
+                    // Trích xuất mã biển báo từ kết quả nhận diện
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase(); // Đảm bảo mã là chữ hoa
+                    if (signMeanings.hasOwnProperty(signCode)) {
+                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                        signMeaning.textContent = meaningText;
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText(meaningText); // Đọc ra ý nghĩa biển báo
+                    } else {
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
+                    }
+                } else {
+                    predictionResult.textContent = "Không có kết quả nhận diện.";
+                    signMeaning.textContent = "";
+                    speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu không có kết quả
+                }
+            } catch (err) {
+                console.error("Lỗi khi nhận diện hình ảnh:", err);
+                predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
+                signMeaning.textContent = "";
+                speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu có lỗi
+            } finally {
+                loadingPrediction.style.display = 'none';
+            }
+        }
+
+        // Sự kiện khi nhấn nút chụp ảnh
+        captureButton.addEventListener('click', capturePhoto);
+
+        // Sự kiện khi nhấn nút tải ảnh xuống
+        downloadButton.addEventListener('click', downloadPhoto);
+
+        // Sự kiện khi nhấn nút chụp lại
+        retakeButton.addEventListener('click', retakePhoto);
+
+        // Sự kiện khi thay đổi zoom
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = `${zoomSlider.value}x`;
+        });
+
+        // Sự kiện khi nhấn nút nghe lại ý nghĩa biển báo
+        speakButton.addEventListener('click', () => {
+            const text = signMeaning.textContent || "";
+            if (text) {
+                speakText(text);
+            }
+        });
+
+        /**
+         * Khởi chạy camera và tải mô hình khi trang được tải
+         */
+        window.addEventListener('load', async () => {
+            await loadModel();
+            await initCamera();
+        });
+
+        // Dừng camera khi rời khỏi trang
+        window.addEventListener('beforeunload', () => {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+        });
     </script>
 
 </body>
