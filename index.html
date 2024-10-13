@@ -355,7 +355,7 @@
       Tra cứu
     </button>
     <button id="downloadButton" onclick="downloadImage()" style="display: none; margin-top: 10px; padding: 10px 20px; font-size: 1em; cursor: pointer; border: none; background-color: #6c757d; color: #fff; border-radius: 5px; transition: background-color 0.3s, transform 0.2s;">
-      Tải Lên Hình Ảnh
+      Tải Xuống Hình Ảnh
     </button>
   </div>
 
@@ -536,6 +536,12 @@
       const capturedCanvas = document.getElementById("capturedCanvas");
       const ctx = capturedCanvas.getContext("2d");
 
+      // Kiểm tra xem video đã có khung hình chưa
+      if (webcamVideo.videoWidth === 0 || webcamVideo.videoHeight === 0) {
+        alert("Video chưa sẵn sàng. Vui lòng thử lại.");
+        return;
+      }
+
       // Đảm bảo capturedCanvas có cùng kích thước với video
       capturedCanvas.width = webcamVideo.videoWidth;
       capturedCanvas.height = webcamVideo.videoHeight;
@@ -543,8 +549,9 @@
       // Vẽ khung hình hiện tại từ video vào capturedCanvas
       ctx.drawImage(webcamVideo, 0, 0, capturedCanvas.width, capturedCanvas.height);
       capturedCanvas.style.display = 'block';
+      console.log("Hình ảnh đã được chụp và vẽ lên canvas.");
 
-      // Hiển thị nút Tra cứu và Tải lên Hình ảnh
+      // Hiển thị nút Tra cứu và Tải Xuống Hình ảnh
       document.getElementById('lookupButton').style.display = 'inline-block';
       document.getElementById('downloadButton').style.display = 'inline-block';
 
@@ -600,14 +607,25 @@
         return;
       }
 
-      const link = document.createElement('a');
-      link.href = capturedCanvas.toDataURL('image/png');
-      link.download = 'captured_image.png';
-      link.click();
+      capturedCanvas.toBlob(function(blob) {
+        if (!blob) {
+          alert("Không thể tạo tệp hình ảnh. Vui lòng thử lại.");
+          return;
+        }
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'captured_image.png';
+        document.body.appendChild(link); // Đảm bảo link nằm trong DOM
+        link.click();
+        document.body.removeChild(link); // Loại bỏ link sau khi tải xuống
+        URL.revokeObjectURL(link.href); // Giải phóng bộ nhớ
+        console.log("Hình ảnh đã được tải xuống thành công.");
+      }, 'image/png');
     }
 
     // Dự đoán từ ảnh tải lên
     async function predictFromImage() {
+      // Kiểm tra nếu mô hình chưa được tải thì tải mô hình
       if (!model) {
         await loadModel();
       }
