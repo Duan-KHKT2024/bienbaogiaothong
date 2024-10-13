@@ -134,6 +134,14 @@
             text-align: center;
         }
 
+        #signMeaning {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            max-width: 600px;
+        }
+
         /* Loading Spinner Styles */
         .spinner {
             border: 4px solid #f3f3f3;
@@ -227,6 +235,7 @@
             <div class="spinner"></div>
         </div>
         <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
+        <div id="signMeaning" aria-live="polite"></div>
     </div>
 
     <div class="footer">
@@ -246,6 +255,7 @@
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
+        const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
         const zoomSlider = document.getElementById('zoomSlider');
@@ -257,6 +267,14 @@
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
 
         let model, maxPredictions;
+
+        // Bản đồ mã biển báo và ý nghĩa tương ứng
+        const signMeanings = {
+            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn trong trường hợp người tham gia giao thông khó quan sát thấy đèn để kịp thời xử lý.",
+            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên khi qua nơi giao nhau (trừ các loại xe được quyền ưu tiên theo quy định).",
+            // Thêm các mã biển báo khác ở đây
+            // "Code": "Ý nghĩa..."
+        };
 
         /**
          * Hàm khởi chạy camera
@@ -329,6 +347,7 @@
                 retakeButton.style.display = 'inline-block';
                 captureButton.style.display = 'none';
                 predictionResult.textContent = "";
+                signMeaning.textContent = "";
                 loadingPrediction.style.display = 'flex';
                 await predictImage();
             } catch (error) {
@@ -367,6 +386,7 @@
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
             predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
+            signMeaning.textContent = "";
 
             // Clear canvas
             const context = canvas.getContext('2d');
@@ -425,12 +445,22 @@
                     // Lấy top prediction
                     const topPrediction = prediction[0];
                     predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
+
+                    // Trích xuất mã biển báo từ kết quả nhận diện
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase(); // Đảm bảo mã là chữ hoa
+                    if (signMeanings.hasOwnProperty(signCode)) {
+                        signMeaning.textContent = `Ý nghĩa: ${signMeanings[signCode]}`;
+                    } else {
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                    }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
+                    signMeaning.textContent = "";
                 }
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
+                signMeaning.textContent = "";
             } finally {
                 loadingPrediction.style.display = 'none';
             }
