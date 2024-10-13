@@ -239,6 +239,36 @@
             width: 40px;
             text-align: right;
         }
+
+        /* Khung Mờ Cho Ý Nghĩa Biển Báo */
+        .meaning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3); /* Màu mờ */
+            border-radius: 8px;
+            z-index: -1;
+            display: none; /* Ẩn mặc định */
+        }
+
+        /* Button để nghe lại ý nghĩa */
+        #speakButton {
+            background-color: #17a2b8;
+            display: none;
+            margin-top: 10px;
+        }
+
+        #speakButton:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        #speakButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -273,7 +303,12 @@
             <div class="spinner"></div>
         </div>
         <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
-        <div id="signMeaning" aria-live="polite"></div>
+        <div id="signMeaning" aria-live="polite">
+            <!-- Khung mờ cho ý nghĩa -->
+            <div class="meaning-overlay"></div>
+        </div>
+        <!-- Nút để nghe lại ý nghĩa biển báo -->
+        <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
     </div>
 
     <div class="footer">
@@ -299,6 +334,7 @@
         const zoomSlider = document.getElementById('zoomSlider');
         const zoomValue = document.getElementById('zoomValue');
         const overlay = document.querySelector('.overlay'); // Lấy phần tử overlay
+        const speakButton = document.getElementById('speakButton'); // Nút nghe lại ý nghĩa
         let stream = null;
         let isProcessing = false; // Flag to prevent multiple processing
 
@@ -390,6 +426,7 @@
                 captureButton.style.display = 'none';
                 predictionResult.textContent = "";
                 signMeaning.textContent = "";
+                speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp ảnh
                 loadingPrediction.style.display = 'flex';
                 await predictImage();
             } catch (error) {
@@ -429,6 +466,7 @@
             captureButton.style.display = 'inline-block';
             predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
             signMeaning.textContent = "";
+            speakButton.style.display = 'none'; // Ẩn nút nghe lại khi chụp lại
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
 
             // Clear canvas
@@ -436,19 +474,33 @@
             context.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Sự kiện khi nhấn nút chụp ảnh
-        captureButton.addEventListener('click', capturePhoto);
+        /**
+         * Hàm để nói văn bản tiếng Việt
+         * @param {string} text - Văn bản cần nói
+         */
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                return;
+            }
 
-        // Sự kiện khi nhấn nút tải ảnh xuống
-        downloadButton.addEventListener('click', downloadPhoto);
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
 
-        // Sự kiện khi nhấn nút chụp lại
-        retakeButton.addEventListener('click', retakePhoto);
+            // Lấy danh sách giọng nói
+            const voices = synth.getVoices();
 
-        // Sự kiện khi thay đổi zoom
-        zoomSlider.addEventListener('input', () => {
-            zoomValue.textContent = `${zoomSlider.value}x`;
-        });
+            // Chọn giọng nói tiếng Việt
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
+            } else {
+                console.warn('Không tìm thấy giọng nói tiếng Việt. Sử dụng giọng mặc định.');
+            }
+
+            synth.speak(utterThis);
+        }
 
         /**
          * Hàm tải mô hình Teachable Machine
@@ -492,25 +544,68 @@
                     // Trích xuất mã biển báo từ kết quả nhận diện
                     const signCode = topPrediction.className.substring(0, 5).toUpperCase(); // Đảm bảo mã là chữ hoa
                     if (signMeanings.hasOwnProperty(signCode)) {
-                        signMeaning.textContent = `Ý nghĩa: ${signMeanings[signCode]}`;
+                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                        signMeaning.textContent = meaningText;
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText(meaningText); // Đọc ra ý nghĩa biển báo
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        speakButton.style.display = 'inline-block'; // Hiển thị nút nghe lại
+                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
                     signMeaning.textContent = "";
+                    speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu không có kết quả
                 }
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
                 signMeaning.textContent = "";
+                speakButton.style.display = 'none'; // Ẩn nút nghe lại nếu có lỗi
             } finally {
                 loadingPrediction.style.display = 'none';
             }
         }
 
+        // Sự kiện khi nhấn nút chụp ảnh
+        captureButton.addEventListener('click', capturePhoto);
+
+        // Sự kiện khi nhấn nút tải ảnh xuống
+        downloadButton.addEventListener('click', downloadPhoto);
+
+        // Sự kiện khi nhấn nút chụp lại
+        retakeButton.addEventListener('click', retakePhoto);
+
+        // Sự kiện khi thay đổi zoom
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = `${zoomSlider.value}x`;
+        });
+
+        // Sự kiện khi nhấn nút nghe lại ý nghĩa biển báo
+        speakButton.addEventListener('click', () => {
+            const text = signMeaning.textContent || "";
+            if (text) {
+                speakText(text);
+            }
+        });
+
+        /**
+         * Tải danh sách giọng nói khi chúng đã sẵn sàng
+         */
+        function populateVoices() {
+            const synth = window.speechSynthesis;
+            const voices = synth.getVoices();
+            // Lưu trữ giọng nói tiếng Việt vào một biến global nếu cần
+            window.vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+        }
+
+        // Thêm sự kiện khi danh sách giọng nói thay đổi
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+
         // Khởi chạy camera và tải mô hình khi trang được tải
         window.addEventListener('load', async () => {
+            populateVoices(); // Lấy giọng nói ngay khi trang tải
             await loadModel();
             startCamera();
         });
