@@ -345,8 +345,8 @@
 
   <!-- Container to display the webcam -->
   <div id="webcam-container">
-    <!-- Webcam canvas sẽ được thêm vào đây bởi JavaScript -->
-    <canvas id="webcamCanvas" style="max-width: 100%; border-radius: 10px;"></canvas>
+    <!-- Webcam video sẽ được thêm vào đây bởi JavaScript -->
+    <video id="webcamVideo" autoplay playsinline style="max-width: 100%; border-radius: 10px;"></video>
     <button id="captureButton" onclick="captureImage()">Chụp Hình</button>
     <canvas id="capturedCanvas"></canvas>
   </div>
@@ -373,8 +373,8 @@
     // URL mô hình Teachable Machine
     const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
 
-    let model, maxPredictions, webcam;
-    let currentStream = null;
+    let model, maxPredictions;
+    let videoStream = null;
 
     // Hiển thị Loading Overlay
     function showLoading(show) {
@@ -413,21 +413,20 @@
 
     // Dừng webcam hiện tại nếu có
     function stopWebcam() {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
       }
-      if (webcam) {
-        webcam.stop();
-        webcam = null;
-      }
-      // Ẩn webcam container và nút chụp hình
+      const webcamVideo = document.getElementById('webcamVideo');
+      webcamVideo.srcObject = null;
+      webcamVideo.style.display = 'none';
       document.getElementById('webcam-container').style.display = 'none';
       document.getElementById('captureButton').style.display = 'none';
-      // Xóa canvas webcam
-      const webcamCanvas = document.getElementById('webcamCanvas');
-      const ctx = webcamCanvas.getContext('2d');
-      ctx.clearRect(0, 0, webcamCanvas.width, webcamCanvas.height);
+      // Xóa canvas captured
+      const capturedCanvas = document.getElementById('capturedCanvas');
+      const ctx = capturedCanvas.getContext('2d');
+      ctx.clearRect(0, 0, capturedCanvas.width, capturedCanvas.height);
+      capturedCanvas.style.display = 'none';
     }
 
     // Liệt kê các camera và điền vào dropdown
@@ -467,22 +466,19 @@
     // Chọn thiết bị (máy tính, điện thoại, file ảnh)
     function selectDevice(device) {
       stopWebcam();
-      document.getElementById('webcam-container').style.display = 'none';
       document.getElementById('file-container').style.display = 'none';
       document.getElementById('controls-container').style.display = 'none';
-      document.getElementById('captureButton').style.display = 'none';
-      document.getElementById('capturedCanvas').style.display = 'none';
+      document.getElementById('label-container').innerHTML = '';
 
       if (device === 'computer' || device === 'phone') {
         document.getElementById('controls-container').style.display = 'block';
         document.getElementById('camera-controls').style.display = 'flex';
         populateCameraList(); // Lấy danh sách camera
+        document.getElementById('instructions').style.display = 'none';
       } else if (device === 'file') {
         document.getElementById('file-container').style.display = 'block';
+        document.getElementById('instructions').style.display = 'none';
       }
-
-      // Ẩn nhãn dự đoán khi chuyển đổi chế độ
-      document.getElementById("label-container").innerHTML = "";
     }
 
     // Thiết lập webcam với camera đã chọn
@@ -496,64 +492,41 @@
         video: {
           deviceId: cameraId ? { exact: cameraId } : undefined,
           width: { ideal: 500 },
-          height: { ideal: 500 }
+          height: { ideal: 500 },
+          facingMode: 'environment' // Đảm bảo sử dụng camera môi trường (sau)
         }
       };
 
       try {
-        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-        webcam = new tmImage.Webcam(500, 500, false); // width, height, flip
-        await webcam.setup(); // Sử dụng các constraints đã định nghĩa
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        // Hiển thị webcam và nút chụp hình
-        document.getElementById("webcam-container").style.display = 'block';
-        document.getElementById("captureButton").style.display = 'block';
-        const webcamCanvas = document.getElementById('webcamCanvas');
-        webcamCanvas.style.display = 'block';
-        const ctx = webcamCanvas.getContext('2d');
-        // Đảm bảo canvas có kích thước đúng
-        webcamCanvas.width = webcam.width;
-        webcamCanvas.height = webcam.height;
-        // Vẽ video lên canvas
-        function drawWebcam() {
-          if (webcam && webcam.canvas) {
-            ctx.drawImage(webcam.canvas, 0, 0, webcamCanvas.width, webcamCanvas.height);
-          }
-          requestAnimationFrame(drawWebcam);
-        }
-        drawWebcam();
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const webcamVideo = document.getElementById('webcamVideo');
+        webcamVideo.srcObject = videoStream;
+        webcamVideo.style.display = 'block';
+        document.getElementById('webcam-container').style.display = 'block';
+        document.getElementById('captureButton').style.display = 'block';
       } catch (error) {
         console.error("Lỗi khi truy cập webcam: ", error);
         alert("Không thể truy cập webcam. Vui lòng kiểm tra quyền truy cập và kết nối thiết bị.");
       }
     }
 
-    // Hàm loop để cập nhật webcam liên tục
-    async function loop() {
-      if (webcam) {
-        await webcam.update(); // Cập nhật hình ảnh từ webcam
-        window.requestAnimationFrame(loop);
-      }
-    }
-
     // Chụp hình từ webcam
     function captureImage() {
-      if (!webcam) {
+      if (!videoStream) {
         alert("Webcam chưa được thiết lập.");
         return;
       }
 
+      const webcamVideo = document.getElementById('webcamVideo');
       const capturedCanvas = document.getElementById("capturedCanvas");
       const ctx = capturedCanvas.getContext("2d");
 
-      // Đảm bảo capturedCanvas có cùng kích thước với webcam.canvas
-      capturedCanvas.width = webcam.width;
-      capturedCanvas.height = webcam.height;
+      // Đảm bảo capturedCanvas có cùng kích thước với video
+      capturedCanvas.width = webcamVideo.videoWidth;
+      capturedCanvas.height = webcamVideo.videoHeight;
 
-      // Vẽ khung hình hiện tại từ webcam vào capturedCanvas
-      ctx.drawImage(webcam.canvas, 0, 0, capturedCanvas.width, capturedCanvas.height);
+      // Vẽ khung hình hiện tại từ video vào capturedCanvas
+      ctx.drawImage(webcamVideo, 0, 0, capturedCanvas.width, capturedCanvas.height);
       capturedCanvas.style.display = 'block';
 
       // Dừng webcam để tránh chụp nhiều hình
