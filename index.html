@@ -389,8 +389,10 @@
       const loadingOverlay = document.getElementById('loading-overlay');
       if (show) {
         loadingOverlay.classList.add('active');
+        console.log("Loading overlay shown.");
       } else {
         loadingOverlay.classList.remove('active');
+        console.log("Loading overlay hidden.");
       }
     }
 
@@ -401,6 +403,7 @@
       const metadataURLPath = MODEL_URL + "metadata.json";
 
       try {
+        console.log("Đang tải mô hình từ:", modelURLPath, metadataURLPath);
         // Tải mô hình và metadata
         model = await tmImage.load(modelURLPath, metadataURLPath);
         maxPredictions = model.getTotalClasses();
@@ -417,6 +420,7 @@
     function showInstructions() {
       const instructions = document.getElementById('instructions');
       instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+      console.log("Instructions toggled to:", instructions.style.display);
     }
 
     // Dừng webcam hiện tại nếu có
@@ -424,6 +428,7 @@
       if (videoStream) {
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
+        console.log("Webcam đã được dừng.");
       }
       const webcamVideo = document.getElementById('webcamVideo');
       webcamVideo.srcObject = null;
@@ -441,12 +446,14 @@
       const labelContainer = document.getElementById("label-container");
       labelContainer.style.display = 'none';
       labelContainer.innerHTML = "";
+      console.log("Webcam và các thành phần liên quan đã được ẩn và dọn dẹp.");
     }
 
     // Liệt kê các camera và điền vào dropdown
     async function populateCameraList() {
       const cameraSelect = document.getElementById('cameraSelect');
       cameraSelect.innerHTML = ''; // Xóa các tùy chọn hiện có
+      console.log("Đang liệt kê các thiết bị camera...");
 
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -454,6 +461,7 @@
 
         if (videoDevices.length === 0) {
           cameraSelect.innerHTML = '<option value="">Không tìm thấy camera nào</option>';
+          console.warn("Không tìm thấy thiết bị camera.");
           return;
         }
 
@@ -471,6 +479,8 @@
           }
           cameraSelect.appendChild(option);
         });
+
+        console.log("Đã liệt kê các thiết bị camera thành công:", videoDevices);
       } catch (error) {
         console.error("Lỗi khi liệt kê thiết bị: ", error);
         alert("Không thể liệt kê các thiết bị camera.");
@@ -479,6 +489,7 @@
 
     // Chọn thiết bị (máy tính, điện thoại, file ảnh)
     function selectDevice(device) {
+      console.log(`Đã chọn thiết bị: ${device}`);
       stopWebcam();
       document.getElementById('file-container').style.display = 'none';
       document.getElementById('controls-container').style.display = 'none';
@@ -490,9 +501,11 @@
         document.getElementById('camera-controls').style.display = 'flex';
         populateCameraList(); // Lấy danh sách camera
         document.getElementById('instructions').style.display = 'none';
+        console.log("Camera controls đã được hiển thị.");
       } else if (device === 'file') {
         document.getElementById('file-container').style.display = 'block';
         document.getElementById('instructions').style.display = 'none';
+        console.log("File upload container đã được hiển thị.");
       }
     }
 
@@ -500,19 +513,22 @@
     async function setupWebcam() {
       const cameraSelect = document.getElementById('cameraSelect');
       const cameraId = cameraSelect.value;
+      console.log("Đã chọn camera ID:", cameraId);
 
       stopWebcam(); // Dừng webcam hiện tại nếu có
 
+      // Điều chỉnh constraints: loại bỏ 'facingMode' để tương thích với desktop
       const constraints = {
         video: {
           deviceId: cameraId ? { exact: cameraId } : undefined,
           width: { ideal: 500 },
-          height: { ideal: 500 },
-          facingMode: 'environment' // Đảm bảo sử dụng camera môi trường (sau)
+          height: { ideal: 500 }
+          // facingMode: 'environment' // Đã loại bỏ để tương thích với desktop
         }
       };
 
       try {
+        console.log("Đang truy cập webcam với constraints:", constraints);
         videoStream = await navigator.mediaDevices.getUserMedia(constraints);
         const webcamVideo = document.getElementById('webcamVideo');
         webcamVideo.srcObject = videoStream;
@@ -537,8 +553,10 @@
 
     // Chụp hình từ webcam
     function captureImage() {
+      console.log("Đã nhấn nút 'Chụp Hình'.");
       if (!videoStream) {
         alert("Webcam chưa được thiết lập.");
+        console.warn("Không có luồng video để chụp hình.");
         return;
       }
 
@@ -549,6 +567,7 @@
       // Kiểm tra xem video đã có khung hình chưa
       if (webcamVideo.videoWidth === 0 || webcamVideo.videoHeight === 0) {
         alert("Video chưa sẵn sàng. Vui lòng thử lại.");
+        console.warn("videoWidth hoặc videoHeight bằng 0.");
         return;
       }
 
@@ -571,24 +590,29 @@
 
     // Dự đoán từ hình ảnh đã chụp
     async function lookupPrediction() {
+      console.log("Đã nhấn nút 'Tra cứu'.");
       const capturedCanvas = document.getElementById("capturedCanvas");
       if (capturedCanvas.style.display === 'none') {
         alert("Vui lòng chụp hình trước khi tra cứu.");
+        console.warn("Canvas không hiển thị.");
         return;
       }
 
       // Kiểm tra nếu mô hình chưa được tải thì tải mô hình
       if (!model) {
+        console.log("Mô hình chưa được tải. Đang tải mô hình...");
         await loadModel();
       }
 
       if (!model) {
         alert("Không thể tải mô hình nhận diện.");
+        console.error("Mô hình không tải được.");
         return;
       }
 
       try {
         showLoading(true);
+        console.log("Đang thực hiện dự đoán trên canvas...");
         const prediction = await model.predict(capturedCanvas);
 
         // Hiển thị dự đoán
@@ -601,6 +625,7 @@
           labelContainer.appendChild(div);
         });
         labelContainer.style.display = 'block';
+        console.log("Đã hiển thị kết quả dự đoán.");
       } catch (error) {
         console.error("Lỗi khi thực hiện dự đoán: ", error);
         alert("Đã xảy ra lỗi khi thực hiện dự đoán.");
@@ -611,15 +636,18 @@
 
     // Tải hình ảnh đã chụp xuống máy
     function downloadImage() {
+      console.log("Đã nhấn nút 'Tải Xuống Hình Ảnh'.");
       const capturedCanvas = document.getElementById("capturedCanvas");
       if (capturedCanvas.style.display === 'none') {
         alert("Vui lòng chụp hình trước khi tải xuống.");
+        console.warn("Canvas không hiển thị.");
         return;
       }
 
       capturedCanvas.toBlob(function(blob) {
         if (!blob) {
           alert("Không thể tạo tệp hình ảnh. Vui lòng thử lại.");
+          console.error("Không thể tạo Blob từ canvas.");
           return;
         }
         const link = document.createElement('a');
@@ -635,13 +663,16 @@
 
     // Dự đoán từ ảnh tải lên
     async function predictFromImage() {
+      console.log("Đã tải lên một ảnh để dự đoán.");
       // Kiểm tra nếu mô hình chưa được tải thì tải mô hình
       if (!model) {
+        console.log("Mô hình chưa được tải. Đang tải mô hình...");
         await loadModel();
       }
 
       if (!model) {
         alert("Không thể tải mô hình nhận diện.");
+        console.error("Mô hình không tải được.");
         return;
       }
 
@@ -649,6 +680,7 @@
       const file = imageUpload.files[0];
       if (!file) {
         alert("Vui lòng chọn một ảnh trước.");
+        console.warn("Không có tệp ảnh được chọn.");
         return;
       }
 
@@ -657,6 +689,7 @@
       img.onload = async function () {
         try {
           showLoading(true);
+          console.log("Đang thực hiện dự đoán trên ảnh đã tải lên...");
           // Sử dụng một canvas để điều chỉnh kích thước nếu cần
           const tempCanvas = document.createElement('canvas');
           const ctx = tempCanvas.getContext('2d');
@@ -676,6 +709,7 @@
             labelContainer.appendChild(div);
           });
           labelContainer.style.display = 'block';
+          console.log("Đã hiển thị kết quả dự đoán từ ảnh đã tải lên.");
         } catch (error) {
           console.error("Lỗi khi thực hiện dự đoán: ", error);
           alert("Đã xảy ra lỗi khi thực hiện dự đoán.");
@@ -686,11 +720,13 @@
 
       img.onerror = function () {
         alert("Không thể tải ảnh. Vui lòng thử lại với một ảnh khác.");
+        console.error("Lỗi khi tải ảnh từ tệp đã chọn.");
       };
     }
 
     // Khởi tạo mô hình khi tải trang (chưa cần tải mô hình ngay lập tức)
     window.onload = function() {
+      console.log("Trang đã được tải. Chờ người dùng chọn thiết bị.");
       // Không gọi loadModel() ở đây
       // Mô hình sẽ được tải sau khi người dùng nhấn "Tra cứu" hoặc tải lên ảnh
     };
