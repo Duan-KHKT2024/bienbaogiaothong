@@ -191,6 +191,7 @@
     }
 
     #label-container {
+      display: none;
       margin-top: 20px;
       font-size: 1em;
       max-width: 600px;
@@ -349,6 +350,13 @@
     <video id="webcamVideo" autoplay playsinline style="max-width: 100%; border-radius: 10px;"></video>
     <button id="captureButton" onclick="captureImage()">Chụp Hình</button>
     <canvas id="capturedCanvas"></canvas>
+    <br>
+    <button id="lookupButton" onclick="lookupPrediction()" style="display: none; margin-top: 10px; padding: 10px 20px; font-size: 1em; cursor: pointer; border: none; background-color: #17a2b8; color: #fff; border-radius: 5px; transition: background-color 0.3s, transform 0.2s;">
+      Tra cứu
+    </button>
+    <button id="downloadButton" onclick="downloadImage()" style="display: none; margin-top: 10px; padding: 10px 20px; font-size: 1em; cursor: pointer; border: none; background-color: #6c757d; color: #fff; border-radius: 5px; transition: background-color 0.3s, transform 0.2s;">
+      Tải Lên Hình Ảnh
+    </button>
   </div>
 
   <!-- Allow user to select an image file from computer -->
@@ -387,7 +395,7 @@
     }
 
     // Tải mô hình và thiết lập
-    async function init() {
+    async function loadModel() {
       showLoading(true);
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
@@ -422,11 +430,17 @@
       webcamVideo.style.display = 'none';
       document.getElementById('webcam-container').style.display = 'none';
       document.getElementById('captureButton').style.display = 'none';
+      document.getElementById('lookupButton').style.display = 'none';
+      document.getElementById('downloadButton').style.display = 'none';
       // Xóa canvas captured
       const capturedCanvas = document.getElementById('capturedCanvas');
       const ctx = capturedCanvas.getContext('2d');
       ctx.clearRect(0, 0, capturedCanvas.width, capturedCanvas.height);
       capturedCanvas.style.display = 'none';
+      // Ẩn kết quả dự đoán
+      const labelContainer = document.getElementById("label-container");
+      labelContainer.style.display = 'none';
+      labelContainer.innerHTML = "";
     }
 
     // Liệt kê các camera và điền vào dropdown
@@ -468,6 +482,7 @@
       stopWebcam();
       document.getElementById('file-container').style.display = 'none';
       document.getElementById('controls-container').style.display = 'none';
+      document.getElementById('label-container').style.display = 'none';
       document.getElementById('label-container').innerHTML = '';
 
       if (device === 'computer' || device === 'phone') {
@@ -529,17 +544,29 @@
       ctx.drawImage(webcamVideo, 0, 0, capturedCanvas.width, capturedCanvas.height);
       capturedCanvas.style.display = 'block';
 
+      // Hiển thị nút Tra cứu và Tải lên Hình ảnh
+      document.getElementById('lookupButton').style.display = 'inline-block';
+      document.getElementById('downloadButton').style.display = 'inline-block';
+
       // Dừng webcam để tránh chụp nhiều hình
       stopWebcam();
-
-      // Dự đoán từ hình ảnh đã chụp
-      predictFromCapturedImage(capturedCanvas);
     }
 
     // Dự đoán từ hình ảnh đã chụp
-    async function predictFromCapturedImage(capturedCanvas) {
+    async function lookupPrediction() {
+      const capturedCanvas = document.getElementById("capturedCanvas");
+      if (capturedCanvas.style.display === 'none') {
+        alert("Vui lòng chụp hình trước khi tra cứu.");
+        return;
+      }
+
+      // Kiểm tra nếu mô hình chưa được tải thì tải mô hình
       if (!model) {
-        alert("Mô hình chưa được tải. Vui lòng thử lại sau.");
+        await loadModel();
+      }
+
+      if (!model) {
+        alert("Không thể tải mô hình nhận diện.");
         return;
       }
 
@@ -556,6 +583,7 @@
           div.textContent = classPrediction;
           labelContainer.appendChild(div);
         });
+        labelContainer.style.display = 'block';
       } catch (error) {
         console.error("Lỗi khi thực hiện dự đoán: ", error);
         alert("Đã xảy ra lỗi khi thực hiện dự đoán.");
@@ -564,10 +592,28 @@
       }
     }
 
+    // Tải hình ảnh đã chụp xuống máy
+    function downloadImage() {
+      const capturedCanvas = document.getElementById("capturedCanvas");
+      if (capturedCanvas.style.display === 'none') {
+        alert("Vui lòng chụp hình trước khi tải xuống.");
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = capturedCanvas.toDataURL('image/png');
+      link.download = 'captured_image.png';
+      link.click();
+    }
+
     // Dự đoán từ ảnh tải lên
     async function predictFromImage() {
       if (!model) {
-        alert("Mô hình chưa được tải. Vui lòng thử lại sau.");
+        await loadModel();
+      }
+
+      if (!model) {
+        alert("Không thể tải mô hình nhận diện.");
         return;
       }
 
@@ -601,6 +647,7 @@
             div.textContent = classPrediction;
             labelContainer.appendChild(div);
           });
+          labelContainer.style.display = 'block';
         } catch (error) {
           console.error("Lỗi khi thực hiện dự đoán: ", error);
           alert("Đã xảy ra lỗi khi thực hiện dự đoán.");
@@ -614,8 +661,11 @@
       };
     }
 
-    // Khởi tạo mô hình khi tải trang
-    window.onload = init;
+    // Khởi tạo mô hình khi tải trang (chưa cần tải mô hình ngay lập tức)
+    window.onload = function() {
+      // Không gọi loadModel() ở đây
+      // Mô hình sẽ được tải sau khi người dùng nhấn "Tra cứu" hoặc tải lên ảnh
+    };
   </script>
 </body>
 </html>
