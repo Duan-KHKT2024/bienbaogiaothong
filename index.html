@@ -219,18 +219,18 @@
     // Capture image from webcam
     function captureImage() {
       const capturedCanvas = document.getElementById("capturedCanvas");
+      const ctx = capturedCanvas.getContext("2d");
+
+      // Ensure capturedCanvas has the same size as the webcam canvas
       capturedCanvas.width = webcam.canvas.width;
       capturedCanvas.height = webcam.canvas.height;
-      const ctx = capturedCanvas.getContext("2d");
+
+      // Draw the current frame from the webcam onto the capturedCanvas
       ctx.drawImage(webcam.canvas, 0, 0);
       capturedCanvas.style.display = 'block';
-      capturedCanvas.toBlob((blob) => {
-        if (blob) {
-          predictFromCapturedImage(capturedCanvas);
-        } else {
-          console.error("Error capturing image.");
-        }
-      });
+
+      // Predict from the captured image
+      predictFromCapturedImage(capturedCanvas);
     }
 
     // Predict from the captured image
