@@ -516,9 +516,19 @@
         videoStream = await navigator.mediaDevices.getUserMedia(constraints);
         const webcamVideo = document.getElementById('webcamVideo');
         webcamVideo.srcObject = videoStream;
-        webcamVideo.style.display = 'block';
-        document.getElementById('webcam-container').style.display = 'block';
-        document.getElementById('captureButton').style.display = 'block';
+
+        // Thêm sự kiện onloadedmetadata để đảm bảo video đã được tải
+        webcamVideo.onloadedmetadata = () => {
+          webcamVideo.play().then(() => {
+            webcamVideo.style.display = 'block';
+            document.getElementById('webcam-container').style.display = 'block';
+            document.getElementById('captureButton').style.display = 'block';
+            console.log("Webcam đã được thiết lập và video đang chạy.");
+          }).catch((error) => {
+            console.error("Lỗi khi chạy video: ", error);
+            alert("Không thể chạy video. Vui lòng kiểm tra kết nối thiết bị.");
+          });
+        };
       } catch (error) {
         console.error("Lỗi khi truy cập webcam: ", error);
         alert("Không thể truy cập webcam. Vui lòng kiểm tra quyền truy cập và kết nối thiết bị.");
@@ -613,12 +623,12 @@
           return;
         }
         const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
+        link.href = window.URL.createObjectURL(blob); // Sử dụng window.URL để tránh xung đột
         link.download = 'captured_image.png';
         document.body.appendChild(link); // Đảm bảo link nằm trong DOM
         link.click();
         document.body.removeChild(link); // Loại bỏ link sau khi tải xuống
-        URL.revokeObjectURL(link.href); // Giải phóng bộ nhớ
+        window.URL.revokeObjectURL(link.href); // Giải phóng bộ nhớ
         console.log("Hình ảnh đã được tải xuống thành công.");
       }, 'image/png');
     }
@@ -643,7 +653,7 @@
       }
 
       const img = new Image();
-      img.src = URL.createObjectURL(file);
+      img.src = window.URL.createObjectURL(file); // Sử dụng window.URL để tránh xung đột
       img.onload = async function () {
         try {
           showLoading(true);
