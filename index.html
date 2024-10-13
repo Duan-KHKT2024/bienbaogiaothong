@@ -3,17 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
+    <title>Sử Dụng Camera Trên Các Thiết Bị</title>
     <style>
-        /* Reset CSS */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f0f4f8;
             display: flex;
             flex-direction: column;
@@ -25,442 +18,183 @@
         h1 {
             color: #333;
             margin-bottom: 20px;
-            font-size: 2em;
             text-align: center;
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Điều chỉnh chiều cao video cho thiết bị di động */
-        #video, #capturedImage {
-            border: 4px solid #4CAF50;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            max-height: 400px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: opacity 0.5s ease, transform 0.3s ease;
-            object-fit: cover;
-        }
-
-        #capturedImage {
-            display: none;
-            opacity: 0;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        button {
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            min-width: 160px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            color: #fff;
-        }
-
-        #captureButton {
-            background-color: #28a745;
-        }
-
-        #downloadButton {
-            background-color: #007bff;
-            display: none;
-        }
-
-        #retakeButton {
-            background-color: #ffc107;
-            display: none;
-            color: #333;
-        }
-
-        button:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 600px) {
-            button {
-                width: 100%;
-                max-width: 220px;
-            }
-        }
-
-        #predictionResult {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            min-height: 50px;
-            text-align: center;
-        }
-
-        #signMeaning {
-            margin-top: 10px;
-            font-size: 16px;
-            color: #555;
-            text-align: center;
-            max-width: 600px;
+        #video-container {
             position: relative;
-        }
-
-        /* Loading Spinner Styles */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4CAF50;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #loadingModel, #loadingPrediction {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .footer {
             width: 100%;
-            text-align: center;
-            padding-top: 20px;
-            font-size: 14px;
-            color: #888;
+            max-width: 600px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #000;
         }
 
-        /* Zoom Control Styling */
-        .zoom-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #cameraSelectContainer {
+            margin-top: 20px;
+            display: none; /* Ẩn mặc định, chỉ hiển thị trên di động */
             width: 100%;
             max-width: 600px;
         }
 
-        .zoom-container label {
+        label {
             font-size: 16px;
-            color: #333;
-            flex: 0 0 auto;
+            margin-right: 10px;
         }
 
-        .zoom-container input[type="range"] {
-            flex: 1 1 auto;
-        }
-
-        .zoom-container span {
+        select {
+            padding: 8px;
             font-size: 16px;
-            color: #333;
-            flex: 0 0 auto;
-            width: 40px;
-            text-align: right;
         }
 
-        /* Button để nghe lại ý nghĩa */
-        #speakButton {
-            background-color: #17a2b8;
-            display: none;
-            margin-top: 10px;
-        }
-
-        #speakButton:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        #speakButton:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        #errorMsg {
+            margin-top: 20px;
+            color: red;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Nhận Diện Biển Báo Giao Thông</h1>
-        <div style="position: relative; width: 100%; max-width: 600px;">
-            <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
-        </div>
-        <img id="capturedImage" alt="Ảnh đã chụp">
-        <canvas id="canvas" style="display: none;"></canvas>
+    <h1>Sử Dụng Camera Trên Các Thiết Bị</h1>
 
-        <div class="zoom-container">
-            <label for="zoomSlider">Zoom:</label>
-            <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
-            <span id="zoomValue">1x</span>
-        </div>
-
-        <div class="button-container">
-            <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
-            <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
-            <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
-        </div>
-
-        <div id="loadingModel">
-            Đang tải mô hình...
-            <div class="spinner"></div>
-        </div>
-        <div id="loadingPrediction" style="display: none;">
-            Đang nhận diện...
-            <div class="spinner"></div>
-        </div>
-        <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
-        <div id="signMeaning" aria-live="polite"></div>
-        <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
+    <div id="video-container">
+        <video id="video" autoplay playsinline></video>
     </div>
 
-    <div class="footer">
-        &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+    <div id="cameraSelectContainer">
+        <label for="cameraSelect">Chọn Camera:</label>
+        <select id="cameraSelect">
+            <option value="user">Camera Trước</option>
+            <option value="environment">Camera Sau</option>
+        </select>
     </div>
 
-    <!-- TensorFlow.js và Teachable Machine -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <div id="errorMsg"></div>
 
+    <!-- JavaScript -->
     <script>
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureButton = document.getElementById('captureButton');
-        const downloadButton = document.getElementById('downloadButton');
-        const retakeButton = document.getElementById('retakeButton');
-        const capturedImage = document.getElementById('capturedImage');
-        const predictionResult = document.getElementById('predictionResult');
-        const signMeaning = document.getElementById('signMeaning');
-        const loadingModel = document.getElementById('loadingModel');
-        const loadingPrediction = document.getElementById('loadingPrediction');
-        const zoomSlider = document.getElementById('zoomSlider');
-        const zoomValue = document.getElementById('zoomValue');
-        const speakButton = document.getElementById('speakButton');
-        let stream = null;
-        let isProcessing = false;
-        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
-        let model, maxPredictions;
-        const signMeanings = {
-            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn...",
-            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
-        };
+        const cameraSelect = document.getElementById('cameraSelect');
+        const cameraSelectContainer = document.getElementById('cameraSelectContainer');
+        const errorMsg = document.getElementById('errorMsg');
 
-        async function startCamera() {
+        let currentStream = null;
+
+        /**
+         * Kiểm tra xem thiết bị có phải di động hay không
+         * @returns {boolean}
+         */
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
+        /**
+         * Lấy danh sách các thiết bị video
+         */
+        async function getCameraDevices() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment"
-                    },
-                    audio: false
-                });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                return videoDevices;
+            } catch (err) {
+                console.error('Lỗi khi lấy danh sách thiết bị:', err);
+                displayError('Không thể lấy danh sách camera.');
+                return [];
+            }
+        }
+
+        /**
+         * Hiển thị thông báo lỗi
+         * @param {string} msg 
+         */
+        function displayError(msg) {
+            errorMsg.textContent = msg;
+        }
+
+        /**
+         * Bắt đầu sử dụng camera với các constraints đã cho
+         * @param {string} facingMode 
+         */
+        async function startCamera(facingMode) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: facingMode
+                },
+                audio: false
+            };
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                currentStream = stream;
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    video.play();
-                    captureButton.disabled = false;
-                };
+                errorMsg.textContent = '';
             } catch (err) {
-                console.error("Không thể truy cập camera: ", err);
-                alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
-            }
-        }
-
-        async function capturePhoto() {
-            if (isProcessing) return;
-            isProcessing = true;
-            captureButton.disabled = true;
-
-            try {
-                const context = canvas.getContext('2d');
-                const zoom = parseFloat(zoomSlider.value);
-                const videoWidth = video.videoWidth;
-                const videoHeight = video.videoHeight;
-
-                if (videoWidth === 0 || videoHeight === 0) {
-                    throw new Error("Video chưa sẵn sàng.");
-                }
-
-                const scaledWidth = videoWidth / zoom;
-                const scaledHeight = videoHeight / zoom;
-                const sx = (videoWidth - scaledWidth) / 2;
-                const sy = (videoHeight - scaledHeight) / 2;
-
-                canvas.width = videoWidth;
-                canvas.height = videoHeight;
-                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
-
-                const imageDataURL = canvas.toDataURL('image/png');
-                capturedImage.src = imageDataURL;
-                capturedImage.style.display = 'block';
-                capturedImage.style.opacity = 1;
-                video.style.opacity = 0;
-                video.style.display = 'none';
-                downloadButton.style.display = 'inline-block';
-                retakeButton.style.display = 'inline-block';
-                captureButton.style.display = 'none';
-                predictionResult.textContent = "";
-                signMeaning.textContent = "";
-                speakButton.style.display = 'none';
-                loadingPrediction.style.display = 'flex';
-                await predictImage();
-            } catch (error) {
-                console.error("Lỗi khi chụp ảnh: ", error);
-                alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
-            } finally {
-                isProcessing = false;
-                captureButton.disabled = false;
-            }
-        }
-
-        function downloadPhoto() {
-            if (!capturedImage.src) return;
-            const link = document.createElement('a');
-            link.href = capturedImage.src;
-            link.download = 'anh-chup.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function retakePhoto() {
-            capturedImage.style.display = 'none';
-            capturedImage.style.opacity = 0;
-            video.style.display = 'block';
-            video.style.opacity = 1;
-            downloadButton.style.display = 'none';
-            retakeButton.style.display = 'none';
-            captureButton.style.display = 'inline-block';
-            predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
-            signMeaning.textContent = "";
-            speakButton.style.display = 'none';
-        }
-
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) {
-                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
-                return;
-            }
-
-            const synth = window.speechSynthesis;
-            const utterThis = new SpeechSynthesisUtterance(text);
-            const voices = synth.getVoices();
-            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
-
-            if (vietnameseVoices.length > 0) {
-                utterThis.voice = vietnameseVoices[0];
-            }
-
-            synth.speak(utterThis);
-        }
-
-        async function loadModel() {
-            try {
-                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-                maxPredictions = model.getTotalClasses();
-                loadingModel.style.display = 'none';
-            } catch (err) {
-                console.error("Lỗi khi tải mô hình: ", err);
-                loadingModel.textContent = "Không thể tải mô hình.";
-            }
-        }
-
-        async function predictImage() {
-            if (!model) {
-                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
-                loadingPrediction.style.display = 'none';
-                return;
-            }
-
-            try {
-                const prediction = await model.predict(canvas);
-                if (prediction.length > 0) {
-                    prediction.sort((a, b) => b.probability - a.probability);
-                    const topPrediction = prediction[0];
-                    predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
-                    const signCode = topPrediction.className.substring(0, 5).toUpperCase();
-                    if (signMeanings.hasOwnProperty(signCode)) {
-                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
-                        signMeaning.textContent = meaningText;
-                        speakButton.style.display = 'inline-block';
-                        speakText(meaningText);
-                    } else {
-                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
-                        speakButton.style.display = 'inline-block';
-                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
-                    }
+                console.error('Lỗi khi truy cập camera:', err);
+                if (err.name === 'NotAllowedError') {
+                    displayError('Bạn đã từ chối quyền truy cập camera.');
+                } else if (err.name === 'NotFoundError') {
+                    displayError('Không tìm thấy camera phù hợp.');
                 } else {
-                    predictionResult.textContent = "Không có kết quả nhận diện.";
-                    signMeaning.textContent = "";
-                    speakButton.style.display = 'none';
+                    displayError('Đã xảy ra lỗi khi truy cập camera.');
                 }
-            } catch (err) {
-                console.error("Lỗi khi nhận diện hình ảnh: ", err);
-                predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
-                signMeaning.textContent = "";
-                speakButton.style.display = 'none';
-            } finally {
-                loadingPrediction.style.display = 'none';
             }
         }
 
-        captureButton.addEventListener('click', capturePhoto);
-        downloadButton.addEventListener('click', downloadPhoto);
-        retakeButton.addEventListener('click', retakePhoto);
-        zoomSlider.addEventListener('input', () => {
-            zoomValue.textContent = `${zoomSlider.value}x`;
-        });
-        speakButton.addEventListener('click', () => {
-            const text = signMeaning.textContent || "";
-            if (text) {
-                speakText(text);
+        /**
+         * Khởi chạy camera dựa trên thiết bị
+         */
+        async function initCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                displayError('Trình duyệt của bạn không hỗ trợ sử dụng camera.');
+                return;
             }
-        });
 
-        window.speechSynthesis.onvoiceschanged = function() {
-            window.speechSynthesis.getVoices();
-        };
+            if (isMobileDevice()) {
+                // Hiển thị tùy chọn chọn camera trên di động
+                cameraSelectContainer.style.display = 'block';
+                const videoDevices = await getCameraDevices();
+                
+                if (videoDevices.length > 1) {
+                    // Nếu có nhiều hơn một camera, hiển thị tùy chọn
+                    cameraSelect.innerHTML = videoDevices.map(device => {
+                        return `<option value="${device.label.toLowerCase().includes('front') ? 'user' : 'environment'}">
+                                    ${device.label.toLowerCase().includes('front') ? 'Camera Trước' : 'Camera Sau'}
+                                </option>`;
+                    }).join('');
+                } else if (videoDevices.length === 1) {
+                    // Chỉ có một camera, không cần hiển thị tùy chọn
+                    cameraSelectContainer.style.display = 'none';
+                }
 
-        window.addEventListener('load', async () => {
-            await loadModel();
-            startCamera();
-        });
+                // Bắt đầu camera với tùy chọn hiện tại
+                startCamera(cameraSelect.value);
 
-        window.addEventListener('beforeunload', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+                // Thay đổi camera khi người dùng chọn
+                cameraSelect.addEventListener('change', () => {
+                    startCamera(cameraSelect.value);
+                });
+
+            } else {
+                // Máy tính sử dụng camera mặc định
+                startCamera('user'); // Hoặc 'environment' nếu muốn sử dụng camera sau
             }
-        });
+        }
+
+        // Khởi chạy khi trang tải xong
+        window.addEventListener('load', initCamera);
     </script>
 
 </body>
