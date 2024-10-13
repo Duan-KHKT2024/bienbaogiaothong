@@ -2,40 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Test Teachable Machine Model</title>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  <title>Traffic Sign Recognition</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    p {
+      font-size: 1.2em;
+    }
+    #webcam-container {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      margin: 0 auto;
+    }
+    #label-container {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    #error-message {
+      color: red;
+      margin-top: 20px;
+    }
+
+    /* Make the layout responsive */
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 1.5em;
+      }
+      p {
+        font-size: 1em;
+      }
+      #label-container {
+        font-size: 1em;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Test Teachable Machine Model</h1>
-  <video id="webcam" autoplay playsinline width="300" height="300"></video>
+  <h1>Traffic Sign Recognition</h1>
+  <p>Allow camera access to start recognizing traffic signs.</p>
+
+  <!-- Webcam container -->
+  <div id="webcam-container"></div>
+  
+  <!-- Display prediction -->
   <div id="label-container"></div>
 
+  <!-- Display error messages -->
+  <div id="error-message"></div>
+
+  <!-- Teachable Machine Model URL and Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script type="text/javascript">
-    const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/";
+    const URL = "https://teachablemachine.withgoogle.com/models/fFZnpVlVM/"; // Thay thế với URL mô hình thực tế của bạn
 
     let model, webcam, labelContainer, maxPredictions;
 
+    // Load the image model and setup the webcam
     async function init() {
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
 
-      // Load the model
-      model = await tmImage.load(modelURL, metadataURL);
-      maxPredictions = model.getTotalClasses();
+      try {
+        // Load the model
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+      } catch (error) {
+        displayError("Không thể tải mô hình: " + error);
+        return;
+      }
 
-      // Setup the webcam
-      const flip = true;
-      webcam = new tmImage.Webcam(300, 300, flip);
-      await webcam.setup();
-      await webcam.play();
-      window.requestAnimationFrame(loop);
+      try {
+        // Setup the webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmImage.Webcam(600, 400, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+      } catch (error) {
+        displayError("Không thể truy cập webcam: " + error);
+        return;
+      }
 
       // Append webcam canvas
-      document.getElementById("webcam").appendChild(webcam.canvas);
+      document.getElementById("webcam-container").appendChild(webcam.canvas);
 
       // Create label container
       labelContainer = document.getElementById("label-container");
-      for (let i = 0; i < maxPredictions; i++) {
+      labelContainer.innerHTML = ""; // Clear existing
+      for (let i = 0; i < maxPredictions; i++) { // create elements to hold prediction labels
         labelContainer.appendChild(document.createElement("div"));
       }
     }
@@ -46,13 +107,23 @@
       window.requestAnimationFrame(loop);
     }
 
+    // Run the image through the model
     async function predict() {
-      const prediction = await model.predict(webcam.canvas);
+      try {
+        const prediction = await model.predict(webcam.canvas);
 
-      for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i].className + ": " + Math.round(prediction[i].probability * 100) + "%";
-        labelContainer.childNodes[i].innerHTML = classPrediction;
+        for (let i = 0; i < maxPredictions; i++) {
+          const classPrediction = prediction[i].className + ": " + Math.round(prediction[i].probability * 100) + "%";
+          labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+      } catch (error) {
+        displayError("Lỗi trong quá trình dự đoán: " + error);
       }
+    }
+
+    function displayError(message) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.innerHTML = message;
     }
 
     window.onload = init;
