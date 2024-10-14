@@ -479,9 +479,9 @@
                     const topPrediction = prediction[0];
                     predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className}</span>`; /* Loại bỏ dấu % */
 
-                    // Chuẩn hóa signCode bằng cách chuyển className thành chữ hoa
-                    const signCode = topPrediction.className.toUpperCase();
-                    
+                    // Chuẩn hóa signCode bằng cách chuyển className thành chữ hoa và loại bỏ khoảng trắng
+                    const signCode = topPrediction.className.trim().toUpperCase();
+
                     console.log("Top Prediction ClassName:", topPrediction.className);
                     console.log("Sign Code (Uppercase):", signCode);
 
