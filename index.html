@@ -157,10 +157,9 @@
         #signCount {
             margin-top: 10px;
             font-size: 16px;
-            color: #555;
+            color: #d9534f; /* Màu đỏ để làm nổi bật */
             text-align: center;
             font-weight: bold;
-            color: #d9534f; /* Màu đỏ để làm nổi bật */
         }
 
         #signMeaning {
@@ -239,6 +238,7 @@
         <!-- Removed Zoom Container -->
 
         <div class="button-container">
+            <button id="captureButton" aria-label="Chụp ảnh">Chụp Ảnh</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
@@ -265,7 +265,6 @@
             <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
-        <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
     </div>
 
     <div class="footer">
@@ -279,8 +278,9 @@
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const captureButton = document.getElementById('captureButton'); // Not used anymore
+        const captureButton = document.getElementById('captureButton');
         const downloadButton = document.getElementById('downloadButton');
+        const readButton = document.getElementById('readButton'); // Renamed from speakButton
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
@@ -288,7 +288,6 @@
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
         const signCount = document.getElementById('totalSigns'); // New element to display total signs
-        const readButton = document.getElementById('readButton'); // Renamed from speakButton
         const quizButton = document.getElementById('quizButton'); // New Quiz Button
         let stream = null;
         let isProcessing = false;
@@ -311,7 +310,7 @@
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    captureButton.disabled = false; // If captureButton is still used somewhere
+                    captureButton.disabled = false;
                 };
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
@@ -350,11 +349,12 @@
                 video.style.opacity = 0;
                 video.style.display = 'none';
                 downloadButton.style.display = 'inline-block';
-                readButton.style.display = 'none'; // Hide read button initially
                 retakeButton.style.display = 'inline-block';
-                quizButton.style.display = 'none'; // Hide quiz button initially
+                captureButton.style.display = 'none';
                 predictionResult.innerHTML = "";
                 signMeaning.textContent = "";
+                readButton.style.display = 'none'; // Hide read button initially
+                quizButton.style.display = 'none'; // Hide quiz button initially
                 loadingPrediction.style.display = 'flex';
                 await predictImage();
             } catch (error) {
@@ -506,8 +506,6 @@
         });
 
         // Event listener cho nút "Chụp Ảnh"
-        // Nếu bạn vẫn muốn giữ nút "Chụp Ảnh", hãy đảm bảo nó tồn tại và hoạt động
-        // Nếu không, bạn có thể bỏ qua đoạn mã dưới đây
         captureButton.addEventListener('click', capturePhoto);
     </script>
 
