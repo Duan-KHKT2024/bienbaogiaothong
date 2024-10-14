@@ -128,6 +128,25 @@
             text-align: center;
         }
 
+        /* Định dạng hướng dẫn sử dụng */
+        #predictionResult h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #28a745;
+        }
+
+        #predictionResult ol {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-left: 20px;
+        }
+
+        #predictionResult li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
         #signMeaning {
             margin-top: 10px;
             font-size: 16px;
@@ -250,7 +269,14 @@
             Đang nhận diện...
             <div class="spinner"></div>
         </div>
-        <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
+        <div id="predictionResult" aria-live="polite">
+            <h2>Hướng Dẫn Sử Dụng</h2>
+            <ol>
+                <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+            </ol>
+        </div>
         <div id="signMeaning" aria-live="polite"></div>
         <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
     </div>
@@ -372,7 +398,14 @@
             downloadButton.style.display = 'none';
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
-            predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
+            predictionResult.innerHTML = `
+                <h2>Hướng Dẫn Sử Dụng</h2>
+                <ol>
+                    <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                </ol>
+            `;
             signMeaning.textContent = "";
             speakButton.style.display = 'none';
             quizButton.style.display = 'none'; // Hide quiz button when retaking photo
