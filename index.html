@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial', sans-serif; /* Thay đổi font chữ */
             background-color: #f0f4f8;
             display: flex;
             flex-direction: column;
@@ -129,6 +129,7 @@
             color: #333;
             min-height: 50px;
             text-align: center;
+            width: 100%;
         }
 
         /* Định dạng hướng dẫn sử dụng */
@@ -142,15 +143,18 @@
         #predictionResult ol {
             text-align: left;
             max-width: 600px;
+            width: 100%;
             margin: 0 auto;
             padding-left: 20px;
             font-size: 1em;
             color: #555;
+            list-style-position: inside; /* Căn đều các dấu đầu dòng */
         }
 
         #predictionResult li {
             margin-bottom: 10px;
             line-height: 1.6;
+            font-family: 'Calibri', sans-serif; /* Thay đổi font chữ cho danh sách */
         }
 
         /* Định dạng số lượng biển báo */
@@ -169,6 +173,7 @@
             text-align: center;
             max-width: 600px;
             position: relative;
+            word-wrap: break-word; /* Đảm bảo dòng dài được xuống dòng */
         }
 
         /* Loading Spinner Styles */
@@ -223,6 +228,14 @@
             cursor: not-allowed;
         }
 
+        /* Nút "Làm Bài Kiểm Tra" */
+        #quizButton-container {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
     </style>
 </head>
 <body>
@@ -242,8 +255,6 @@
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
-            <!-- New Quiz Button -->
-            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
         </div>
 
         <div id="loadingModel">
@@ -265,6 +276,11 @@
             <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
+
+        <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Ý Nghĩa Biển Báo -->
+        <div id="quizButton-container">
+            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
+        </div>
     </div>
 
     <div class="footer">
@@ -280,23 +296,23 @@
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
         const downloadButton = document.getElementById('downloadButton');
-        const readButton = document.getElementById('readButton'); // Renamed from speakButton
+        const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
-        const signCount = document.getElementById('totalSigns'); // New element to display total signs
-        const quizButton = document.getElementById('quizButton'); // New Quiz Button
+        const signCount = document.getElementById('totalSigns');
+        const quizButton = document.getElementById('quizButton');
         let stream = null;
         let isProcessing = false;
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
         let model, maxPredictions;
         const signMeanings = {
-            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn...",
-            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
-            // Add more sign meanings here as needed
+            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại.",
+            "W.208": "Các xe đi trên đường có biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên."
+            // Thêm các ý nghĩa cho các biển báo khác ở đây
         };
 
         async function startCamera() {
