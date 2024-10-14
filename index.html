@@ -329,16 +329,17 @@
         const loadingPrediction = document.getElementById('loadingPrediction');
         const signCount = document.getElementById('totalSigns');
         const quizButton = document.getElementById('quizButton');
+        const overlay = document.querySelector('.overlay');
         let stream = null;
         let isProcessing = false;
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
         let model, maxPredictions;
         const signMeanings = {
-            "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại.Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
+            "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.208": "Biển báo Giao nhau với đường ưu tiên: Các xe đi trên đường phải nhường đường cho xe đi trên đường ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.205": "Biển báo giao nhau với đường cùng cấp: Dùng để báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.207": "Biển báo giao nhau với đường không ưu tiên: Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với đường không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "P.103": "Biển báo cấm xe ô tô. Dùng để báo đường cấm các loại xe cơ giới kể cả xe máy 3 bánh có thùng đi qua, trừ xe máy 2 bánh, xe gắn máy và các xe được ưu tiên theo quy định.Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
+            "P.103": "Biển báo cấm xe ô tô. Dùng để báo đường cấm các loại xe cơ giới kể cả xe máy 3 bánh có thùng đi qua, trừ xe máy 2 bánh, xe gắn máy và các xe được ưu tiên theo quy định. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
 
             // Thêm các ý nghĩa cho các biển báo khác ở đây
         };
@@ -347,7 +348,10 @@
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "environment"
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        // Optional: thêm các constraints khác nếu cần
                     },
                     audio: false
                 });
@@ -403,6 +407,7 @@
                 readButton.style.display = 'none'; // Hide read button initially
                 quizButton.style.display = 'none'; // Hide quiz button initially
                 loadingPrediction.style.display = 'flex';
+                overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
                 await predictImage();
             } catch (error) {
                 console.error("Lỗi khi chụp ảnh: ", error);
@@ -448,6 +453,7 @@
                 <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             `;
             signMeaning.textContent = "";
+            overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
         }
 
         function speakText(text) {
@@ -473,8 +479,8 @@
                 model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
                 maxPredictions = model.getTotalClasses();
                 loadingModel.style.display = 'none';
-                // Update the total number of signs (subtracting 1 for background)
-                signCount.textContent = maxPredictions - 1;
+                // Update the total number of signs (subtracting 1 for background if applicable)
+                signCount.textContent = maxPredictions; // Adjusted to match actual number
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
