@@ -95,12 +95,6 @@
             color: #333;
         }
 
-        #speakButton {
-            background-color: #17a2b8;
-            display: none;
-            margin-top: 10px;
-        }
-
         button:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
@@ -170,6 +164,51 @@
             font-size: 14px;
             color: #888;
         }
+
+        /* Zoom Control Styling */
+        .zoom-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .zoom-container label {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+        }
+
+        .zoom-container input[type="range"] {
+            flex: 1 1 auto;
+        }
+
+        .zoom-container span {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+            width: 40px;
+            text-align: right;
+        }
+
+        /* Button để nghe lại ý nghĩa */
+        #speakButton {
+            background-color: #17a2b8;
+            display: none;
+            margin-top: 10px;
+        }
+
+        #speakButton:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        #speakButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -181,6 +220,12 @@
         </div>
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
+
+        <div class="zoom-container">
+            <label for="zoomSlider">Zoom:</label>
+            <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+            <span id="zoomValue">1x</span>
+        </div>
 
         <div class="button-container">
             <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
@@ -206,13 +251,10 @@
     </div>
 
     <!-- TensorFlow.js và Teachable Machine -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
     <script>
-        'use strict';
-
-        // Lấy các phần tử DOM
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
@@ -223,28 +265,23 @@
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
         const speakButton = document.getElementById('speakButton');
         let stream = null;
         let isProcessing = false;
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
         let model, maxPredictions;
-
         const signMeanings = {
             "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn...",
-            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên...",
-            "W.205": "Biển báo 'Đường Giao Nhau'. Cảnh báo phía trước có các tuyến đường cùng cấp giao nhau. Bạn cần chú ý nhường đường cho xe khác, giảm tốc độ và tuân theo quy định để đảm bảo an toàn khi tham gia giao thông,
-            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên...",
-            
+            "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
         };
 
-        // Khởi động camera
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "environment",
-                        width: { max: 1280 },
-                        height: { max: 720 }
+                        facingMode: "environment"
                     },
                     audio: false
                 });
@@ -259,63 +296,6 @@
             }
         }
 
-        // Tải mô hình học máy
-        async function loadModel() {
-            try {
-                model = await tmImage.load(`${MODEL_URL}model.json`, `${MODEL_URL}metadata.json`);
-                maxPredictions = model.getTotalClasses();
-                loadingModel.style.display = 'none';
-                captureButton.disabled = false; // Kích hoạt nút chụp khi mô hình đã tải
-            } catch (err) {
-                console.error("Lỗi khi tải mô hình: ", err);
-                loadingModel.innerHTML = "Không thể tải mô hình. <button id='retryLoad'>Thử lại</button>";
-                document.getElementById('retryLoad').addEventListener('click', loadModel);
-            }
-        }
-
-        // Hàm kiểm tra độ mờ của hình ảnh
-        function isImageBlurry(context, width, height) {
-            // Chuyển đổi hình ảnh sang grayscale
-            const imageData = context.getImageData(0, 0, width, height);
-            const grayscale = [];
-            for (let i = 0; i < imageData.data.length; i += 4) {
-                const avg = (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
-                grayscale.push(avg);
-            }
-
-            // Áp dụng toán tử Laplacian để phát hiện cạnh
-            const laplacian = [];
-            const kernel = [
-                0, 1, 0,
-                1, -4, 1,
-                0, 1, 0
-            ];
-
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    let sum = 0;
-                    for (let ky = -1; ky <= 1; ky++) {
-                        for (let kx = -1; kx <= 1; kx++) {
-                            const pixel = grayscale[(y + ky) * width + (x + kx)];
-                            const weight = kernel[(ky + 1) * 3 + (kx + 1)];
-                            sum += pixel * weight;
-                        }
-                    }
-                    laplacian.push(sum);
-                }
-            }
-
-            // Tính phương sai của giá trị Laplacian
-            const mean = laplacian.reduce((a, b) => a + b, 0) / laplacian.length;
-            const variance = laplacian.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / laplacian.length;
-
-            // Ngưỡng để xác định hình ảnh mờ (có thể điều chỉnh)
-            const BLUR_THRESHOLD = 100;
-
-            return variance < BLUR_THRESHOLD;
-        }
-
-        // Chụp ảnh
         async function capturePhoto() {
             if (isProcessing) return;
             isProcessing = true;
@@ -323,6 +303,7 @@
 
             try {
                 const context = canvas.getContext('2d');
+                const zoom = parseFloat(zoomSlider.value);
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
 
@@ -330,17 +311,14 @@
                     throw new Error("Video chưa sẵn sàng.");
                 }
 
+                const scaledWidth = videoWidth / zoom;
+                const scaledHeight = videoHeight / zoom;
+                const sx = (videoWidth - scaledWidth) / 2;
+                const sy = (videoHeight - scaledHeight) / 2;
+
                 canvas.width = videoWidth;
                 canvas.height = videoHeight;
-                context.drawImage(video, 0, 0, videoWidth, videoHeight);
-
-                // Kiểm tra độ mờ của hình ảnh
-                const blurry = isImageBlurry(context, videoWidth, videoHeight);
-                if (blurry) {
-                    alert("Hình ảnh quá mờ. Vui lòng chụp lại.");
-                    retakePhoto();
-                    return;
-                }
+                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
 
                 const imageDataURL = canvas.toDataURL('image/png');
                 capturedImage.src = imageDataURL;
@@ -365,7 +343,6 @@
             }
         }
 
-        // Tải xuống ảnh
         function downloadPhoto() {
             if (!capturedImage.src) return;
             const link = document.createElement('a');
@@ -376,7 +353,6 @@
             document.body.removeChild(link);
         }
 
-        // Chụp lại ảnh
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
@@ -390,28 +366,6 @@
             speakButton.style.display = 'none';
         }
 
-        // Chức năng đọc văn bản
-        let vietnameseVoice = null;
-
-        function loadVoices() {
-            return new Promise((resolve) => {
-                let voices = window.speechSynthesis.getVoices();
-                if (voices.length !== 0) {
-                    resolve(voices);
-                    return;
-                }
-                window.speechSynthesis.onvoiceschanged = () => {
-                    voices = window.speechSynthesis.getVoices();
-                    resolve(voices);
-                };
-            });
-        }
-
-        async function initializeVoices() {
-            const voices = await loadVoices();
-            vietnameseVoice = voices.find(voice => voice.lang.startsWith('vi'));
-        }
-
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
                 console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
@@ -420,15 +374,27 @@
 
             const synth = window.speechSynthesis;
             const utterThis = new SpeechSynthesisUtterance(text);
+            const voices = synth.getVoices();
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
 
-            if (vietnameseVoice) {
-                utterThis.voice = vietnameseVoice;
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
             }
 
             synth.speak(utterThis);
         }
 
-        // Dự đoán hình ảnh
+        async function loadModel() {
+            try {
+                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+                maxPredictions = model.getTotalClasses();
+                loadingModel.style.display = 'none';
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình: ", err);
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
+
         async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
@@ -437,19 +403,21 @@
             }
 
             try {
-                const predictions = await model.predict(canvas, false);
-                if (predictions.length > 0) {
-                    predictions.sort((a, b) => b.probability - a.probability);
-                    const topPrediction = predictions[0];
+                const prediction = await model.predict(canvas);
+                if (prediction.length > 0) {
+                    prediction.sort((a, b) => b.probability - a.probability);
+                    const topPrediction = prediction[0];
                     predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
                     const signCode = topPrediction.className.substring(0, 5).toUpperCase();
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
                         speakButton.style.display = 'inline-block';
+                        speakText(meaningText);
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         speakButton.style.display = 'inline-block';
+                        speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
@@ -466,25 +434,28 @@
             }
         }
 
-        // Thêm sự kiện cho các nút bấm
         captureButton.addEventListener('click', capturePhoto);
         downloadButton.addEventListener('click', downloadPhoto);
         retakeButton.addEventListener('click', retakePhoto);
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = `${zoomSlider.value}x`;
+        });
         speakButton.addEventListener('click', () => {
-            const text = signMeaning.textContent.replace("Ý nghĩa: ", "");
+            const text = signMeaning.textContent || "";
             if (text) {
                 speakText(text);
             }
         });
 
-        // Khởi động khi tải trang
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+
         window.addEventListener('load', async () => {
             await loadModel();
-            await initializeVoices();
             startCamera();
         });
 
-        // Ngắt luồng video khi rời trang
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
