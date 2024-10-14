@@ -165,6 +165,34 @@
             color: #888;
         }
 
+        /* Zoom Control Styling */
+        .zoom-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .zoom-container label {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+        }
+
+        .zoom-container input[type="range"] {
+            flex: 1 1 auto;
+        }
+
+        .zoom-container span {
+            font-size: 16px;
+            color: #333;
+            flex: 0 0 auto;
+            width: 40px;
+            text-align: right;
+        }
+
         /* Button để nghe lại ý nghĩa */
         #speakButton {
             background-color: #17a2b8;
@@ -192,6 +220,12 @@
         </div>
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
+
+        <div class="zoom-container">
+            <label for="zoomSlider">Zoom:</label>
+            <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+            <span id="zoomValue">1x</span>
+        </div>
 
         <div class="button-container">
             <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
@@ -231,6 +265,8 @@
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
         const speakButton = document.getElementById('speakButton');
         let stream = null;
         let isProcessing = false;
@@ -241,7 +277,6 @@
             "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
         };
 
-        // Khởi động camera
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -261,7 +296,6 @@
             }
         }
 
-        // Chụp ảnh
         async function capturePhoto() {
             if (isProcessing) return;
             isProcessing = true;
@@ -269,6 +303,7 @@
 
             try {
                 const context = canvas.getContext('2d');
+                const zoom = parseFloat(zoomSlider.value);
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
 
@@ -276,9 +311,14 @@
                     throw new Error("Video chưa sẵn sàng.");
                 }
 
+                const scaledWidth = videoWidth / zoom;
+                const scaledHeight = videoHeight / zoom;
+                const sx = (videoWidth - scaledWidth) / 2;
+                const sy = (videoHeight - scaledHeight) / 2;
+
                 canvas.width = videoWidth;
                 canvas.height = videoHeight;
-                context.drawImage(video, 0, 0, videoWidth, videoHeight);
+                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
 
                 const imageDataURL = canvas.toDataURL('image/png');
                 capturedImage.src = imageDataURL;
@@ -303,7 +343,6 @@
             }
         }
 
-        // Tải ảnh xuống
         function downloadPhoto() {
             if (!capturedImage.src) return;
             const link = document.createElement('a');
@@ -314,7 +353,6 @@
             document.body.removeChild(link);
         }
 
-        // Chụp lại
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
@@ -328,11 +366,9 @@
             speakButton.style.display = 'none';
         }
 
-        // Hàm đọc văn bản
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
                 console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
-                alert('Trình duyệt của bạn không hỗ trợ tính năng này.');
                 return;
             }
 
@@ -342,22 +378,12 @@
             const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
 
             if (vietnameseVoices.length > 0) {
-                // Chọn giọng đọc tiếng Việt tốt nhất (giọng nữ nếu có)
-                const femaleVoices = vietnameseVoices.filter(voice => voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('woman') || voice.name.toLowerCase().includes('nữ'));
-                utterThis.voice = femaleVoices.length > 0 ? femaleVoices[0] : vietnameseVoices[0];
-            } else {
-                alert('Không tìm thấy giọng đọc tiếng Việt. Vui lòng kiểm tra cài đặt trình duyệt của bạn.');
-                return;
+                utterThis.voice = vietnameseVoices[0];
             }
-
-            // Điều chỉnh tốc độ và cao độ để cải thiện chất lượng giọng đọc
-            utterThis.rate = 1;    // Tốc độ mặc định (0.1 - 10)
-            utterThis.pitch = 1;   // Cao độ mặc định (0 - 2)
 
             synth.speak(utterThis);
         }
 
-        // Tải mô hình
         async function loadModel() {
             try {
                 model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
@@ -369,7 +395,6 @@
             }
         }
 
-        // Nhận diện hình ảnh
         async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
@@ -383,17 +408,18 @@
                     prediction.sort((a, b) => b.probability - a.probability);
                     const topPrediction = prediction[0];
                     predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
-                    const signCode = topPrediction.className.toUpperCase();
-
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase();
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
                         speakButton.style.display = 'inline-block';
-                        // Không tự động đọc
+                        // Xóa dòng dưới để không tự động nghe
+                        // speakText(meaningText);
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         speakButton.style.display = 'inline-block';
-                        // Không tự động đọc
+                        // Xóa dòng dưới để không tự động nghe
+                        // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
@@ -410,29 +436,28 @@
             }
         }
 
-        // Xử lý sự kiện nút
         captureButton.addEventListener('click', capturePhoto);
         downloadButton.addEventListener('click', downloadPhoto);
         retakeButton.addEventListener('click', retakePhoto);
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = `${zoomSlider.value}x`;
+        });
         speakButton.addEventListener('click', () => {
-            const text = signMeaning.textContent.replace(/^Ý nghĩa:\s*/, '') || "";
+            const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
                 speakText(text);
             }
         });
 
-        // Đảm bảo danh sách giọng nói được cập nhật
         window.speechSynthesis.onvoiceschanged = function() {
             window.speechSynthesis.getVoices();
         };
 
-        // Khởi động ứng dụng
         window.addEventListener('load', async () => {
             await loadModel();
             startCamera();
         });
 
-        // Dừng camera khi đóng trang
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
