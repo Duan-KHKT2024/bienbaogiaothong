@@ -4,7 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
+    <!-- Thêm Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* CSS Variables for Easy Maintenance */
+        :root {
+            --primary-color: #28a745;
+            --secondary-color: #007bff;
+            --accent-color: #17a2b8;
+            --warning-color: #ffc107;
+            --purple-color: #6f42c1;
+            --dark-color: #333;
+            --light-bg: #f0f4f8;
+            --white-bg: #fff;
+            --text-color: #555;
+            --error-color: #d9534f;
+            --disabled-color: #cccccc;
+            --focus-outline: #ffbf47;
+        }
+
         /* Reset CSS */
         * {
             margin: 0;
@@ -13,8 +31,8 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif; /* Thay đổi font chữ */
-            background-color: #f0f4f8;
+            font-family: 'Roboto', sans-serif; /* Sử dụng Roboto từ Google Fonts */
+            background-color: var(--light-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -23,7 +41,7 @@
         }
 
         h1 {
-            color: #333;
+            color: var(--dark-color);
             margin-bottom: 20px;
             font-size: 2em;
             text-align: center;
@@ -32,7 +50,7 @@
         .container {
             width: 100%;
             max-width: 800px;
-            background-color: #fff;
+            background-color: var(--white-bg);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
@@ -43,7 +61,7 @@
 
         /* Điều chỉnh chiều cao video cho thiết bị di động */
         #video, #capturedImage {
-            border: 4px solid #4CAF50;
+            border: 4px solid var(--primary-color);
             border-radius: 15px;
             width: 100%;
             max-width: 600px;
@@ -80,30 +98,32 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
             color: #fff;
             text-align: center;
+            min-height: 44px; /* Đảm bảo touch target đủ lớn */
         }
 
+        /* Các màu sắc cho các nút */
         #captureButton {
-            background-color: #28a745;
+            background-color: var(--primary-color);
         }
 
         #downloadButton {
-            background-color: #007bff;
+            background-color: var(--secondary-color);
             display: none; /* Ẩn ban đầu */
         }
 
         #readButton {
-            background-color: #17a2b8;
+            background-color: var(--accent-color);
             display: none; /* Initially hidden */
         }
 
         #retakeButton {
-            background-color: #ffc107;
+            background-color: var(--warning-color);
             display: none;
-            color: #333;
+            color: var(--dark-color);
         }
 
         #quizButton {
-            background-color: #6f42c1;
+            background-color: var(--purple-color);
             display: none; /* Initially hidden */
         }
 
@@ -113,8 +133,13 @@
         }
 
         button:disabled {
-            background-color: #cccccc;
+            background-color: var(--disabled-color);
             cursor: not-allowed;
+        }
+
+        button:focus {
+            outline: 3px solid var(--focus-outline); /* Màu nổi bật khi focus */
+            outline-offset: 2px;
         }
 
         @media (max-width: 600px) {
@@ -128,7 +153,7 @@
             margin-top: 20px;
             font-size: 16px; /* Giảm kích thước font chữ */
             font-weight: bold;
-            color: #333;
+            color: var(--dark-color);
             min-height: 50px;
             text-align: center;
             width: 100%;
@@ -138,7 +163,7 @@
         #predictionResult h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
-            color: #28a745;
+            color: var(--primary-color);
             text-align: center;
         }
 
@@ -149,21 +174,21 @@
             margin: 0 auto;
             padding-left: 20px;
             font-size: 0.9em; /* Giảm kích thước font chữ */
-            color: #555;
+            color: var(--text-color);
             list-style-position: inside; /* Căn đều các dấu đầu dòng */
+            font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
         }
 
         #predictionResult li {
             margin-bottom: 10px;
             line-height: 1.6;
-            font-family: 'Calibri', sans-serif; /* Thay đổi font chữ cho danh sách */
         }
 
         /* Định dạng số lượng biển báo */
         #signCount {
             margin-top: 10px;
             font-size: 16px;
-            color: #d9534f; /* Màu đỏ để làm nổi bật */
+            color: var(--error-color); /* Màu đỏ để làm nổi bật */
             text-align: center;
             font-weight: bold;
         }
@@ -171,7 +196,7 @@
         #signMeaning {
             margin-top: 10px;
             font-size: 16px;
-            color: #555;
+            color: var(--text-color);
             text-align: center;
             max-width: 600px;
             position: relative;
@@ -181,7 +206,7 @@
         /* Loading Spinner Styles */
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #4CAF50;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -199,7 +224,7 @@
         #loadingModel, #loadingPrediction {
             margin-top: 20px;
             font-size: 18px;
-            color: #555;
+            color: var(--text-color);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -213,25 +238,6 @@
             color: #888;
         }
 
-        /* Button để đọc lại ý nghĩa */
-        #readButton {
-            background-color: #17a2b8;
-            display: none;
-            margin-top: 10px;
-            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
-            max-width: 220px; /* Giới hạn kích thước tối đa */
-        }
-
-        #readButton:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        #readButton:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
         /* Nút "Làm Bài Kiểm Tra" */
         #quizButton-container {
             margin-top: 20px;
@@ -239,7 +245,6 @@
             display: flex;
             justify-content: center;
         }
-
     </style>
 </head>
 <body>
@@ -467,7 +472,7 @@
                 if (prediction.length > 0) {
                     prediction.sort((a, b) => b.probability - a.probability);
                     const topPrediction = prediction[0];
-                    predictionResult.innerHTML = `<span style="color: #28a745;">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
+                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
                     const signCode = topPrediction.className.substring(0, 5).toUpperCase();
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
@@ -486,14 +491,14 @@
                         // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
-                    predictionResult.innerHTML = `<span style="color: #d9534f;">Không có kết quả nhận diện.</span>`;
+                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
                     signMeaning.textContent = "";
                     readButton.style.display = 'none';
                     quizButton.style.display = 'none';
                 }
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
-                predictionResult.innerHTML = `<span style="color: #d9534f;">Lỗi khi nhận diện hình ảnh.</span>`;
+                predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
                 signMeaning.textContent = "";
                 readButton.style.display = 'none';
                 quizButton.style.display = 'none';
