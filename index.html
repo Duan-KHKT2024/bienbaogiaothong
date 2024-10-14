@@ -1,29 +1,549 @@
-#predictionResult {
-    margin-top: 20px;
-    font-size: 18px; /* Tăng kích thước font chữ từ 16px lên 18px */
-    font-weight: bold;
-    color: var(--dark-color);
-    min-height: 50px;
-    text-align: center;
-    width: 100%;
-}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
+    <!-- Thêm Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for Easy Maintenance */
+        :root {
+            --primary-color: #28a745;
+            --secondary-color: #007bff;
+            --accent-color: #17a2b8;
+            --warning-color: #ffc107;
+            --purple-color: #6f42c1;
+            --dark-color: #333;
+            --light-bg: #f0f4f8;
+            --white-bg: #fff;
+            --text-color: #555;
+            --error-color: #d9534f;
+            --disabled-color: #cccccc;
+            --focus-outline: #ffbf47;
+        }
 
-/* Định dạng hướng dẫn sử dụng */
-#predictionResult h2 {
-    font-size: 1.7em; /* Tăng kích thước font từ 1.5em lên 1.7em */
-    margin-bottom: 10px;
-    color: var(--primary-color);
-    text-align: center;
-}
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-#predictionResult ol {
-    text-align: left;
-    max-width: 600px;
-    width: 100%;
-    margin: 0 auto;
-    padding-left: 20px;
-    font-size: 1em; /* Tăng kích thước font chữ từ 0.9em lên 1em */
-    color: var(--text-color);
-    list-style-position: inside; /* Căn đều các dấu đầu dòng */
-    font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
-}
+        body {
+            font-family: 'Roboto', sans-serif; /* Sử dụng Roboto từ Google Fonts */
+            background-color: var(--light-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--white-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Điều chỉnh chiều cao video cho thiết bị di động */
+        #video, #capturedImage {
+            border: 4px solid var(--primary-color);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            max-height: 400px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: opacity 0.5s ease, transform 0.3s ease;
+            object-fit: cover;
+        }
+
+        #capturedImage {
+            display: none;
+            opacity: 0;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
+            max-width: 220px; /* Giới hạn kích thước tối đa */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: #fff;
+            text-align: center;
+            min-height: 44px; /* Đảm bảo touch target đủ lớn */
+        }
+
+        /* Các màu sắc cho các nút */
+        #captureButton {
+            background-color: var(--primary-color);
+        }
+
+        #downloadButton {
+            background-color: var(--secondary-color);
+            display: none; /* Ẩn ban đầu */
+        }
+
+        #readButton {
+            background-color: var(--accent-color);
+            display: none; /* Initially hidden */
+        }
+
+        #retakeButton {
+            background-color: var(--warning-color);
+            display: none;
+            color: var(--dark-color);
+        }
+
+        #quizButton {
+            background-color: var(--purple-color);
+            display: none; /* Initially hidden */
+        }
+
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+
+        button:focus {
+            outline: 3px solid var(--focus-outline); /* Màu nổi bật khi focus */
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 600px) {
+            button {
+                width: 100%;
+                max-width: 220px;
+            }
+        }
+
+        #predictionResult {
+            margin-top: 20px;
+            font-size: 18px; /* Tăng kích thước font chữ từ 16px lên 18px */
+            font-weight: bold;
+            color: var(--dark-color);
+            min-height: 50px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Định dạng hướng dẫn sử dụng */
+        #predictionResult h2 {
+            font-size: 1.7em; /* Tăng kích thước font từ 1.5em lên 1.7em */
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        #predictionResult ol {
+            text-align: left;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding-left: 20px;
+            font-size: 1em; /* Tăng kích thước font chữ từ 0.9em lên 1em */
+            color: var(--text-color);
+            list-style-position: inside; /* Căn đều các dấu đầu dòng */
+            font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
+        }
+
+        #predictionResult li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Định dạng số lượng biển báo */
+        #signCount {
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--error-color); /* Màu đỏ để làm nổi bật */
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #signMeaning {
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--text-color);
+            text-align: center;
+            max-width: 600px;
+            position: relative;
+            word-wrap: break-word; /* Đảm bảo dòng dài được xuống dòng */
+        }
+
+        /* Loading Spinner Styles */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingModel, #loadingPrediction {
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* Nút "Làm Bài Kiểm Tra" */
+        #quizButton-container {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Nhận Diện Biển Báo Giao Thông</h1>
+        <div style="position: relative; width: 100%; max-width: 600px;">
+            <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
+        </div>
+        <img id="capturedImage" alt="Ảnh đã chụp">
+        <canvas id="canvas" style="display: none;"></canvas>
+
+        <!-- Removed Zoom Container -->
+
+        <div class="button-container">
+            <button id="captureButton" aria-label="Chụp ảnh">Chụp Ảnh</button>
+            <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
+            <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
+            <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
+        </div>
+
+        <div id="loadingModel">
+            Đang tải mô hình...
+            <div class="spinner"></div>
+        </div>
+        <div id="loadingPrediction" style="display: none;">
+            Đang nhận diện...
+            <div class="spinner"></div>
+        </div>
+        <div id="predictionResult" aria-live="polite">
+            <h2>Hướng Dẫn Sử Dụng</h2>
+            <ol>
+                <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
+                <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+            </ol>
+            <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+        </div>
+        <div id="signMeaning" aria-live="polite"></div>
+
+        <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Ý Nghĩa Biển Báo -->
+        <div id="quizButton-container">
+            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+    </div>
+
+    <!-- TensorFlow.js và Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('captureButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const readButton = document.getElementById('readButton');
+        const retakeButton = document.getElementById('retakeButton');
+        const capturedImage = document.getElementById('capturedImage');
+        const predictionResult = document.getElementById('predictionResult');
+        const signMeaning = document.getElementById('signMeaning');
+        const loadingModel = document.getElementById('loadingModel');
+        const loadingPrediction = document.getElementById('loadingPrediction');
+        const signCount = document.getElementById('totalSigns');
+        const quizButton = document.getElementById('quizButton');
+        let stream = null;
+        let isProcessing = false;
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
+        let model, maxPredictions;
+        const signMeanings = {
+            "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại.",
+            "W.208": "Các xe đi trên đường có biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên."
+            // Thêm các ý nghĩa cho các biển báo khác ở đây
+        };
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment"
+                    },
+                    audio: false
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    captureButton.disabled = false;
+                };
+            } catch (err) {
+                console.error("Không thể truy cập camera: ", err);
+                alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
+            }
+        }
+
+        async function capturePhoto() {
+            if (isProcessing) return;
+            isProcessing = true;
+            captureButton.disabled = true;
+
+            try {
+                const context = canvas.getContext('2d');
+                const zoom = 1; // Removed zoom functionality
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
+
+                if (videoWidth === 0 || videoHeight === 0) {
+                    throw new Error("Video chưa sẵn sàng.");
+                }
+
+                const scaledWidth = videoWidth / zoom;
+                const scaledHeight = videoHeight / zoom;
+                const sx = (videoWidth - scaledWidth) / 2;
+                const sy = (videoHeight - scaledHeight) / 2;
+
+                canvas.width = videoWidth;
+                canvas.height = videoHeight;
+                context.drawImage(video, sx, sy, scaledWidth, scaledHeight, 0, 0, videoWidth, videoHeight);
+
+                const imageDataURL = canvas.toDataURL('image/png');
+                capturedImage.src = imageDataURL;
+                capturedImage.style.display = 'block';
+                capturedImage.style.opacity = 1;
+                video.style.opacity = 0;
+                video.style.display = 'none';
+                downloadButton.style.display = 'inline-block';
+                retakeButton.style.display = 'inline-block';
+                captureButton.style.display = 'none';
+                predictionResult.innerHTML = "";
+                signMeaning.textContent = "";
+                readButton.style.display = 'none'; // Hide read button initially
+                quizButton.style.display = 'none'; // Hide quiz button initially
+                loadingPrediction.style.display = 'flex';
+                await predictImage();
+            } catch (error) {
+                console.error("Lỗi khi chụp ảnh: ", error);
+                alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
+            } finally {
+                isProcessing = false;
+                captureButton.disabled = false;
+            }
+        }
+
+        function downloadPhoto() {
+            if (!capturedImage.src) {
+                alert("Không có ảnh nào để tải xuống.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = capturedImage.src;
+            link.download = 'anh-chup.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function retakePhoto() {
+            capturedImage.style.display = 'none';
+            capturedImage.style.opacity = 0;
+            video.style.display = 'block';
+            video.style.opacity = 1;
+            downloadButton.style.display = 'none';
+            readButton.style.display = 'none';
+            retakeButton.style.display = 'none';
+            quizButton.style.display = 'none';
+            captureButton.style.display = 'inline-block';
+            predictionResult.innerHTML = `
+                <h2>Hướng Dẫn Sử Dụng</h2>
+                <ol>
+                    <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
+                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+                </ol>
+                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+            `;
+            signMeaning.textContent = "";
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
+            const voices = synth.getVoices();
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
+
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
+            }
+
+            synth.speak(utterThis);
+        }
+
+        async function loadModel() {
+            try {
+                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+                maxPredictions = model.getTotalClasses();
+                loadingModel.style.display = 'none';
+                // Update the total number of signs (subtracting 1 for background)
+                signCount.textContent = maxPredictions - 1;
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình: ", err);
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
+
+        async function predictImage() {
+            if (!model) {
+                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            try {
+                const prediction = await model.predict(canvas);
+                if (prediction.length > 0) {
+                    prediction.sort((a, b) => b.probability - a.probability);
+                    const topPrediction = prediction[0];
+                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)})</span>`; /* Loại bỏ dấu % */
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase();
+                    if (signMeanings.hasOwnProperty(signCode)) {
+                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                        signMeaning.textContent = meaningText;
+                        readButton.style.display = 'inline-block';
+                        // Hiển thị nút làm bài kiểm tra
+                        quizButton.style.display = 'inline-block';
+                        // Không tự động đọc
+                        // speakText(meaningText);
+                    } else {
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                        readButton.style.display = 'inline-block';
+                        // Hiển thị nút làm bài kiểm tra
+                        quizButton.style.display = 'inline-block';
+                        // Không tự động đọc
+                        // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
+                    }
+                } else {
+                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
+                    signMeaning.textContent = "";
+                    readButton.style.display = 'none';
+                    quizButton.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Lỗi khi nhận diện hình ảnh: ", err);
+                predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
+                signMeaning.textContent = "";
+                readButton.style.display = 'none';
+                quizButton.style.display = 'none';
+            } finally {
+                loadingPrediction.style.display = 'none';
+            }
+        }
+
+        // Event listener cho nút "Đọc"
+        readButton.addEventListener('click', () => {
+            const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
+            if (text) {
+                speakText(text);
+            }
+        });
+
+        // Event listener cho nút làm bài kiểm tra
+        quizButton.addEventListener('click', () => {
+            window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
+        });
+
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+
+        window.addEventListener('load', async () => {
+            await loadModel();
+            startCamera();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Event listener cho nút "Chụp Ảnh"
+        captureButton.addEventListener('click', capturePhoto);
+
+        // Event listener cho nút "Chụp Lại"
+        retakeButton.addEventListener('click', retakePhoto);
+
+        // Thêm sự kiện cho nút "Tải Ảnh Xuống"
+        downloadButton.addEventListener('click', downloadPhoto);
+    </script>
+
+</body>
+</html>
