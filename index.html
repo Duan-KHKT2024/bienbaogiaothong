@@ -78,17 +78,19 @@
             opacity: 0;
         }
 
+        /* Cải thiện thiết kế Overlay */
         .overlay {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 70%;
-            height: 70%;
+            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
+            height: 60%;
             transform: translate(-50%, -50%);
-            border: 4px dashed var(--primary-color);
-            border-radius: 15px;
-            pointer-events: none; /* Không chặn các tương tác với video */
+            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
+            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
             box-sizing: border-box;
+            pointer-events: none; /* Không chặn các tương tác với video */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
         }
 
         .button-container {
@@ -374,9 +376,9 @@
                     throw new Error("Video chưa sẵn sàng.");
                 }
 
-                // Kích thước và vị trí của overlay (70% của video)
-                const overlayWidth = videoWidth * 0.7;
-                const overlayHeight = videoHeight * 0.7;
+                // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                const overlayWidth = videoWidth * 0.6;
+                const overlayHeight = videoHeight * 0.6;
                 const sx = (videoWidth - overlayWidth) / 2;
                 const sy = (videoHeight - overlayHeight) / 2;
 
