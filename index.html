@@ -89,17 +89,20 @@
             display: none;
         }
 
+        #readButton {
+            background-color: #17a2b8;
+            display: none; /* Initially hidden */
+        }
+
         #retakeButton {
             background-color: #ffc107;
             display: none;
             color: #333;
         }
 
-        /* New Quiz Button */
         #quizButton {
-            background-color: #17a2b8;
+            background-color: #6f42c1;
             display: none; /* Initially hidden */
-            margin-top: 10px;
         }
 
         button:hover:not(:disabled) {
@@ -156,6 +159,8 @@
             font-size: 16px;
             color: #555;
             text-align: center;
+            font-weight: bold;
+            color: #d9534f; /* Màu đỏ để làm nổi bật */
         }
 
         #signMeaning {
@@ -202,22 +207,23 @@
             color: #888;
         }
 
-        /* Button để nghe lại ý nghĩa */
-        #speakButton {
+        /* Button để đọc lại ý nghĩa */
+        #readButton {
             background-color: #17a2b8;
             display: none;
             margin-top: 10px;
         }
 
-        #speakButton:hover:not(:disabled) {
+        #readButton:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
         }
 
-        #speakButton:disabled {
+        #readButton:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
+
     </style>
 </head>
 <body>
@@ -233,8 +239,8 @@
         <!-- Removed Zoom Container -->
 
         <div class="button-container">
-            <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
+            <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
             <!-- New Quiz Button -->
             <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
@@ -254,11 +260,12 @@
                 <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
                 <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                 <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
             </ol>
             <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
-        <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
+        <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
     </div>
 
     <div class="footer">
@@ -272,7 +279,7 @@
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const captureButton = document.getElementById('captureButton');
+        const captureButton = document.getElementById('captureButton'); // Not used anymore
         const downloadButton = document.getElementById('downloadButton');
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
@@ -281,7 +288,7 @@
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
         const signCount = document.getElementById('totalSigns'); // New element to display total signs
-        const speakButton = document.getElementById('speakButton');
+        const readButton = document.getElementById('readButton'); // Renamed from speakButton
         const quizButton = document.getElementById('quizButton'); // New Quiz Button
         let stream = null;
         let isProcessing = false;
@@ -304,7 +311,7 @@
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    captureButton.disabled = false;
+                    captureButton.disabled = false; // If captureButton is still used somewhere
                 };
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
@@ -343,12 +350,11 @@
                 video.style.opacity = 0;
                 video.style.display = 'none';
                 downloadButton.style.display = 'inline-block';
+                readButton.style.display = 'none'; // Hide read button initially
                 retakeButton.style.display = 'inline-block';
-                captureButton.style.display = 'none';
+                quizButton.style.display = 'none'; // Hide quiz button initially
                 predictionResult.innerHTML = "";
                 signMeaning.textContent = "";
-                speakButton.style.display = 'none';
-                quizButton.style.display = 'none'; // Hide quiz button initially
                 loadingPrediction.style.display = 'flex';
                 await predictImage();
             } catch (error) {
@@ -376,7 +382,9 @@
             video.style.display = 'block';
             video.style.opacity = 1;
             downloadButton.style.display = 'none';
+            readButton.style.display = 'none';
             retakeButton.style.display = 'none';
+            quizButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
             predictionResult.innerHTML = `
                 <h2>Hướng Dẫn Sử Dụng</h2>
@@ -384,12 +392,11 @@
                     <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
                     <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                 </ol>
                 <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             `;
             signMeaning.textContent = "";
-            speakButton.style.display = 'none';
-            quizButton.style.display = 'none'; // Hide quiz button when retaking photo
         }
 
         function speakText(text) {
@@ -415,8 +422,8 @@
                 model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
                 maxPredictions = model.getTotalClasses();
                 loadingModel.style.display = 'none';
-                // Update the total number of signs
-                signCount.textContent = maxPredictions;
+                // Update the total number of signs (subtracting 1 for background)
+                signCount.textContent = maxPredictions - 1;
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
@@ -440,40 +447,38 @@
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
-                        speakButton.style.display = 'inline-block';
+                        readButton.style.display = 'inline-block';
                         // Hiển thị nút làm bài kiểm tra
                         quizButton.style.display = 'inline-block';
-                        // Xóa dòng dưới để không tự động nghe
+                        // Không tự động đọc
                         // speakText(meaningText);
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
-                        speakButton.style.display = 'inline-block';
+                        readButton.style.display = 'inline-block';
                         // Hiển thị nút làm bài kiểm tra
                         quizButton.style.display = 'inline-block';
-                        // Xóa dòng dưới để không tự động nghe
+                        // Không tự động đọc
                         // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
-                    predictionResult.textContent = "Không có kết quả nhận diện.";
+                    predictionResult.innerHTML = `<span style="color: #d9534f;">Không có kết quả nhận diện.</span>`;
                     signMeaning.textContent = "";
-                    speakButton.style.display = 'none';
-                    quizButton.style.display = 'none'; // Ẩn nút làm bài kiểm tra nếu không có kết quả
+                    readButton.style.display = 'none';
+                    quizButton.style.display = 'none';
                 }
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
-                predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
+                predictionResult.innerHTML = `<span style="color: #d9534f;">Lỗi khi nhận diện hình ảnh.</span>`;
                 signMeaning.textContent = "";
-                speakButton.style.display = 'none';
-                quizButton.style.display = 'none'; // Ẩn nút làm bài kiểm tra khi có lỗi
+                readButton.style.display = 'none';
+                quizButton.style.display = 'none';
             } finally {
                 loadingPrediction.style.display = 'none';
             }
         }
 
-        captureButton.addEventListener('click', capturePhoto);
-        downloadButton.addEventListener('click', downloadPhoto);
-        retakeButton.addEventListener('click', retakePhoto);
-        speakButton.addEventListener('click', () => {
+        // Event listener cho nút "Đọc"
+        readButton.addEventListener('click', () => {
             const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
                 speakText(text);
@@ -499,6 +504,11 @@
                 stream.getTracks().forEach(track => track.stop());
             }
         });
+
+        // Event listener cho nút "Chụp Ảnh"
+        // Nếu bạn vẫn muốn giữ nút "Chụp Ảnh", hãy đảm bảo nó tồn tại và hoạt động
+        // Nếu không, bạn có thể bỏ qua đoạn mã dưới đây
+        captureButton.addEventListener('click', capturePhoto);
     </script>
 
 </body>
