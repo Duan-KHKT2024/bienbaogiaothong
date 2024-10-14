@@ -29,13 +29,47 @@
             text-align: center;
         }
 
-        .container {
+        .navbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #6c757d;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #5a6268;
+        }
+
+        .nav-button.active {
+            background-color: #28a745;
+        }
+
+        .section {
             width: 100%;
             max-width: 800px;
             background-color: #fff;
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #recognition {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -93,6 +127,12 @@
             background-color: #ffc107;
             display: none;
             color: #333;
+        }
+
+        #navigateButton {
+            background-color: #17a2b8;
+            display: none;
+            margin-top: 10px;
         }
 
         button:hover:not(:disabled) {
@@ -193,27 +233,29 @@
             text-align: right;
         }
 
-        /* Button để nghe lại ý nghĩa */
-        #speakButton {
-            background-color: #17a2b8;
-            display: none;
-            margin-top: 10px;
+        /* Các phần học tập và kiểm tra */
+        .lesson, .quiz-question, .quiz-explanation {
+            width: 100%;
+            margin-bottom: 20px;
         }
 
-        #speakButton:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        #speakButton:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        .quiz-question label {
+            display: block;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="navbar">
+        <button class="nav-button active" data-target="recognition">Nhận Diện</button>
+        <button class="nav-button" data-target="learning">Học Tập</button>
+        <button class="nav-button" data-target="quiz">Kiểm Tra</button>
+        <button class="nav-button" data-target="progress">Tiến Độ</button>
+    </div>
+
+    <!-- Phần Nhận Diện -->
+    <div id="recognition" class="section" style="display: flex;">
         <h1>Nhận Diện Biển Báo Giao Thông</h1>
         <div style="position: relative; width: 100%; max-width: 600px;">
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
@@ -233,6 +275,8 @@
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
         </div>
 
+        <button id="navigateButton" aria-label="Điều hướng đến bài học">Điều Hướng</button>
+
         <div id="loadingModel">
             Đang tải mô hình...
             <div class="spinner"></div>
@@ -244,6 +288,40 @@
         <div id="predictionResult" aria-live="polite">Kết quả nhận diện sẽ hiển thị ở đây.</div>
         <div id="signMeaning" aria-live="polite"></div>
         <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
+    </div>
+
+    <!-- Phần Học Tập -->
+    <div id="learning" class="section">
+        <h2>Bài Học Về Luật Giao Thông</h2>
+        <div class="lesson">
+            <h3>Biển P.101 - Biển Nhường Đường</h3>
+            <p>Biển P.101 được sử dụng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn. Các tài xế phải chú ý và chuẩn bị dừng lại nếu cần thiết.</p>
+            <img src="https://example.com/images/P101.png" alt="Biển P.101" style="max-width: 100%; height: auto;">
+        </div>
+        <div class="lesson">
+            <h3>Biển W.208 - Biển Nhường Đường Ưu Tiên</h3>
+            <p>Biển W.208 thông báo rằng các xe đi trên đường có biển này phải nhường đường cho xe đi trên đường ưu tiên.</p>
+            <img src="https://example.com/images/W208.png" alt="Biển W.208" style="max-width: 100%; height: auto;">
+        </div>
+        <!-- Thêm nhiều bài học khác tương tự -->
+    </div>
+
+    <!-- Phần Kiểm Tra -->
+    <div id="quiz" class="section">
+        <h2>Kiểm Tra Kiến Thức</h2>
+        <div id="quiz-container">
+            <!-- Câu hỏi sẽ được chèn vào đây -->
+        </div>
+        <button id="submitQuiz">Nộp Bài</button>
+        <div id="quiz-result" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Phần Tiến Độ -->
+    <div id="progress" class="section">
+        <h2>Tiến Độ Học Tập</h2>
+        <div id="progress-container">
+            <!-- Thông tin tiến độ sẽ được chèn vào đây -->
+        </div>
     </div>
 
     <div class="footer">
@@ -260,6 +338,7 @@
         const captureButton = document.getElementById('captureButton');
         const downloadButton = document.getElementById('downloadButton');
         const retakeButton = document.getElementById('retakeButton');
+        const navigateButton = document.getElementById('navigateButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
         const signMeaning = document.getElementById('signMeaning');
@@ -275,6 +354,12 @@
         const signMeanings = {
             "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn...",
             "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
+            // Thêm các biển báo khác nếu có
+        };
+        const signLinks = {
+            "P.101": "https://example.com/lesson/P101",
+            "W.208": "https://example.com/lesson/W208"
+            // Thêm các liên kết khác tương ứng với các biển báo
         };
 
         async function startCamera() {
@@ -332,6 +417,7 @@
                 predictionResult.textContent = "";
                 signMeaning.textContent = "";
                 speakButton.style.display = 'none';
+                navigateButton.style.display = 'none';
                 loadingPrediction.style.display = 'flex';
                 await predictImage();
             } catch (error) {
@@ -364,6 +450,7 @@
             predictionResult.textContent = "Kết quả nhận diện sẽ hiển thị ở đây.";
             signMeaning.textContent = "";
             speakButton.style.display = 'none';
+            navigateButton.style.display = 'none';
         }
 
         function speakText(text) {
@@ -413,35 +500,165 @@
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
                         speakButton.style.display = 'inline-block';
-                        // Xóa dòng dưới để không tự động nghe
-                        // speakText(meaningText);
+                        navigateButton.style.display = 'inline-block';
+                        // Hiển thị nút điều hướng
+                        showNavigateButton(signCode);
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         speakButton.style.display = 'inline-block';
-                        // Xóa dòng dưới để không tự động nghe
-                        // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
+                        navigateButton.style.display = 'none';
                     }
                 } else {
                     predictionResult.textContent = "Không có kết quả nhận diện.";
                     signMeaning.textContent = "";
                     speakButton.style.display = 'none';
+                    navigateButton.style.display = 'none';
                 }
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.textContent = "Lỗi khi nhận diện hình ảnh.";
                 signMeaning.textContent = "";
                 speakButton.style.display = 'none';
+                navigateButton.style.display = 'none';
             } finally {
                 loadingPrediction.style.display = 'none';
             }
         }
 
-        captureButton.addEventListener('click', capturePhoto);
-        downloadButton.addEventListener('click', downloadPhoto);
-        retakeButton.addEventListener('click', retakePhoto);
-        zoomSlider.addEventListener('input', () => {
-            zoomValue.textContent = `${zoomSlider.value}x`;
+        // Liên kết tới các bài học hoặc tài nguyên tùy theo biển báo
+        const signLinks = {
+            "P.101": "https://example.com/lesson/P101",
+            "W.208": "https://example.com/lesson/W208"
+            // Thêm các liên kết khác tương ứng với các biển báo
+        };
+
+        // Hàm hiển thị nút điều hướng
+        function showNavigateButton(signCode) {
+            if (signCode && signLinks[signCode]) {
+                navigateButton.style.display = 'inline-block';
+                navigateButton.onclick = () => {
+                    window.open(signLinks[signCode], '_blank');
+                };
+            } else {
+                navigateButton.style.display = 'none';
+            }
+        }
+
+        // Dữ liệu câu hỏi trắc nghiệm
+        const quizData = [
+            {
+                question: "Biển báo nào báo hiệu xe cộ phải nhường đường?",
+                options: ["Biển P.101", "Biển W.208", "Biển C.201", "Biển H.301"],
+                answer: "Biển W.208"
+            },
+            {
+                question: "Biển nào cho biết rằng có điều khiển giao thông bằng tín hiệu đèn?",
+                options: ["Biển P.101", "Biển W.208", "Biển C.201", "Biển H.301"],
+                answer: "Biển P.101"
+            }
+            // Thêm nhiều câu hỏi khác nếu cần
+        ];
+
+        // Hàm tạo các câu hỏi kiểm tra
+        function loadQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = ''; // Xóa nội dung cũ
+            quizData.forEach((item, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('quiz-question');
+                questionDiv.innerHTML = `
+                    <p><strong>Câu ${index + 1}:</strong> ${item.question}</p>
+                    ${item.options.map(option => `
+                        <label>
+                            <input type="radio" name="question${index}" value="${option}">
+                            ${option}
+                        </label><br>
+                    `).join('')}
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        // Hàm xử lý khi nộp bài kiểm tra
+        function submitQuiz() {
+            let score = 0;
+            quizData.forEach((item, index) => {
+                const selected = document.querySelector(`input[name="question${index}"]:checked`);
+                if (selected && selected.value === item.answer) {
+                    score++;
+                }
+            });
+
+            const resultDiv = document.getElementById('quiz-result');
+            resultDiv.innerHTML = `Bạn đã đúng ${score} trên ${quizData.length} câu.`;
+
+            // Hiển thị giải thích
+            quizData.forEach((item, index) => {
+                const selected = document.querySelector(`input[name="question${index}"]:checked`);
+                const explanation = document.createElement('div');
+                explanation.classList.add('quiz-explanation');
+                explanation.innerHTML = `
+                    <p><strong>Câu ${index + 1}:</strong> ${item.question}</p>
+                    <p>Đáp án: <strong>${item.answer}</strong></p>
+                `;
+                resultDiv.appendChild(explanation);
+            });
+
+            // Lưu tiến độ học tập (ví dụ: số câu đúng)
+            saveProgress(score, quizData.length);
+        }
+
+        // Hàm lưu tiến độ học tập vào localStorage
+        function saveProgress(score, total) {
+            let progress = JSON.parse(localStorage.getItem('progress')) || { totalScore: 0, totalQuestions: 0 };
+            progress.totalScore += score;
+            progress.totalQuestions += total;
+            localStorage.setItem('progress', JSON.stringify(progress));
+        }
+
+        // Hàm hiển thị tiến độ học tập
+        function displayProgress() {
+            const progressContainer = document.getElementById('progress-container');
+            const progress = JSON.parse(localStorage.getItem('progress')) || { totalScore: 0, totalQuestions: 0 };
+            const percentage = progress.totalQuestions > 0 ? ((progress.totalScore / progress.totalQuestions) * 100).toFixed(2) : 0;
+            progressContainer.innerHTML = `
+                <p>Tổng số câu đã làm: <strong>${progress.totalQuestions}</strong></p>
+                <p>Tổng số câu đúng: <strong>${progress.totalScore}</strong></p>
+                <p>Tỉ lệ chính xác: <strong>${percentage}%</strong></p>
+            `;
+        }
+
+        // Xử lý thanh điều hướng
+        const navButtons = document.querySelectorAll('.nav-button');
+        const sections = document.querySelectorAll('.section');
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-target');
+
+                sections.forEach(section => {
+                    if (section.id === target) {
+                        section.style.display = 'flex';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+
+                // Thay đổi trạng thái active cho nút được chọn
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Nếu là trang kiểm tra, tải câu hỏi
+                if (target === 'quiz') {
+                    loadQuiz();
+                }
+            });
         });
+
+        // Sự kiện cho nút nộp bài kiểm tra
+        document.getElementById('submitQuiz').addEventListener('click', submitQuiz);
+
+        // Sự kiện cho nút nghe lại
         speakButton.addEventListener('click', () => {
             const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
@@ -449,15 +666,20 @@
             }
         });
 
+        // Xử lý sự kiện thay đổi giọng nói
         window.speechSynthesis.onvoiceschanged = function() {
             window.speechSynthesis.getVoices();
         };
 
+        // Tải mô hình và khởi động camera khi trang được tải
         window.addEventListener('load', async () => {
             await loadModel();
             startCamera();
+            // Hiển thị phần nhận diện mặc định
+            document.getElementById('recognition').style.display = 'flex';
         });
 
+        // Dừng camera khi trang được đóng
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
