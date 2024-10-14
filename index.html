@@ -319,13 +319,15 @@
         let isProcessing = false;
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
         let model, maxPredictions;
+
+        // Định nghĩa các ý nghĩa của biển báo với khóa là className viết hoa
         const signMeanings = {
             "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại.",
             "W.208": "Ý nghĩa của Biển báo giao nhau với đường ưu tiên...: Báo trước sắp đến nơi giao nhau với đường ưu tiên. Các xe đi trên đường có đặt biển này phải nhường đường cho xe đi trên đường ưu tiên khi qua nơi giao nhau (trừ các loại xe được quyền ưu tiên theo quy định). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.205": "Ý nghĩa của Biển báo giao nhau với đường cùng cấp..: Báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.207": "Ý nghĩa của Biển báo giao nhau với đường không ưu tiên.. Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông",
-            "P.103a": "Ý nghĩa biển báo cấm xe ô tô",
-            // Thêm các ý nghĩa cho các biển báo khác ở đây
+            "P.103A": "Ý nghĩa biển báo cấm xe ô tô",
+            // Thêm các ý nghĩa cho các biển báo khác ở đây, đảm bảo các khóa là className viết hoa
         };
 
         async function startCamera() {
@@ -427,7 +429,7 @@
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
-                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <p id="signCount">Số loại biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             `;
             signMeaning.textContent = "";
         }
@@ -476,10 +478,13 @@
                     prediction.sort((a, b) => b.probability - a.probability);
                     const topPrediction = prediction[0];
                     predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className}</span>`; /* Loại bỏ dấu % */
+
+                    // Chuẩn hóa signCode bằng cách chuyển className thành chữ hoa
+                    const signCode = topPrediction.className.toUpperCase();
                     
-                    // **Cập nhật đoạn này để lấy 6 ký tự đầu tiên**
-                    const signCode = topPrediction.className.substring(0, 6).toUpperCase();
-                    
+                    console.log("Top Prediction ClassName:", topPrediction.className);
+                    console.log("Sign Code (Uppercase):", signCode);
+
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
