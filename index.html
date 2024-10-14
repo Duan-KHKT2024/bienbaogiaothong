@@ -151,7 +151,7 @@
 
         #predictionResult {
             margin-top: 20px;
-            font-size: 18px; /* Tăng kích thước font chữ từ 16px lên 18px */
+            font-size: 16px; /* Giảm kích thước font chữ */
             font-weight: bold;
             color: var(--dark-color);
             min-height: 50px;
@@ -161,7 +161,7 @@
 
         /* Định dạng hướng dẫn sử dụng */
         #predictionResult h2 {
-            font-size: 1.7em; /* Tăng kích thước font từ 1.5em lên 1.7em */
+            font-size: 1.5em;
             margin-bottom: 10px;
             color: var(--primary-color);
             text-align: center;
@@ -173,7 +173,7 @@
             width: 100%;
             margin: 0 auto;
             padding-left: 20px;
-            font-size: 1em; /* Tăng kích thước font chữ từ 0.9em lên 1em */
+            font-size: 0.9em; /* Giảm kích thước font chữ */
             color: var(--text-color);
             list-style-position: inside; /* Căn đều các dấu đầu dòng */
             font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
@@ -283,7 +283,7 @@
                 <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                 <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
             </ol>
-            <p id="signCount">Số loại biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+            <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
 
@@ -319,15 +319,10 @@
         let isProcessing = false;
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
         let model, maxPredictions;
-
-        // Định nghĩa các ý nghĩa của biển báo với khóa là className viết hoa
         const signMeanings = {
             "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại.",
-            "W.208": "Ý nghĩa của Biển báo giao nhau với đường ưu tiên...: Báo trước sắp đến nơi giao nhau với đường ưu tiên. Các xe đi trên đường có đặt biển này phải nhường đường cho xe đi trên đường ưu tiên khi qua nơi giao nhau (trừ các loại xe được quyền ưu tiên theo quy định). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "W.205": "Ý nghĩa của Biển báo giao nhau với đường cùng cấp..: Báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "W.207": "Ý nghĩa của Biển báo giao nhau với đường không ưu tiên.. Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông",
-            "P.103A": "Ý nghĩa biển báo cấm xe ô tô",
-            // Thêm các ý nghĩa cho các biển báo khác ở đây, đảm bảo các khóa là className viết hoa
+            "W.208": "Các xe đi trên đường có biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên."
+            // Thêm các ý nghĩa cho các biển báo khác ở đây
         };
 
         async function startCamera() {
@@ -429,7 +424,7 @@
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
-                <p id="signCount">Số loại biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             `;
             signMeaning.textContent = "";
         }
@@ -477,14 +472,8 @@
                 if (prediction.length > 0) {
                     prediction.sort((a, b) => b.probability - a.probability);
                     const topPrediction = prediction[0];
-                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className}</span>`; /* Loại bỏ dấu % */
-
-                    // Chuẩn hóa signCode bằng cách chuyển className thành chữ hoa và loại bỏ khoảng trắng
-                    const signCode = topPrediction.className.trim().toUpperCase();
-
-                    console.log("Top Prediction ClassName:", topPrediction.className);
-                    console.log("Sign Code (Uppercase):", signCode);
-
+                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
+                    const signCode = topPrediction.className.substring(0, 5).toUpperCase();
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
@@ -494,7 +483,7 @@
                         // Không tự động đọc
                         // speakText(meaningText);
                     } else {
-                        signMeaning.textContent = "Ý nghĩa: Đây là một hình khác, không phải là biển báo giao thông. Bạn hãy nhấn nút chụp lại và làm theo các bước hướng dẫn. Xin cảm ơn.";
+                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         readButton.style.display = 'inline-block';
                         // Hiển thị nút làm bài kiểm tra
                         quizButton.style.display = 'inline-block';
