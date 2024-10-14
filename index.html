@@ -86,7 +86,7 @@
 
         #downloadButton {
             background-color: #007bff;
-            display: none;
+            display: none; /* Ẩn ban đầu */
         }
 
         #readButton {
@@ -383,7 +383,10 @@
         }
 
         function downloadPhoto() {
-            if (!capturedImage.src) return;
+            if (!capturedImage.src) {
+                alert("Không có ảnh nào để tải xuống.");
+                return;
+            }
             const link = document.createElement('a');
             link.href = capturedImage.src;
             link.download = 'anh-chup.png';
@@ -526,6 +529,9 @@
 
         // Event listener cho nút "Chụp Lại"
         retakeButton.addEventListener('click', retakePhoto);
+
+        // **Thêm sự kiện cho nút "Tải Ảnh Xuống"**
+        downloadButton.addEventListener('click', downloadPhoto);
     </script>
 
 </body>
