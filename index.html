@@ -133,6 +133,7 @@
             font-size: 1.5em;
             margin-bottom: 10px;
             color: #28a745;
+            text-align: center;
         }
 
         #predictionResult ol {
@@ -140,11 +141,21 @@
             max-width: 600px;
             margin: 0 auto;
             padding-left: 20px;
+            font-size: 1em;
+            color: #555;
         }
 
         #predictionResult li {
             margin-bottom: 10px;
-            line-height: 1.5;
+            line-height: 1.6;
+        }
+
+        /* Định dạng số lượng biển báo */
+        #signCount {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
         }
 
         #signMeaning {
@@ -191,34 +202,6 @@
             color: #888;
         }
 
-        /* Zoom Control Styling */
-        .zoom-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .zoom-container label {
-            font-size: 16px;
-            color: #333;
-            flex: 0 0 auto;
-        }
-
-        .zoom-container input[type="range"] {
-            flex: 1 1 auto;
-        }
-
-        .zoom-container span {
-            font-size: 16px;
-            color: #333;
-            flex: 0 0 auto;
-            width: 40px;
-            text-align: right;
-        }
-
         /* Button để nghe lại ý nghĩa */
         #speakButton {
             background-color: #17a2b8;
@@ -247,11 +230,7 @@
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
 
-        <div class="zoom-container">
-            <label for="zoomSlider">Zoom:</label>
-            <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
-            <span id="zoomValue">1x</span>
-        </div>
+        <!-- Removed Zoom Container -->
 
         <div class="button-container">
             <button id="captureButton" aria-label="Chụp ảnh" disabled>Chụp Ảnh</button>
@@ -276,6 +255,7 @@
                 <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                 <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
             </ol>
+            <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
         <button id="speakButton" aria-label="Nghe lại ý nghĩa biển báo">Nghe Lại</button>
@@ -300,8 +280,7 @@
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
-        const zoomSlider = document.getElementById('zoomSlider');
-        const zoomValue = document.getElementById('zoomValue');
+        const signCount = document.getElementById('totalSigns'); // New element to display total signs
         const speakButton = document.getElementById('speakButton');
         const quizButton = document.getElementById('quizButton'); // New Quiz Button
         let stream = null;
@@ -311,6 +290,7 @@
         const signMeanings = {
             "P.101": "Để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn...",
             "W.208": "Các xe đi trên đường có đặt biển số W.208 phải nhường đường cho xe đi trên đường ưu tiên..."
+            // Add more sign meanings here as needed
         };
 
         async function startCamera() {
@@ -339,7 +319,7 @@
 
             try {
                 const context = canvas.getContext('2d');
-                const zoom = parseFloat(zoomSlider.value);
+                const zoom = 1; // Removed zoom functionality
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
 
@@ -365,7 +345,7 @@
                 downloadButton.style.display = 'inline-block';
                 retakeButton.style.display = 'inline-block';
                 captureButton.style.display = 'none';
-                predictionResult.textContent = "";
+                predictionResult.innerHTML = "";
                 signMeaning.textContent = "";
                 speakButton.style.display = 'none';
                 quizButton.style.display = 'none'; // Hide quiz button initially
@@ -405,6 +385,7 @@
                     <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                 </ol>
+                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             `;
             signMeaning.textContent = "";
             speakButton.style.display = 'none';
@@ -434,6 +415,8 @@
                 model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
                 maxPredictions = model.getTotalClasses();
                 loadingModel.style.display = 'none';
+                // Update the total number of signs
+                signCount.textContent = maxPredictions;
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
@@ -490,9 +473,6 @@
         captureButton.addEventListener('click', capturePhoto);
         downloadButton.addEventListener('click', downloadPhoto);
         retakeButton.addEventListener('click', retakePhoto);
-        zoomSlider.addEventListener('input', () => {
-            zoomValue.textContent = `${zoomSlider.value}x`;
-        });
         speakButton.addEventListener('click', () => {
             const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
