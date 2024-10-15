@@ -334,6 +334,9 @@
         let isProcessing = false;
         const MODEL_URL = "https://uan-khkt2024.github.io/bienbaogiaothong/model/";
         let model;
+        let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
+
+        // Định nghĩa ý nghĩa của các biển báo
         const signMeanings = {
             "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.208": "Biển báo Giao nhau với đường ưu tiên: Các xe đi trên đường phải nhường đường cho xe đi trên đường ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
@@ -498,19 +501,32 @@
                 // Tải mô hình từ GitHub Pages
                 model = await tf.loadLayersModel(MODEL_URL + "model.json");
                 loadingModel.style.display = 'none';
-                
-                // Tải labels.json để lấy nhãn (nếu có)
-                const response = await fetch(MODEL_URL + "labels.json");
+
+                // Tải metadata.json để lấy nhãn
+                const response = await fetch(MODEL_URL + "metadata.json");
                 if (response.ok) {
-                    const labels = await response.json();
-                    signCount.textContent = labels.length;
-                    
-                    // Lưu labels vào biến toàn cục để sử dụng sau
-                    window.labels = labels;
+                    const metadata = await response.json();
+                    if (metadata.labels && Array.isArray(metadata.labels)) {
+                        labels = metadata.labels;
+                        signCount.textContent = labels.length;
+
+                        // Lưu labels vào biến toàn cục để sử dụng sau
+                        window.labels = labels;
+                    } else {
+                        console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
+                        // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
+                        // Ví dụ:
+                        // window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"];
+                        // signCount.textContent = window.labels.length;
+                        // Bạn cần cập nhật danh sách này dựa trên mô hình của bạn
+                        window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
+                        signCount.textContent = window.labels.length;
+                    }
                 } else {
-                    console.warn("Không tìm thấy file labels.json. Sử dụng nhãn từ metadata.json hoặc định nghĩa trong mã JavaScript.");
-                    // Nếu không có labels.json, bạn có thể định nghĩa nhãn trực tiếp trong JavaScript hoặc lấy từ metadata.json
-                    // Ví dụ: window.labels = ["P.101", "W.208", ...];
+                    console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
+                    // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
+                    window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
+                    signCount.textContent = window.labels.length;
                 }
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
