@@ -21,6 +21,9 @@
             --error-color: #d9534f;
             --disabled-color: #cccccc;
             --focus-outline: #ffbf47;
+            --accordion-bg: #e9ecef;
+            --accordion-hover: #dee2e6;
+            --accordion-active: #ced4da;
         }
 
         /* Reset CSS */
@@ -260,6 +263,79 @@
             display: flex;
             justify-content: center;
         }
+
+        /* Phần Hỏi Đáp (QA) */
+        .qa-section {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 30px;
+            background-color: var(--accordion-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .qa-section h2 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .accordion {
+            background-color: var(--white-bg);
+            color: var(--dark-color);
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .accordion:hover {
+            background-color: var(--accordion-hover);
+        }
+
+        .accordion.active {
+            background-color: var(--accordion-active);
+        }
+
+        .panel {
+            padding: 0 15px;
+            display: none;
+            background-color: var(--white-bg);
+            overflow: hidden;
+            border-left: 3px solid var(--primary-color);
+            border-right: 3px solid var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            border-radius: 0 0 5px 5px;
+            margin-bottom: 15px;
+        }
+
+        .panel p {
+            padding: 10px 0;
+            color: var(--text-color);
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Biểu tượng mũi tên cho accordion */
+        .accordion::after {
+            content: '\002B'; /* Plus sign */
+            font-size: 1.2em;
+            float: right;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion.active::after {
+            transform: rotate(45deg); /* Turns plus into an 'X' */
+        }
+
     </style>
 </head>
 <body>
@@ -304,6 +380,43 @@
         <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Ý Nghĩa Biển Báo -->
         <div id="quizButton-container">
             <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
+        </div>
+
+        <!-- Phần Hỏi Đáp (QA) -->
+        <div class="qa-section">
+            <h2>Hỏi Đáp</h2>
+
+            <!-- Câu hỏi 1 -->
+            <button class="accordion">1. Những quy định tham gia giao thông của học sinh</button>
+            <div class="panel">
+                <p>
+                    Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:
+                </p>
+                <ul>
+                    <li>Luôn đội mũ bảo hiểm khi đi xe máy.</li>
+                    <li>Đi đúng làn đường, tuân thủ tín hiệu đèn giao thông.</li>
+                    <li>Không sử dụng điện thoại di động khi lái xe.</li>
+                    <li>Giữ khoảng cách an toàn với các phương tiện khác.</li>
+                    <li>Tuân thủ giới hạn tốc độ quy định.</li>
+                </ul>
+            </div>
+
+            <!-- Câu hỏi 2 -->
+            <button class="accordion">2. Những quy tắc đội mũ bảo hiểm</button>
+            <div class="panel">
+                <p>
+                    Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:
+                </p>
+                <ul>
+                    <li>Chọn mũ bảo hiểm đạt tiêu chuẩn an toàn.</li>
+                    <li>Điều chỉnh dây quai sao cho vừa vặn, không quá chặt hay quá lỏng.</li>
+                    <li>Kiểm tra mũ bảo hiểm trước mỗi chuyến đi để đảm bảo không bị hư hỏng.</li>
+                    <li>Không đội mũ bảo hiểm bị trầy xước hoặc móp méo.</li>
+                    <li>Đội mũ bảo hiểm đúng cách, đảm bảo che kín trán và cằm.</li>
+                </ul>
+            </div>
+
+            <!-- Thêm các câu hỏi khác nếu cần -->
         </div>
     </div>
 
@@ -644,6 +757,21 @@
 
         // Thêm sự kiện cho nút "Tải Ảnh Xuống"
         downloadButton.addEventListener('click', downloadPhoto);
+
+        /**
+         * Xử lý accordion trong phần Hỏi Đáp (QA)
+         */
+        document.querySelectorAll('.accordion').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const panel = this.nextElementSibling;
+                if (panel.style.display === "block") {
+                    panel.style.display = "none";
+                } else {
+                    panel.style.display = "block";
+                }
+            });
+        });
     </script>
 
 </body>
