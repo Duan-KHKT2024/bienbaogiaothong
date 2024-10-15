@@ -62,6 +62,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* Để overlay hoạt động đúng */
         }
 
         /* Điều chỉnh chiều cao video cho thiết bị di động */
@@ -299,6 +300,7 @@
             border-radius: 5px;
             margin-bottom: 10px;
             font-family: var(--qa-question-font);
+            position: relative;
         }
 
         .accordion:hover {
@@ -340,12 +342,15 @@
         .accordion::after {
             content: '\002B'; /* Plus sign */
             font-size: 1.2em;
-            float: right;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             transition: transform 0.3s ease;
         }
 
         .accordion.active::after {
-            transform: rotate(45deg); /* Turns plus into an 'X' */
+            transform: translateY(-50%) rotate(45deg); /* Turns plus into an 'X' */
         }
     </style>
 </head>
@@ -486,9 +491,15 @@
                     audio: false
                 });
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    video.play();
-                };
+                return new Promise((resolve, reject) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                    video.onerror = (err) => {
+                        reject(err);
+                    };
+                });
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
                 alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị của bạn.");
@@ -508,6 +519,15 @@
                 if (!stream) {
                     // Khởi động camera nếu chưa bắt đầu
                     await startCamera();
+                }
+
+                // Kiểm tra xem video đã sẵn sàng chưa
+                if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
+                    await new Promise((resolve) => {
+                        video.oncanplay = () => {
+                            resolve();
+                        };
+                    });
                 }
 
                 const context = canvas.getContext('2d');
@@ -544,7 +564,6 @@
                 signMeaning.textContent = "";
                 readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                 quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                loadingPrediction.style.display = 'flex';
                 overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
                 await predictImage();
             } catch (error) {
@@ -644,10 +663,6 @@
                     } else {
                         console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
                         // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
-                        // Ví dụ:
-                        // window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"];
-                        // signCount.textContent = window.labels.length;
-                        // Bạn cần cập nhật danh sách này dựa trên mô hình của bạn
                         window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                         signCount.textContent = window.labels.length;
                     }
@@ -674,45 +689,48 @@
             }
 
             try {
-                // Chuyển đổi canvas thành tensor
-                const img = tf.browser.fromPixels(canvas);
-                const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
-                const normalized = resized.div(255.0).expandDims();
+                // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
+                tf.tidy(() => {
+                    // Chuyển đổi canvas thành tensor
+                    const img = tf.browser.fromPixels(canvas);
+                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                    const normalized = resized.div(255.0).expandDims();
 
-                // Thực hiện dự đoán
-                const predictions = model.predict(normalized);
-                const data = predictions.dataSync();
+                    // Thực hiện dự đoán
+                    const predictions = model.predict(normalized);
+                    const data = predictions.dataSync();
 
-                // Tìm lớp có xác suất cao nhất
-                let maxProb = -1;
-                let maxIndex = -1;
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i] > maxProb) {
-                        maxProb = data[i];
-                        maxIndex = i;
+                    // Tìm lớp có xác suất cao nhất
+                    let maxProb = -1;
+                    let maxIndex = -1;
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > maxProb) {
+                            maxProb = data[i];
+                            maxIndex = i;
+                        }
                     }
-                }
 
-                if (maxIndex !== -1 && window.labels) {
-                    const predictedClass = window.labels[maxIndex];
-                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
-                    const signCode = predictedClass.substring(0, 5).toUpperCase();
-                    if (signMeanings.hasOwnProperty(signCode)) {
-                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
-                        signMeaning.textContent = meaningText;
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
+                    if (maxIndex !== -1 && window.labels) {
+                        const predictedClass = window.labels[maxIndex];
+                        predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
+                        const signCode = predictedClass.substring(0, 5).toUpperCase();
+                        if (signMeanings.hasOwnProperty(signCode)) {
+                            const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                            signMeaning.textContent = meaningText;
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        } else {
+                            signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        }
                     } else {
-                        signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
+                        predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
+                        signMeaning.textContent = "";
+                        readButton.style.display = 'none';
+                        quizButton.style.display = 'none';
                     }
-                } else {
-                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
-                    signMeaning.textContent = "";
-                    readButton.style.display = 'none';
-                    quizButton.style.display = 'none';
-                }
+                });
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
