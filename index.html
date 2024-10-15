@@ -301,6 +301,9 @@
             margin-bottom: 10px;
             font-family: var(--qa-question-font);
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .accordion:hover {
@@ -311,11 +314,23 @@
             background-color: var(--accordion-active);
         }
 
+        /* Biểu tượng mũi tên cho accordion */
+        .accordion::after {
+            content: '\002B'; /* Plus sign */
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion.active::after {
+            content: '\2212'; /* Minus sign */
+        }
+
+        /* Panel styles with smooth transition */
         .panel {
-            padding: 0 15px;
-            display: none;
-            background-color: var(--white-bg);
+            max-height: 0;
             overflow: hidden;
+            transition: max-height 0.3s ease;
+            background-color: var(--white-bg);
             border-left: 3px solid var(--primary-color);
             border-right: 3px solid var(--primary-color);
             border-bottom: 3px solid var(--primary-color);
@@ -323,8 +338,12 @@
             margin-bottom: 15px;
         }
 
+        .panel.show {
+            max-height: 500px; /* Adjust as needed */
+        }
+
         .panel p {
-            padding: 10px 0;
+            padding: 10px 15px;
             color: var(--text-color);
             font-family: var(--qa-answer-font);
             line-height: 1.6;
@@ -332,26 +351,12 @@
 
         .panel ul {
             list-style-type: disc;
-            padding-left: 20px;
+            padding-left: 30px;
             font-family: var(--qa-answer-font);
             color: var(--text-color);
             line-height: 1.6;
         }
 
-        /* Biểu tượng mũi tên cho accordion */
-        .accordion::after {
-            content: '\002B'; /* Plus sign */
-            font-size: 1.2em;
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: transform 0.3s ease;
-        }
-
-        .accordion.active::after {
-            transform: translateY(-50%) rotate(45deg); /* Turns plus into an 'X' */
-        }
     </style>
 </head>
 <body>
@@ -399,8 +404,8 @@
             <h2>Hỏi Đáp</h2>
 
             <!-- Câu hỏi 1 -->
-            <button class="accordion">1. Những quy định tham gia giao thông của học sinh</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel1">1. Những quy định tham gia giao thông của học sinh</button>
+            <div class="panel" id="panel1">
                 <p>
                     Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:
                 </p>
@@ -414,8 +419,8 @@
             </div>
 
             <!-- Câu hỏi 2 -->
-            <button class="accordion">2. Những quy tắc đội mũ bảo hiểm</button>
-            <div class="panel">
+            <button class="accordion" aria-expanded="false" aria-controls="panel2">2. Những quy tắc đội mũ bảo hiểm</button>
+            <div class="panel" id="panel2">
                 <p>
                     Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:
                 </p>
@@ -429,6 +434,19 @@
             </div>
 
             <!-- Thêm các câu hỏi khác nếu cần -->
+            <!-- Câu hỏi 3 -->
+            <button class="accordion" aria-expanded="false" aria-controls="panel3">3. Cách sử dụng đèn tín hiệu giao thông</button>
+            <div class="panel" id="panel3">
+                <p>
+                    Khi sử dụng đèn tín hiệu giao thông, học sinh cần lưu ý:
+                </p>
+                <ul>
+                    <li>Luôn quan sát đèn tín hiệu trước khi di chuyển.</li>
+                    <li>Dừng lại khi đèn đỏ và chỉ đi khi đèn xanh.</li>
+                    <li>Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.</li>
+                    <li>Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn.</li>
+                </ul>
+            </div>
         </div>
 
         <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Hỏi Đáp -->
@@ -816,12 +834,14 @@
          */
         document.querySelectorAll('.accordion').forEach(button => {
             button.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                this.setAttribute('aria-expanded', !isActive);
                 this.classList.toggle('active');
                 const panel = this.nextElementSibling;
-                if (panel.style.display === "block") {
-                    panel.style.display = "none";
+                if (panel.classList.contains('show')) {
+                    panel.classList.remove('show');
                 } else {
-                    panel.style.display = "block";
+                    panel.classList.add('show');
                 }
             });
         });
