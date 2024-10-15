@@ -24,6 +24,8 @@
             --accordion-bg: #e9ecef;
             --accordion-hover: #dee2e6;
             --accordion-active: #ced4da;
+            --qa-question-font: 'Roboto', sans-serif;
+            --qa-answer-font: 'Open Sans', sans-serif;
         }
 
         /* Reset CSS */
@@ -34,7 +36,7 @@
         }
 
         body {
-            font-family: 'Roboto', sans-serif; /* Sử dụng Roboto từ Google Fonts */
+            font-family: var(--qa-question-font); /* Sử dụng Roboto cho toàn bộ trang */
             background-color: var(--light-bg);
             display: flex;
             flex-direction: column;
@@ -194,7 +196,7 @@
             font-size: 0.9em; /* Giảm kích thước font chữ */
             color: var(--text-color);
             list-style-position: inside; /* Căn đều các dấu đầu dòng */
-            font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
         }
 
         #predictionResult li {
@@ -280,6 +282,7 @@
             color: var(--dark-color);
             margin-bottom: 20px;
             font-size: 1.8em;
+            font-family: var(--qa-question-font);
         }
 
         .accordion {
@@ -295,6 +298,7 @@
             transition: background-color 0.3s ease;
             border-radius: 5px;
             margin-bottom: 10px;
+            font-family: var(--qa-question-font);
         }
 
         .accordion:hover {
@@ -320,7 +324,15 @@
         .panel p {
             padding: 10px 0;
             color: var(--text-color);
-            font-family: 'Open Sans', sans-serif;
+            font-family: var(--qa-answer-font);
+            line-height: 1.6;
+        }
+
+        .panel ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-family: var(--qa-answer-font);
+            color: var(--text-color);
             line-height: 1.6;
         }
 
@@ -335,7 +347,6 @@
         .accordion.active::after {
             transform: rotate(45deg); /* Turns plus into an 'X' */
         }
-
     </style>
 </head>
 <body>
@@ -377,11 +388,6 @@
         </div>
         <div id="signMeaning" aria-live="polite"></div>
 
-        <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Ý Nghĩa Biển Báo -->
-        <div id="quizButton-container">
-            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
-        </div>
-
         <!-- Phần Hỏi Đáp (QA) -->
         <div class="qa-section">
             <h2>Hỏi Đáp</h2>
@@ -417,6 +423,11 @@
             </div>
 
             <!-- Thêm các câu hỏi khác nếu cần -->
+        </div>
+
+        <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Hỏi Đáp -->
+        <div id="quizButton-container">
+            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
         </div>
     </div>
 
@@ -477,7 +488,6 @@
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    captureButton.disabled = false;
                 };
             } catch (err) {
                 console.error("Không thể truy cập camera: ", err);
@@ -492,8 +502,14 @@
             if (isProcessing) return;
             isProcessing = true;
             captureButton.disabled = true;
+            loadingPrediction.style.display = 'flex';
 
             try {
+                if (!stream) {
+                    // Khởi động camera nếu chưa bắt đầu
+                    await startCamera();
+                }
+
                 const context = canvas.getContext('2d');
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
@@ -737,7 +753,7 @@
          */
         window.addEventListener('load', async () => {
             await loadModel();
-            startCamera();
+            // Không khởi động camera ngay khi tải trang
         });
 
         /**
