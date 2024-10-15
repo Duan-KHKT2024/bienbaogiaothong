@@ -26,6 +26,7 @@
             --accordion-active: #ced4da;
             --qa-question-font: 'Roboto', sans-serif;
             --qa-answer-font: 'Open Sans', sans-serif;
+            --question-color: #2c3e50; /* Màu xanh đậm cho câu hỏi */
         }
 
         /* Reset CSS */
@@ -288,14 +289,15 @@
 
         .accordion {
             background-color: var(--white-bg);
-            color: var(--dark-color);
+            color: var(--question-color); /* Đổi màu sắc của câu hỏi */
             cursor: pointer;
-            padding: 15px;
+            padding: 20px; /* Tăng padding để làm rộng chiều dài */
             width: 100%;
             border: none;
             text-align: left;
             outline: none;
-            font-size: 1em;
+            font-size: 1.1em; /* Tăng kích thước font chữ */
+            font-weight: 700; /* Tăng độ đậm của font chữ */
             transition: background-color 0.3s ease;
             border-radius: 5px;
             margin-bottom: 10px;
