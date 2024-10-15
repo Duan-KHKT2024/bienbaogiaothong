@@ -7,259 +7,7 @@
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables cho dễ bảo trì */
-        :root {
-            --primary-color: #28a745;
-            --secondary-color: #007bff;
-            --accent-color: #17a2b8;
-            --warning-color: #ffc107;
-            --purple-color: #6f42c1;
-            --dark-color: #333;
-            --light-bg: #f0f4f8;
-            --white-bg: #fff;
-            --text-color: #555;
-            --error-color: #d9534f;
-            --disabled-color: #cccccc;
-            --focus-outline: #ffbf47;
-        }
-
-        /* Reset CSS */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif; /* Sử dụng Roboto từ Google Fonts */
-            background-color: var(--light-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        h1 {
-            color: var(--dark-color);
-            margin-bottom: 20px;
-            font-size: 2em;
-            text-align: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--white-bg);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Điều chỉnh chiều cao video cho thiết bị di động */
-        #video, #capturedImage {
-            border: 4px solid var(--primary-color);
-            border-radius: 15px;
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            max-height: 400px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: opacity 0.5s ease, transform 0.3s ease;
-            object-fit: cover;
-        }
-
-        #capturedImage {
-            display: none;
-            opacity: 0;
-        }
-
-        /* Cải thiện thiết kế Overlay */
-        .overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
-            height: 60%;
-            transform: translate(-50%, -50%);
-            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
-            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
-            box-sizing: border-box;
-            pointer-events: none; /* Không chặn các tương tác với video */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        button {
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
-            max-width: 220px; /* Giới hạn kích thước tối đa */
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            color: #fff;
-            text-align: center;
-            min-height: 44px; /* Đảm bảo touch target đủ lớn */
-        }
-
-        /* Các màu sắc cho các nút */
-        #captureButton {
-            background-color: var(--primary-color);
-        }
-
-        #downloadButton {
-            background-color: var(--secondary-color);
-            display: none; /* Ẩn ban đầu */
-        }
-
-        #readButton {
-            background-color: var(--accent-color);
-            display: none; /* Initially hidden */
-        }
-
-        #retakeButton {
-            background-color: var(--warning-color);
-            display: none;
-            color: var(--dark-color);
-        }
-
-        #quizButton {
-            background-color: var(--purple-color);
-            display: none; /* Initially hidden */
-        }
-
-        button:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-
-        button:disabled {
-            background-color: var(--disabled-color);
-            cursor: not-allowed;
-        }
-
-        button:focus {
-            outline: 3px solid var(--focus-outline); /* Màu nổi bật khi focus */
-            outline-offset: 2px;
-        }
-
-        @media (max-width: 600px) {
-            button {
-                width: 100%;
-                max-width: 220px;
-            }
-        }
-
-        #predictionResult {
-            margin-top: 20px;
-            font-size: 16px; /* Giảm kích thước font chữ */
-            font-weight: bold;
-            color: var(--dark-color);
-            min-height: 50px;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* Định dạng hướng dẫn sử dụng */
-        #predictionResult h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            text-align: center;
-        }
-
-        #predictionResult ol {
-            text-align: left;
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            padding-left: 20px;
-            font-size: 0.9em; /* Giảm kích thước font chữ */
-            color: var(--text-color);
-            list-style-position: inside; /* Căn đều các dấu đầu dòng */
-            font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho danh sách */
-        }
-
-        #predictionResult li {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        /* Định dạng số lượng biển báo */
-        #signCount {
-            margin-top: 10px;
-            font-size: 16px;
-            color: var(--error-color); /* Màu đỏ để làm nổi bật */
-            text-align: center;
-            font-weight: bold;
-        }
-
-        #signMeaning {
-            margin-top: 10px;
-            font-size: 16px;
-            color: var(--text-color);
-            text-align: center;
-            max-width: 600px;
-            position: relative;
-            word-wrap: break-word; /* Đảm bảo dòng dài được xuống dòng */
-        }
-
-        /* Loading Spinner Styles */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #loadingModel, #loadingPrediction {
-            margin-top: 20px;
-            font-size: 18px;
-            color: var(--text-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .footer {
-            width: 100%;
-            text-align: center;
-            padding-top: 20px;
-            font-size: 14px;
-            color: #888;
-        }
-
-        /* Nút "Làm Bài Kiểm Tra" */
-        #quizButton-container {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
+        /* (CSS của bạn ở đây) */
     </style>
 </head>
 <body>
@@ -312,7 +60,7 @@
     </div>
 
     <!-- TensorFlow.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.0.0/dist/tf.min.js"></script>
 
     <script>
         // Các phần tử DOM
@@ -332,7 +80,7 @@
         const overlay = document.querySelector('.overlay');
         let stream = null;
         let isProcessing = false;
-        const MODEL_URL = "https://duan-khkt2024.github.io/bienbaogiaothong/model/";
+        const MODEL_URL = "./model/"; // Sử dụng đường dẫn tương đối
         let model;
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
@@ -343,7 +91,7 @@
             "W.205": "Biển báo giao nhau với đường cùng cấp: Dùng để báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.207": "Biển báo giao nhau với đường không ưu tiên: Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với đường không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "P.103": "Biển báo cấm xe ô tô. Dùng để báo đường cấm các loại xe cơ giới kể cả xe máy 3 bánh có thùng đi qua, trừ xe máy 2 bánh, xe gắn máy và các xe được ưu tiên theo quy định. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-
+    
             // Thêm các ý nghĩa cho các biển báo khác ở đây
         };
 
@@ -498,8 +246,13 @@
          */
         async function loadModel() {
             try {
-                // Tải mô hình từ GitHub Pages
+                // Thiết lập backend tốt hơn
+                await tf.setBackend('webgl'); // Hoặc 'wasm'
+                await tf.ready();
+
+                // Tải mô hình từ cùng một domain
                 model = await tf.loadLayersModel(MODEL_URL + "model.json");
+                console.log("Mô hình đã được tải thành công.");
                 loadingModel.style.display = 'none';
 
                 // Tải metadata.json để lấy nhãn
@@ -514,23 +267,18 @@
                         window.labels = labels;
                     } else {
                         console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
-                        // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
-                        // Ví dụ:
-                        // window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"];
-                        // signCount.textContent = window.labels.length;
-                        // Bạn cần cập nhật danh sách này dựa trên mô hình của bạn
                         window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                         signCount.textContent = window.labels.length;
                     }
                 } else {
                     console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
-                    // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
                     window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                     signCount.textContent = window.labels.length;
                 }
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
+                alert("Lỗi khi tải mô hình: " + err.message);
             }
         }
 
@@ -545,6 +293,8 @@
             }
 
             try {
+                tf.engine().startScope(); // Bắt đầu scope để tự động giải phóng bộ nhớ
+
                 // Chuyển đổi canvas thành tensor
                 const img = tf.browser.fromPixels(canvas);
                 const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
@@ -584,6 +334,7 @@
                     readButton.style.display = 'none';
                     quizButton.style.display = 'none';
                 }
+
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
@@ -591,6 +342,7 @@
                 readButton.style.display = 'none';
                 quizButton.style.display = 'none';
             } finally {
+                tf.engine().endScope(); // Kết thúc scope và giải phóng bộ nhớ
                 loadingPrediction.style.display = 'none';
             }
         }
