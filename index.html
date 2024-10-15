@@ -7,7 +7,7 @@
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for Easy Maintenance */
+        /* CSS Variables cho dễ bảo trì */
         :root {
             --primary-color: #28a745;
             --secondary-color: #007bff;
@@ -311,11 +311,11 @@
         &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
     </div>
 
-    <!-- TensorFlow.js và Teachable Machine -->
+    <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
     <script>
+        // Các phần tử DOM
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
@@ -332,8 +332,8 @@
         const overlay = document.querySelector('.overlay');
         let stream = null;
         let isProcessing = false;
-        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/7y8Dc7os8/";
-        let model, maxPredictions;
+        const MODEL_URL = "https://uan-khkt2024.github.io/bienbaogiaothong/model/";
+        let model;
         const signMeanings = {
             "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
             "W.208": "Biển báo Giao nhau với đường ưu tiên: Các xe đi trên đường phải nhường đường cho xe đi trên đường ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
@@ -344,6 +344,9 @@
             // Thêm các ý nghĩa cho các biển báo khác ở đây
         };
 
+        /**
+         * Hàm khởi động camera
+         */
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -366,6 +369,9 @@
             }
         }
 
+        /**
+         * Hàm chụp ảnh từ video
+         */
         async function capturePhoto() {
             if (isProcessing) return;
             isProcessing = true;
@@ -404,8 +410,8 @@
                 captureButton.style.display = 'none';
                 predictionResult.innerHTML = "";
                 signMeaning.textContent = "";
-                readButton.style.display = 'none'; // Hide read button initially
-                quizButton.style.display = 'none'; // Hide quiz button initially
+                readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
                 loadingPrediction.style.display = 'flex';
                 overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
                 await predictImage();
@@ -418,6 +424,9 @@
             }
         }
 
+        /**
+         * Hàm tải ảnh xuống
+         */
         function downloadPhoto() {
             if (!capturedImage.src) {
                 alert("Không có ảnh nào để tải xuống.");
@@ -431,6 +440,9 @@
             document.body.removeChild(link);
         }
 
+        /**
+         * Hàm chụp lại ảnh
+         */
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
@@ -456,6 +468,10 @@
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
         }
 
+        /**
+         * Hàm đọc văn bản bằng giọng nói
+         * @param {string} text - Văn bản cần đọc
+         */
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
                 console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
@@ -474,19 +490,37 @@
             synth.speak(utterThis);
         }
 
+        /**
+         * Hàm tải mô hình TensorFlow.js
+         */
         async function loadModel() {
             try {
-                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-                maxPredictions = model.getTotalClasses();
+                // Tải mô hình từ GitHub Pages
+                model = await tf.loadLayersModel(MODEL_URL + "model.json");
                 loadingModel.style.display = 'none';
-                // Update the total number of signs (subtracting 1 for background if applicable)
-                signCount.textContent = maxPredictions; // Adjusted to match actual number
+                
+                // Tải labels.json để lấy nhãn (nếu có)
+                const response = await fetch(MODEL_URL + "labels.json");
+                if (response.ok) {
+                    const labels = await response.json();
+                    signCount.textContent = labels.length;
+                    
+                    // Lưu labels vào biến toàn cục để sử dụng sau
+                    window.labels = labels;
+                } else {
+                    console.warn("Không tìm thấy file labels.json. Sử dụng nhãn từ metadata.json hoặc định nghĩa trong mã JavaScript.");
+                    // Nếu không có labels.json, bạn có thể định nghĩa nhãn trực tiếp trong JavaScript hoặc lấy từ metadata.json
+                    // Ví dụ: window.labels = ["P.101", "W.208", ...];
+                }
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
             }
         }
 
+        /**
+         * Hàm thực hiện dự đoán hình ảnh
+         */
         async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
@@ -495,27 +529,38 @@
             }
 
             try {
-                const prediction = await model.predict(canvas);
-                if (prediction.length > 0) {
-                    prediction.sort((a, b) => b.probability - a.probability);
-                    const topPrediction = prediction[0];
-                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)</span>`;
-                    const signCode = topPrediction.className.substring(0, 5).toUpperCase();
+                // Chuyển đổi canvas thành tensor
+                const img = tf.browser.fromPixels(canvas);
+                const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                const normalized = resized.div(255.0).expandDims();
+
+                // Thực hiện dự đoán
+                const predictions = model.predict(normalized);
+                const data = predictions.dataSync();
+
+                // Tìm lớp có xác suất cao nhất
+                let maxProb = -1;
+                let maxIndex = -1;
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i] > maxProb) {
+                        maxProb = data[i];
+                        maxIndex = i;
+                    }
+                }
+
+                if (maxIndex !== -1 && window.labels) {
+                    const predictedClass = window.labels[maxIndex];
+                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
+                    const signCode = predictedClass.substring(0, 5).toUpperCase();
                     if (signMeanings.hasOwnProperty(signCode)) {
                         const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                         signMeaning.textContent = meaningText;
                         readButton.style.display = 'inline-block';
-                        // Hiển thị nút làm bài kiểm tra
                         quizButton.style.display = 'inline-block';
-                        // Không tự động đọc
-                        // speakText(meaningText);
                     } else {
                         signMeaning.textContent = "Ý nghĩa: Không tìm thấy ý nghĩa cho biển báo này.";
                         readButton.style.display = 'inline-block';
-                        // Hiển thị nút làm bài kiểm tra
                         quizButton.style.display = 'inline-block';
-                        // Không tự động đọc
-                        // speakText("Không tìm thấy ý nghĩa cho biển báo này.");
                     }
                 } else {
                     predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
@@ -534,7 +579,9 @@
             }
         }
 
-        // Event listener cho nút "Đọc"
+        /**
+         * Event listener cho nút "Đọc"
+         */
         readButton.addEventListener('click', () => {
             const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
@@ -542,20 +589,31 @@
             }
         });
 
-        // Event listener cho nút làm bài kiểm tra
+        /**
+         * Event listener cho nút làm bài kiểm tra
+         */
         quizButton.addEventListener('click', () => {
             window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
         });
 
+        /**
+         * Cập nhật danh sách giọng nói khi chúng thay đổi
+         */
         window.speechSynthesis.onvoiceschanged = function() {
             window.speechSynthesis.getVoices();
         };
 
+        /**
+         * Khởi động ứng dụng khi trang được tải
+         */
         window.addEventListener('load', async () => {
             await loadModel();
             startCamera();
         });
 
+        /**
+         * Dừng camera khi trang được đóng hoặc tải lại
+         */
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
