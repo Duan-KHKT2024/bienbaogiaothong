@@ -366,7 +366,7 @@
         <canvas id="canvas" style="display: none;"></canvas>
 
         <div class="button-container">
-            <button id="captureButton" aria-label="Chụp ảnh">Chụp Ảnh</button>
+            <button id="captureButton" aria-label="Chụp ảnh">Bắt Đầu</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
@@ -383,7 +383,8 @@
         <div id="predictionResult" aria-live="polite">
             <h2>Hướng Dẫn Sử Dụng</h2>
             <ol>
-                <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
+                <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
                 <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                 <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                 <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
@@ -461,6 +462,7 @@
         const overlay = document.querySelector('.overlay');
         let stream = null;
         let isProcessing = false;
+        let cameraStarted = false; // Biến trạng thái camera
         const MODEL_URL = "https://duan-khkt2024.github.io/bienbaogiaothong/model/";
         let model;
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
@@ -513,65 +515,77 @@
             if (isProcessing) return;
             isProcessing = true;
             captureButton.disabled = true;
-            loadingPrediction.style.display = 'flex';
 
-            try {
-                if (!stream) {
-                    // Khởi động camera nếu chưa bắt đầu
+            if (!cameraStarted) {
+                // Nếu camera chưa được khởi động, bắt đầu camera
+                try {
                     await startCamera();
+                    cameraStarted = true;
+                    captureButton.textContent = "Chụp Ảnh"; // Thay đổi nhãn nút sau khi camera đã khởi động
+                } catch (err) {
+                    console.error("Lỗi khi khởi động camera: ", err);
+                    alert("Không thể khởi động camera.");
+                } finally {
+                    isProcessing = false;
+                    captureButton.disabled = false;
                 }
+            } else {
+                // Nếu camera đã được khởi động, tiến hành chụp ảnh
+                loadingPrediction.style.display = 'flex';
 
-                // Kiểm tra xem video đã sẵn sàng chưa
-                if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
-                    await new Promise((resolve) => {
-                        video.oncanplay = () => {
-                            resolve();
-                        };
-                    });
+                try {
+                    // Kiểm tra xem video đã sẵn sàng chưa
+                    if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
+                        await new Promise((resolve) => {
+                            video.oncanplay = () => {
+                                resolve();
+                            };
+                        });
+                    }
+
+                    const context = canvas.getContext('2d');
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
+
+                    if (videoWidth === 0 || videoHeight === 0) {
+                        throw new Error("Video chưa sẵn sàng.");
+                    }
+
+                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                    const overlayWidth = videoWidth * 0.6;
+                    const overlayHeight = videoHeight * 0.6;
+                    const sx = (videoWidth - overlayWidth) / 2;
+                    const sy = (videoHeight - overlayHeight) / 2;
+
+                    // Cài đặt kích thước canvas theo kích thước overlay
+                    canvas.width = overlayWidth;
+                    canvas.height = overlayHeight;
+
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+
+                    const imageDataURL = canvas.toDataURL('image/png');
+                    capturedImage.src = imageDataURL;
+                    capturedImage.style.display = 'block';
+                    capturedImage.style.opacity = 1;
+                    video.style.opacity = 0;
+                    video.style.display = 'none';
+                    downloadButton.style.display = 'inline-block';
+                    retakeButton.style.display = 'inline-block';
+                    // Không ẩn nút "Chụp Ảnh" để người dùng có thể chụp lại nếu cần
+                    predictionResult.innerHTML = "";
+                    signMeaning.textContent = "";
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+                    overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
+                    await predictImage();
+                } catch (error) {
+                    console.error("Lỗi khi chụp ảnh: ", error);
+                    alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
+                } finally {
+                    isProcessing = false;
+                    captureButton.disabled = false;
                 }
-
-                const context = canvas.getContext('2d');
-                const videoWidth = video.videoWidth;
-                const videoHeight = video.videoHeight;
-
-                if (videoWidth === 0 || videoHeight === 0) {
-                    throw new Error("Video chưa sẵn sàng.");
-                }
-
-                // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
-                const overlayWidth = videoWidth * 0.6;
-                const overlayHeight = videoHeight * 0.6;
-                const sx = (videoWidth - overlayWidth) / 2;
-                const sy = (videoHeight - overlayHeight) / 2;
-
-                // Cài đặt kích thước canvas theo kích thước overlay
-                canvas.width = overlayWidth;
-                canvas.height = overlayHeight;
-
-                // Vẽ phần ảnh trong khu vực overlay vào canvas
-                context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
-
-                const imageDataURL = canvas.toDataURL('image/png');
-                capturedImage.src = imageDataURL;
-                capturedImage.style.display = 'block';
-                capturedImage.style.opacity = 1;
-                video.style.opacity = 0;
-                video.style.display = 'none';
-                downloadButton.style.display = 'inline-block';
-                retakeButton.style.display = 'inline-block';
-                captureButton.style.display = 'none';
-                predictionResult.innerHTML = "";
-                signMeaning.textContent = "";
-                readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
-                quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
-                await predictImage();
-            } catch (error) {
-                console.error("Lỗi khi chụp ảnh: ", error);
-                alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
-            } finally {
-                isProcessing = false;
-                captureButton.disabled = false;
             }
         }
 
@@ -604,6 +618,7 @@
             retakeButton.style.display = 'none';
             quizButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
+            captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
             predictionResult.innerHTML = `
                 <h2>Hướng Dẫn Sử Dụng</h2>
                 <ol>
@@ -617,6 +632,10 @@
             `;
             signMeaning.textContent = "";
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
+            cameraStarted = false; // Reset trạng thái camera
+            // Hiển thị lại video nếu nó đã bị ẩn
+            video.style.display = 'block';
+            video.style.opacity = 1;
         }
 
         /**
