@@ -128,6 +128,10 @@
             background-color: var(--primary-color);
         }
 
+        #uploadButton {
+            background-color: var(--secondary-color);
+        }
+
         #downloadButton {
             background-color: var(--secondary-color);
             display: none; /* Ẩn ban đầu */
@@ -374,10 +378,14 @@
 
         <div class="button-container">
             <button id="captureButton" aria-label="Chụp ảnh">Bắt Đầu</button>
+            <button id="uploadButton" aria-label="Tải ảnh lên">Tải Ảnh Lên</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
         </div>
+
+        <!-- Hidden file input for uploading images -->
+        <input type="file" id="uploadInput" accept="image/*" style="display: none;" />
 
         <div id="loadingModel">
             Đang tải mô hình...
@@ -469,6 +477,8 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
+        const uploadButton = document.getElementById('uploadButton');
+        const uploadInput = document.getElementById('uploadInput'); // Hidden file input
         const downloadButton = document.getElementById('downloadButton');
         const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
@@ -830,6 +840,56 @@
 
         // Thêm sự kiện cho nút "Tải Ảnh Xuống"
         downloadButton.addEventListener('click', downloadPhoto);
+
+        // Event listener cho nút "Tải Ảnh Lên"
+        uploadButton.addEventListener('click', () => {
+            uploadInput.click(); // Trigger click on hidden file input
+        });
+
+        // Event listener cho việc chọn file từ file input
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    capturedImage.src = e.target.result;
+                    capturedImage.style.display = 'block';
+                    capturedImage.style.opacity = 1;
+                    video.style.opacity = 0;
+                    video.style.display = 'none';
+                    downloadButton.style.display = 'inline-block';
+                    retakeButton.style.display = 'inline-block';
+                    predictionResult.innerHTML = "";
+                    signMeaning.textContent = "";
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+                    overlay.style.display = 'none'; // Ẩn overlay sau khi tải ảnh lên
+
+                    // Vẽ ảnh lên canvas để dự đoán
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const context = canvas.getContext('2d');
+                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
+                        const aspectRatio = img.width / img.height;
+                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
+                        let canvasHeight = 224;
+                        if (aspectRatio > 1) {
+                            canvasHeight = canvasWidth / aspectRatio;
+                        } else {
+                            canvasWidth = canvasHeight * aspectRatio;
+                        }
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasHeight;
+                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                        predictImage();
+                    };
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Vui lòng chọn một tệp ảnh hợp lệ.");
+            }
+        });
 
         /**
          * Xử lý accordion trong phần Hỏi Đáp (QA)
