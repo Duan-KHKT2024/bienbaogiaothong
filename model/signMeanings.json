@@ -1,8 +1,28 @@
 {
     "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-    "W.208": "Biển báo Giao nhau với đường ưu tiên: Các xe đi trên đường phải nhường đường cho xe đi trên đường ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
+    
+    "W.208": "Biển báo Giao nhau với đường ưu tiên: 
+	1. Hình thức biển báo:
+	- Hình dạng: Tam giác, có cạnh đáy ở phía trên.
+	- Màu sắc: Nền đỏ với viền trắng.
+	- Biểu tượng: Trên biển có hình vẽ giao lộ của hai hoặc nhiều đường, trong đó một trong các đường được đánh dấu là đường ưu tiên bằng cách sử dụng màu sắc hoặc biểu tượng đặc biệt.
+	2. Mục đích và ý nghĩa:
+	- Thông báo về quyền ưu tiên đường: Biển báo này cảnh báo người lái xe rằng tại giao lộ nơi biển báo được đặt, có một hoặc nhiều đường được xác định là đường ưu tiên. Điều này có nghĩa là các phương tiện đang di chuyển trên đường ưu tiên có quyền đi trước.
+	- Quy định về nhường đường: Người lái xe không thuộc đường ưu tiên phải nhường đường cho các phương tiện trên đường ưu tiên trước khi vào giao lộ.
+	3. Hành vi người lái xe khi gặp biển báo:
+	- Giảm tốc độ: Khi tiếp cận giao lộ có biển báo này, người lái xe nên giảm tốc độ để dễ dàng kiểm soát xe và có thời gian quan sát tình hình giao thông.
+	- Quan sát kỹ lưỡng: Kiểm tra các phương tiện đang tiến đến từ đường ưu tiên, đảm bảo không có phương tiện nào đang di chuyển hoặc chuẩn bị rẽ.
+	- Nhường đường: Chỉ tiến vào giao lộ khi đã đảm bảo rằng mình không cản trở quyền ưu tiên của các phương tiện trên đường ưu tiên.
+	4. Tác dụng của biển báo:
+	- Đảm bảo trật tự giao thông: Giúp các phương tiện di chuyển một cách an toàn và trật tự tại các giao lộ, giảm nguy cơ va chạm và ùn tắc.
+	- An toàn giao thông: Bằng cách xác định rõ đường ưu tiên, biển báo này góp phần tăng cường an toàn cho người tham gia giao thông, đặc biệt là tại những nơi có lưu lượng giao thông cao.
+	5. Lưu ý khi sử dụng biển báo:
+	- Tuân thủ luật giao thông: Vi phạm quy định về nhường đường tại biển báo này có thể bị xử phạt theo quy định của pháp luật, bao gồm các mức phạt về tiền và điểm phạt cho bằng lái.
+	- Đảm bảo tầm nhìn: Đặt biển báo ở vị trí có tầm nhìn rõ ràng, đủ để người lái xe nhận biết và tuân thủ đúng quy định.",
+  
+
     "W.205": "Biển báo giao nhau với đường cùng cấp: Dùng để báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
     "W.207": "Biển báo giao nhau với đường không ưu tiên: Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với đường không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
     "P.103": "Biển báo cấm xe ô tô. Dùng để báo đường cấm các loại xe cơ giới kể cả xe máy 3 bánh có thùng đi qua, trừ xe máy 2 bánh, xe gắn máy và các xe được ưu tiên theo quy định."
-   
+    
 }
