@@ -53,6 +53,7 @@
             --section-title-color: #ffffff; /* Màu chữ cho tiêu đề các phần */
             --section-title-padding: 10px 20px;
             --section-title-border-radius: 8px 8px 0 0;
+            --fixed-slogan-width: 800px; /* Kích thước cố định cho khẩu hiệu */
         }
 
         /* Reset CSS */
@@ -89,7 +90,8 @@
 
         /* Phần 1: Khẩu Hiệu */
         .slogan-section {
-            width: 100%;
+            width: var(--fixed-slogan-width);
+            max-width: 100%; /* Đảm bảo không vượt quá màn hình */
             background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
             padding: var(--slogan-padding);
             border-radius: var(--slogan-border-radius);
@@ -100,6 +102,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            transition: width 0.3s ease;
         }
 
         #slogan {
@@ -118,7 +121,7 @@
             opacity: 1;
         }
 
-        /* Phần 2: Nhận Diện Biển Báo */
+        /* Phần 2: Nhận Diện Biển Báo Giao Thông */
         .recognition-section {
             width: 100%;
             max-width: 800px;
@@ -133,7 +136,14 @@
             margin-bottom: 30px;
         }
 
-        .recognition-section h1 {
+        .recognition-section h2.section-title {
+            /* Sử dụng class section-title để làm nổi bật tiêu đề */
+            /* Không cần thêm h1 nữa */
+            /* Đảm bảo tiêu đề giống nhau giữa các phần */
+            /* Nếu cần thêm, có thể điều chỉnh thêm */
+        }
+
+        .recognition-section h2 {
             color: var(--dark-color);
             margin-bottom: 20px;
             font-size: 2em;
@@ -253,6 +263,10 @@
         }
 
         @media (max-width: 600px) {
+            .slogan-section {
+                width: 100%; /* Trên thiết bị nhỏ, chiều rộng 100% */
+            }
+
             button {
                 width: 100%;
                 max-width: 220px;
@@ -353,7 +367,12 @@
             justify-content: center;
         }
 
-        /* Phần 3: Tìm hiểu */
+        /* Phần 3: Nhận Diện Biển Báo Giao Thông (Moved Up) */
+        .recognition-section {
+            /* Không cần thay đổi gì thêm ở đây */
+        }
+
+        /* Phần 4: Tìm hiểu */
         .learning-section {
             width: 100%;
             max-width: 800px;
@@ -364,11 +383,18 @@
             margin-bottom: 30px;
         }
 
+        .learning-section h2.section-title {
+            /* Sử dụng class section-title để làm nổi bật tiêu đề */
+            /* Đảm bảo tiêu đề giống nhau giữa các phần */
+            /* Không cần thêm h2 nữa */
+            /* Đảm bảo font-size và style tương tự */
+        }
+
         .learning-section h2 {
-            text-align: center;
             color: var(--dark-color);
             margin-bottom: 20px;
-            font-size: 1.8em;
+            font-size: 2em;
+            text-align: center;
             font-family: var(--qa-question-font);
         }
 
@@ -396,7 +422,7 @@
             transform: var(--card-hover-transform);
         }
 
-        /* Phần 4: Hỏi Đáp */
+        /* Phần 5: Hỏi Đáp (QA) */
         .qa-section {
             width: 100%;
             max-width: 800px;
@@ -407,11 +433,15 @@
             margin-bottom: 30px;
         }
 
+        .qa-section h2.section-title {
+            /* Sử dụng class section-title để làm nổi bật tiêu đề */
+        }
+
         .qa-section h2 {
-            text-align: center;
             color: var(--dark-color);
             margin-bottom: 20px;
-            font-size: 1.8em;
+            font-size: 2em;
+            text-align: center;
             font-family: var(--qa-question-font);
         }
 
@@ -560,49 +590,6 @@
             color: var(--error-color);
         }
 
-        /* Phần 5: Tìm hiểu */
-        .learning-section {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--learning-bg-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .learning-section h2 {
-            text-align: center;
-            color: var(--dark-color);
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            font-family: var(--qa-question-font);
-        }
-
-        .learning-items {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-        }
-
-        .learning-item {
-            background-color: var(--card-bg-color);
-            border: 1px solid var(--card-border-color);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--card-transition);
-            font-family: var(--qa-answer-font);
-            color: var(--text-color);
-        }
-
-        .learning-item:hover {
-            background-color: var(--accordion-hover);
-            transform: var(--card-hover-transform);
-        }
-
         /* Phần 6: Footer */
         .footer {
             width: 100%;
@@ -631,28 +618,9 @@
         <p id="slogan"></p>
     </div>
 
-    <!-- Phần 2: Tìm hiểu -->
-    <div class="learning-section">
-        <h2>Tìm hiểu</h2>
-        <div class="learning-items">
-            <div class="learning-item" onclick="window.open('https://sites.google.com/view/luatgiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu luật giao thông cho học sinh">
-                1. Tìm hiểu luật giao thông cho học sinh
-            </div>
-            <div class="learning-item" onclick="window.open('https://sites.google.com/view/hanhvigiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông">
-                2. Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông
-            </div>
-            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tinhhuongthucte', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những tình huống thực tế">
-                3. Tìm hiểu về những tình huống thực tế
-            </div>
-            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank')" tabindex="0" role="button" aria-label="Làm các bài trắc nghiệm về giao thông">
-                4. Làm các bài trắc nghiệm về giao thông
-            </div>
-        </div>
-    </div>
-
-    <!-- Phần 3: Nhận Diện Biển Báo Giao Thông -->
+    <!-- Phần 2: Nhận Diện Biển Báo Giao Thông (Moved Up) -->
     <div class="recognition-section">
-        <div class="section-title">Nhận Diện Biển Báo Giao Thông</div>
+        <h2 class="section-title">Nhận Diện Biển Báo Giao Thông</h2>
         <div class="video-container">
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
             <div class="overlay"></div>
@@ -689,10 +657,28 @@
         </div>
     </div>
 
+    <!-- Phần 3: Tìm hiểu -->
+    <div class="learning-section">
+        <h2 class="section-title">Tìm hiểu</h2>
+        <div class="learning-items">
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/luatgiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu luật giao thông cho học sinh">
+                1. Tìm hiểu luật giao thông cho học sinh
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/hanhvigiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông">
+                2. Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tinhhuongthucte', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những tình huống thực tế">
+                3. Tìm hiểu về những tình huống thực tế
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank')" tabindex="0" role="button" aria-label="Làm các bài trắc nghiệm về giao thông">
+                4. Làm các bài trắc nghiệm về giao thông
+            </div>
+        </div>
+    </div>
+
     <!-- Phần 4: Hỏi Đáp (QA) -->
     <div class="qa-section">
-        <div class="section-title">Hỏi Đáp</div>
-        <h2>Hỏi Đáp</h2>
+        <h2 class="section-title">Hỏi Đáp</h2>
 
         <!-- Câu hỏi 1 -->
         <button class="accordion" aria-expanded="false" aria-controls="panel1">1. Những quy định tham gia giao thông của học sinh</button>
