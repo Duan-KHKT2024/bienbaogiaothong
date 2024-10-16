@@ -29,10 +29,11 @@
             --question-color: #2c3e50; /* Màu xanh đậm cho câu hỏi */
             --slogan-font: 'Roboto', sans-serif;
             --slogan-color: #ffffff;
-            --slogan-bg-color: rgba(40, 167, 69, 0.9); /* Nền sắc xanh lá */
+            --slogan-bg-color: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(40, 167, 69, 0.7)); /* Gradient sắc xanh lá */
             --slogan-padding: 20px;
-            --slogan-border-radius: 10px;
+            --slogan-border-radius: 15px;
             --slogan-font-size: 1.8em;
+            --slogan-transition: opacity 1s ease-in-out;
         }
 
         /* Reset CSS */
@@ -60,15 +61,17 @@
         }
 
         .slogan-container {
-            width: 100%;
+            width: 90%;
             max-width: 800px;
-            background-color: var(--slogan-bg-color);
+            background: var(--slogan-bg-color);
             padding: var(--slogan-padding);
             border-radius: var(--slogan-border-radius);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             margin-bottom: 20px;
             text-align: center;
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
         }
 
@@ -77,12 +80,9 @@
             font-size: var(--slogan-font-size);
             color: var(--slogan-color);
             opacity: 0;
-            transition: opacity 1s ease-in-out;
-            position: absolute;
-            width: 100%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            transition: var(--slogan-transition);
+            text-align: center;
+            word-wrap: break-word;
         }
 
         .slogan-container.active #slogan {
@@ -212,6 +212,10 @@
 
             #slogan {
                 font-size: 1.2em; /* Giảm kích thước font trên thiết bị nhỏ */
+            }
+
+            .slogan-container {
+                padding: 15px;
             }
         }
 
