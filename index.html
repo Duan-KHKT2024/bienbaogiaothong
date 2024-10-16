@@ -142,7 +142,8 @@
         }
 
         .recognition-section h2 {
-            color: var(--dark-color); /* Thay đổi từ #ffffff sang màu đen */
+            /* Đã chuyển từ var(--dark-color) sang var(--section-title-color) để giữ màu trắng */
+            color: var(--section-title-color);
             margin-bottom: 20px;
             font-size: 1.1em; /* Giảm kích thước font */
             text-align: center;
@@ -578,7 +579,7 @@
         }
 
         .learning-section h2 {
-            color: var(--dark-color); /* Thay đổi thành màu đen */
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             margin-bottom: 20px;
             font-size: 1.1em; /* Giảm kích thước font chữ */
             text-align: center;
@@ -601,9 +602,10 @@
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
             flex: 1 1 calc(50% - 30px); /* Hai mục mỗi dòng, trừ đi khoảng cách */
-            text-align: center;
+            text-align: left; /* Căn trái nội dung */
             font-size: 1em;
-            color: var(--question-color);
+            font-weight: bold; /* Kiểu chữ đậm */
+            color: var(--text-color); /* Màu chữ giống như phần Hỏi Đáp */
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -799,18 +801,18 @@
             const qaContainer = document.getElementById('qa-container');
             qaContainer.innerHTML = ''; // Xóa nội dung cũ nếu có
 
-            qaData.forEach(item => {
+            qaData.forEach((item, index) => {
                 // Tạo nút accordion
                 const accordionButton = document.createElement('button');
                 accordionButton.classList.add('accordion');
                 accordionButton.setAttribute('aria-expanded', 'false');
-                accordionButton.setAttribute('aria-controls', item.id);
+                accordionButton.setAttribute('aria-controls', `qa-panel-${index}`);
                 accordionButton.textContent = item.question;
 
                 // Tạo panel
                 const panelDiv = document.createElement('div');
                 panelDiv.classList.add('panel');
-                panelDiv.id = item.id;
+                panelDiv.id = `qa-panel-${index}`;
 
                 // Tạo phần nội dung câu trả lời
                 const answerPara = document.createElement('p');
