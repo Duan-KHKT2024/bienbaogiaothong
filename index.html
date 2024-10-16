@@ -28,7 +28,11 @@
             --qa-answer-font: 'Open Sans', sans-serif;
             --question-color: #2c3e50; /* Màu xanh đậm cho câu hỏi */
             --slogan-font: 'Roboto', sans-serif;
-            --slogan-color: #2c3e50;
+            --slogan-color: #ffffff;
+            --slogan-bg-color: rgba(40, 167, 69, 0.9); /* Nền sắc xanh lá */
+            --slogan-padding: 20px;
+            --slogan-border-radius: 10px;
+            --slogan-font-size: 1.8em;
         }
 
         /* Reset CSS */
@@ -58,9 +62,9 @@
         .slogan-container {
             width: 100%;
             max-width: 800px;
-            background-color: var(--primary-color);
-            padding: 15px 20px;
-            border-radius: 10px;
+            background-color: var(--slogan-bg-color);
+            padding: var(--slogan-padding);
+            border-radius: var(--slogan-border-radius);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             text-align: center;
@@ -70,8 +74,8 @@
 
         #slogan {
             font-family: var(--slogan-font);
-            font-size: 1.5em;
-            color: var(--white-bg);
+            font-size: var(--slogan-font-size);
+            color: var(--slogan-color);
             opacity: 0;
             transition: opacity 1s ease-in-out;
             position: absolute;
@@ -204,6 +208,10 @@
             button {
                 width: 100%;
                 max-width: 220px;
+            }
+
+            #slogan {
+                font-size: 1.2em; /* Giảm kích thước font trên thiết bị nhỏ */
             }
         }
 
@@ -967,7 +975,7 @@
             sloganContainer.classList.add('active');
             setTimeout(() => {
                 sloganContainer.classList.remove('active');
-            }, 4000); // Hiển thị khẩu hiệu trong 4 giây để tạo khoảng trống cho hiệu ứng mờ dần
+            }, 6000); // Hiển thị khẩu hiệu trong 6 giây để tạo khoảng trống cho hiệu ứng mờ dần
         }
 
         function startSloganRotation() {
@@ -976,7 +984,7 @@
             setInterval(() => {
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
-            }, 5000); // Mỗi 5 giây một khẩu hiệu
+            }, 7000); // Mỗi 7 giây một khẩu hiệu
         }
 
     </script>
