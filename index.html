@@ -34,6 +34,15 @@
             --slogan-border-radius: 15px;
             --slogan-font-size: 1.8em;
             --slogan-transition: opacity 1s ease-in-out;
+            --footer-bg-color: #007bff; /* Màu nền footer xanh */
+            --footer-text-color: #ffffff; /* Màu chữ footer trắng */
+            --modal-bg-color: rgba(0, 0, 0, 0.6); /* Nền modal đậm hơn */
+            --modal-content-bg: #ffffff; /* Nền nội dung modal trắng */
+            --modal-content-border: #28a745; /* Viền nội dung modal màu xanh lá */
+            --modal-padding: 30px;
+            --modal-border-radius: 10px;
+            --modal-title-color: var(--primary-color);
+            --modal-text-color: #333;
         }
 
         /* Reset CSS */
@@ -53,21 +62,14 @@
             min-height: 100vh;
         }
 
-        h1 {
-            color: var(--dark-color);
-            margin-bottom: 20px;
-            font-size: 2em;
-            text-align: center;
-        }
-
-        .slogan-container {
-            width: 90%;
-            max-width: 800px;
+        /* Phần 1: Khẩu Hiệu */
+        .slogan-section {
+            width: 100%;
             background: var(--slogan-bg-color);
             padding: var(--slogan-padding);
             border-radius: var(--slogan-border-radius);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-align: center;
             display: flex;
             align-items: center;
@@ -85,11 +87,12 @@
             word-wrap: break-word;
         }
 
-        .slogan-container.active #slogan {
+        .slogan-section.active #slogan {
             opacity: 1;
         }
 
-        .container {
+        /* Phần 2: Nhận Diện Biển Báo */
+        .recognition-section {
             width: 100%;
             max-width: 800px;
             background-color: var(--white-bg);
@@ -100,9 +103,22 @@
             flex-direction: column;
             align-items: center;
             position: relative; /* Để overlay hoạt động đúng */
+            margin-bottom: 30px;
         }
 
-        /* Điều chỉnh chiều cao video cho thiết bị di động */
+        .recognition-section h1 {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+
         #video, #capturedImage {
             border: 4px solid var(--primary-color);
             border-radius: 15px;
@@ -218,7 +234,7 @@
                 font-size: 1.2em; /* Giảm kích thước font trên thiết bị nhỏ */
             }
 
-            .slogan-container {
+            .slogan-section {
                 padding: 15px;
             }
         }
@@ -304,34 +320,15 @@
             justify-content: center;
         }
 
-        .footer {
-            width: 100%;
-            text-align: center;
-            padding: 20px;
-            font-size: 14px;
-            color: #fff;
-            background-color: var(--secondary-color); /* Nền xanh */
-            margin-top: 20px;
-            border-radius: 10px;
-        }
-
-        /* Nút "Làm Bài Kiểm Tra" */
-        #quizButton-container {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        /* Phần Hỏi Đáp (QA) */
+        /* Phần 3: Hỏi Đáp */
         .qa-section {
             width: 100%;
-            max-width: 600px;
-            margin-top: 30px;
+            max-width: 800px;
             background-color: var(--accordion-bg);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
+            margin-bottom: 30px;
         }
 
         .qa-section h2 {
@@ -424,16 +421,16 @@
             width: 100%; /* Full width */
             height: 100%; /* Full height */
             overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+            background-color: var(--modal-bg-color); /* Nền modal đậm hơn */
         }
 
         .modal-content {
-            background-color: var(--white-bg);
-            margin: 10% auto; /* 10% from the top and centered */
-            padding: 20px;
-            border: 1px solid var(--primary-color);
-            width: 80%; /* Could be more or less, depending on screen size */
-            border-radius: 10px;
+            background-color: var(--modal-content-bg);
+            margin: 5% auto; /* 5% từ trên và giữa */
+            padding: var(--modal-padding);
+            border: 2px solid var(--modal-content-border);
+            width: 80%; /* Có thể điều chỉnh tùy theo kích thước màn hình */
+            border-radius: var(--modal-border-radius);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
         }
@@ -456,18 +453,69 @@
             cursor: pointer;
         }
 
+        .modal-content h2 {
+            color: var(--modal-title-color);
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .modal-content ol {
+            text-align: left;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            padding-left: 20px;
+            font-size: 1em; /* Tăng kích thước font chữ */
+            color: var(--modal-text-color);
+            list-style-position: inside; /* Căn đều các dấu đầu dòng */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
+        }
+
+        .modal-content li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .modal-content p {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            color: var(--error-color);
+        }
+
+        /* Phần 4: Footer */
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: var(--footer-text-color);
+            background-color: var(--footer-bg-color); /* Nền xanh */
+            border-radius: 10px;
+        }
+
+        /* Nút "Làm Bài Kiểm Tra" */
+        #quizButton-container {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- Phần Khẩu Hiệu Tham Gia Giao Thông -->
-    <div class="slogan-container">
+    <!-- Phần 1: Khẩu Hiệu Tham Gia Giao Thông -->
+    <div class="slogan-section">
         <p id="slogan"></p>
     </div>
 
-    <div class="container">
+    <!-- Phần 2: Nhận Diện Biển Báo Giao Thông -->
+    <div class="recognition-section">
         <h1>Nhận Diện Biển Báo Giao Thông</h1>
-        <div style="position: relative; width: 100%; max-width: 600px;">
+        <div class="video-container">
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
             <div class="overlay"></div>
         </div>
@@ -497,58 +545,58 @@
         <div id="predictionResult" aria-live="polite"></div>
         <div id="signMeaning" aria-live="polite"></div>
 
-        <!-- Phần Hỏi Đáp (QA) -->
-        <div class="qa-section">
-            <h2>Hỏi Đáp</h2>
-
-            <!-- Câu hỏi 1 -->
-            <button class="accordion" aria-expanded="false" aria-controls="panel1">1. Những quy định tham gia giao thông của học sinh</button>
-            <div class="panel" id="panel1">
-                <p>
-                    Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:
-                </p>
-                <ul>
-                    <li>Luôn đội mũ bảo hiểm khi đi xe máy.</li>
-                    <li>Đi đúng làn đường, tuân thủ tín hiệu đèn giao thông.</li>
-                    <li>Không sử dụng điện thoại di động khi lái xe.</li>
-                    <li>Giữ khoảng cách an toàn với các phương tiện khác.</li>
-                    <li>Tuân thủ giới hạn tốc độ quy định.</li>
-                </ul>
-            </div>
-
-            <!-- Câu hỏi 2 -->
-            <button class="accordion" aria-expanded="false" aria-controls="panel2">2. Những quy tắc đội mũ bảo hiểm</button>
-            <div class="panel" id="panel2">
-                <p>
-                    Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:
-                </p>
-                <ul>
-                    <li>Chọn mũ bảo hiểm đạt tiêu chuẩn an toàn.</li>
-                    <li>Điều chỉnh dây quai sao cho vừa vặn, không quá chặt hay quá lỏng.</li>
-                    <li>Kiểm tra mũ bảo hiểm trước mỗi chuyến đi để đảm bảo không bị hư hỏng.</li>
-                    <li>Không đội mũ bảo hiểm bị trầy xước hoặc móp méo.</li>
-                    <li>Đội mũ bảo hiểm đúng cách, đảm bảo che kín trán và cằm.</li>
-                </ul>
-            </div>
-
-            <!-- Câu hỏi 3 -->
-            <button class="accordion" aria-expanded="false" aria-controls="panel3">3. Cách sử dụng đèn tín hiệu giao thông</button>
-            <div class="panel" id="panel3">
-                <p>
-                    Khi sử dụng đèn tín hiệu giao thông, học sinh cần lưu ý:
-                </p>
-                <ul>
-                    <li>Luôn quan sát đèn tín hiệu trước khi di chuyển.</li>
-                    <li>Dừng lại khi đèn đỏ và chỉ đi khi đèn xanh.</li>
-                    <li>Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.</li>
-                    <li>Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn.</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Hỏi Đáp -->
+        <!-- Nút "Làm Bài Kiểm Tra" -->
         <div id="quizButton-container">
             <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
+        </div>
+    </div>
+
+    <!-- Phần 3: Hỏi Đáp (QA) -->
+    <div class="qa-section">
+        <h2>Hỏi Đáp</h2>
+
+        <!-- Câu hỏi 1 -->
+        <button class="accordion" aria-expanded="false" aria-controls="panel1">1. Những quy định tham gia giao thông của học sinh</button>
+        <div class="panel" id="panel1">
+            <p>
+                Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:
+            </p>
+            <ul>
+                <li>Luôn đội mũ bảo hiểm khi đi xe máy.</li>
+                <li>Đi đúng làn đường, tuân thủ tín hiệu đèn giao thông.</li>
+                <li>Không sử dụng điện thoại di động khi lái xe.</li>
+                <li>Giữ khoảng cách an toàn với các phương tiện khác.</li>
+                <li>Tuân thủ giới hạn tốc độ quy định.</li>
+            </ul>
+        </div>
+
+        <!-- Câu hỏi 2 -->
+        <button class="accordion" aria-expanded="false" aria-controls="panel2">2. Những quy tắc đội mũ bảo hiểm</button>
+        <div class="panel" id="panel2">
+            <p>
+                Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:
+            </p>
+            <ul>
+                <li>Chọn mũ bảo hiểm đạt tiêu chuẩn an toàn.</li>
+                <li>Điều chỉnh dây quai sao cho vừa vặn, không quá chặt hay quá lỏng.</li>
+                <li>Kiểm tra mũ bảo hiểm trước mỗi chuyến đi để đảm bảo không bị hư hỏng.</li>
+                <li>Không đội mũ bảo hiểm bị trầy xước hoặc móp méo.</li>
+                <li>Đội mũ bảo hiểm đúng cách, đảm bảo che kín trán và cằm.</li>
+            </ul>
+        </div>
+
+        <!-- Câu hỏi 3 -->
+        <button class="accordion" aria-expanded="false" aria-controls="panel3">3. Cách sử dụng đèn tín hiệu giao thông</button>
+        <div class="panel" id="panel3">
+            <p>
+                Khi sử dụng đèn tín hiệu giao thông, học sinh cần lưu ý:
+            </p>
+            <ul>
+                <li>Luôn quan sát đèn tín hiệu trước khi di chuyển.</li>
+                <li>Dừng lại khi đèn đỏ và chỉ đi khi đèn xanh.</li>
+                <li>Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.</li>
+                <li>Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn.</li>
+            </ul>
         </div>
     </div>
 
@@ -1006,7 +1054,7 @@
         });
 
         /**
-         * Phần Khẩu Hiệu Tham Gia Giao Thông
+         * Phần 1: Khẩu Hiệu Tham Gia Giao Thông
          */
         const slogans = [
             "An toàn giao thông - Hạnh phúc cho mọi nhà!",
@@ -1020,13 +1068,13 @@
 
         let currentSloganIndex = 0;
         const sloganElement = document.getElementById('slogan');
-        const sloganContainer = document.querySelector('.slogan-container');
+        const sloganSection = document.querySelector('.slogan-section');
 
         function showSlogan(index) {
             sloganElement.textContent = slogans[index];
-            sloganContainer.classList.add('active');
+            sloganSection.classList.add('active');
             setTimeout(() => {
-                sloganContainer.classList.remove('active');
+                sloganSection.classList.remove('active');
             }, 6000); // Hiển thị khẩu hiệu trong 6 giây để tạo khoảng trống cho hiệu ứng mờ dần
         }
 
@@ -1052,20 +1100,19 @@
             instructionModal.setAttribute('aria-hidden', 'false');
         });
 
-        // Close the modal when 'x' is clicked
+        // Close the modal khi 'x' được nhấn
         closeButton.addEventListener('click', () => {
             instructionModal.style.display = 'none';
             instructionModal.setAttribute('aria-hidden', 'true');
         });
 
-        // Close the modal when clicking outside the modal content
+        // Close the modal khi nhấn ngoài nội dung modal
         window.addEventListener('click', (event) => {
             if (event.target == instructionModal) {
                 instructionModal.style.display = 'none';
                 instructionModal.setAttribute('aria-hidden', 'true');
             }
         });
-
     </script>
 
 </body>
