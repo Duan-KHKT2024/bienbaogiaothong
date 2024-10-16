@@ -348,10 +348,16 @@
             margin-top: 10px;
             font-size: 16px;
             color: var(--text-color);
-            text-align: center;
+            text-align: left; /* Đổi từ center sang left */
             max-width: 600px;
-            position: relative;
-            word-wrap: break-word; /* Đảm bảo dòng dài được xuống dòng */
+            width: 100%;
+            padding: 15px;
+            background-color: #f8f9fa; /* Thêm nền màu nhẹ */
+            border: 1px solid var(--primary-color); /* Thêm viền màu xanh lá */
+            border-radius: 8px; /* Bo tròn các góc */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
+            line-height: 1.6; /* Tăng khoảng cách giữa các dòng */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho nội dung */
         }
 
         /* Loading Spinner Styles */
@@ -1114,7 +1120,7 @@
                             readButton.style.display = 'inline-block';
                             quizButton.style.display = 'inline-block';
                         } else {
-                            signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rỏ nét, đảm bảo kích thước";
+                            signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
                             readButton.style.display = 'inline-block';
                             quizButton.style.display = 'inline-block';
                         }
