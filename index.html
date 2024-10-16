@@ -160,6 +160,10 @@
         }
 
         /* Các màu sắc cho các nút */
+        #instructionButton {
+            background-color: var(--accent-color);
+        }
+
         #captureButton {
             background-color: var(--primary-color);
         }
@@ -303,9 +307,12 @@
         .footer {
             width: 100%;
             text-align: center;
-            padding-top: 20px;
+            padding: 20px;
             font-size: 14px;
-            color: #888;
+            color: #fff;
+            background-color: var(--secondary-color); /* Nền xanh */
+            margin-top: 20px;
+            border-radius: 10px;
         }
 
         /* Nút "Làm Bài Kiểm Tra" */
@@ -407,6 +414,48 @@
             line-height: 1.6;
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: var(--white-bg);
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -426,6 +475,7 @@
         <canvas id="canvas" style="display: none;"></canvas>
 
         <div class="button-container">
+            <button id="instructionButton" aria-label="Hướng Dẫn">Hướng Dẫn</button>
             <button id="captureButton" aria-label="Chụp ảnh">Bắt Đầu</button>
             <button id="uploadButton" aria-label="Tải ảnh lên">Tải Ảnh Lên</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
@@ -444,18 +494,7 @@
             Đang nhận diện...
             <div class="spinner"></div>
         </div>
-        <div id="predictionResult" aria-live="polite">
-            <h2>Hướng Dẫn Sử Dụng</h2>
-            <ol>
-                <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
-                <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
-                <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
-                <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
-                <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
-            </ol>
-            <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
-        </div>
+        <div id="predictionResult" aria-live="polite"></div>
         <div id="signMeaning" aria-live="polite"></div>
 
         <!-- Phần Hỏi Đáp (QA) -->
@@ -513,8 +552,28 @@
         </div>
     </div>
 
+    <!-- Footer với nền xanh và chữ trắng -->
     <div class="footer">
         &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+    </div>
+
+    <!-- Modal Hướng Dẫn -->
+    <div id="instructionModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="instructionModalTitle" aria-describedby="instructionModalDescription">
+        <div class="modal-content">
+            <span class="close-button" aria-label="Đóng">&times;</span>
+            <h2 id="instructionModalTitle">Hướng Dẫn Sử Dụng</h2>
+            <div id="instructionModalDescription">
+                <ol>
+                    <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
+                    <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
+                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+                </ol>
+                <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+            </div>
+        </div>
     </div>
 
     <!-- TensorFlow.js -->
@@ -650,7 +709,6 @@
                     video.style.display = 'none';
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
-                    // Không ẩn nút "Chụp Ảnh" để người dùng có thể chụp lại nếu cần
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
@@ -697,17 +755,7 @@
             quizButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
             captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
-            predictionResult.innerHTML = `
-                <h2>Hướng Dẫn Sử Dụng</h2>
-                <ol>
-                    <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
-                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
-                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
-                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
-                </ol>
-                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
-            `;
+            predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
             cameraStarted = false; // Reset trạng thái camera
@@ -990,6 +1038,33 @@
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
             }, 7000); // Mỗi 7 giây một khẩu hiệu
         }
+
+        /**
+         * Event Listener cho Modal Hướng Dẫn
+         */
+        const instructionButton = document.getElementById('instructionButton');
+        const instructionModal = document.getElementById('instructionModal');
+        const closeButton = document.querySelector('.close-button');
+
+        // Open the modal
+        instructionButton.addEventListener('click', () => {
+            instructionModal.style.display = 'block';
+            instructionModal.setAttribute('aria-hidden', 'false');
+        });
+
+        // Close the modal when 'x' is clicked
+        closeButton.addEventListener('click', () => {
+            instructionModal.style.display = 'none';
+            instructionModal.setAttribute('aria-hidden', 'true');
+        });
+
+        // Close the modal when clicking outside the modal content
+        window.addEventListener('click', (event) => {
+            if (event.target == instructionModal) {
+                instructionModal.style.display = 'none';
+                instructionModal.setAttribute('aria-hidden', 'true');
+            }
+        });
 
     </script>
 
