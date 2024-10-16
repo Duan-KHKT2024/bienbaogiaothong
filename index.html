@@ -29,7 +29,7 @@
             --question-color: #2c3e50; /* Màu xanh đậm cho câu hỏi */
             --slogan-font: 'Roboto', sans-serif;
             --slogan-color: #ffffff;
-            --slogan-bg-color: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(40, 167, 69, 0.7)); /* Gradient sắc xanh lá */
+            --slogan-bg-color: var(--footer-bg-color); /* Được thay đổi để giống footer */
             --slogan-padding: 20px;
             --slogan-border-radius: 15px;
             --slogan-font-size: 1.8em;
@@ -65,7 +65,7 @@
         /* Phần 1: Khẩu Hiệu */
         .slogan-section {
             width: 100%;
-            background: var(--slogan-bg-color);
+            background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
             padding: var(--slogan-padding);
             border-radius: var(--slogan-border-radius);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -80,7 +80,7 @@
         #slogan {
             font-family: var(--slogan-font);
             font-size: var(--slogan-font-size);
-            color: var(--slogan-color);
+            color: var(--slogan-color); /* Đã thay đổi để giống footer */
             opacity: 0;
             transition: var(--slogan-transition);
             text-align: center;
@@ -324,7 +324,7 @@
         .qa-section {
             width: 100%;
             max-width: 800px;
-            background-color: var(--accordion-bg);
+            background-color: var(--white-bg); /* Đã thay đổi để giống phần nhận diện biển báo */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
