@@ -43,6 +43,12 @@
             --modal-border-radius: 10px;
             --modal-title-color: var(--primary-color);
             --modal-text-color: #333;
+            --learning-bg-color: #f8f9fa; /* Màu nền cho phần Tìm hiểu */
+            --card-bg-color: #ffffff; /* Màu nền cho card */
+            --card-border-color: #dee2e6; /* Màu viền cho card */
+            --card-hover-bg: #e9ecef; /* Màu nền khi hover card */
+            --card-hover-transform: translateY(-5px);
+            --card-transition: transform 0.3s ease, background-color 0.3s ease;
         }
 
         /* Reset CSS */
@@ -411,6 +417,49 @@
             line-height: 1.6;
         }
 
+        /* Phần 4: Tìm hiểu */
+        .learning-section {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--learning-bg-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .learning-section h2 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-family: var(--qa-question-font);
+        }
+
+        .learning-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .learning-item {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--card-border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--card-transition);
+            font-family: var(--qa-answer-font);
+            color: var(--text-color);
+        }
+
+        .learning-item:hover {
+            background-color: var(--accordion-hover);
+            transform: var(--card-hover-transform);
+        }
+
         /* Modal Styles */
         .modal {
             display: none; /* Hidden by default */
@@ -484,7 +533,7 @@
             color: var(--error-color);
         }
 
-        /* Phần 4: Footer */
+        /* Phần 5: Footer */
         .footer {
             width: 100%;
             text-align: center;
@@ -600,9 +649,28 @@
         </div>
     </div>
 
+    <!-- Phần 4: Tìm hiểu -->
+    <div class="learning-section">
+        <h2>Tìm hiểu</h2>
+        <div class="learning-items">
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/luatgiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu luật giao thông cho học sinh">
+                1. Tìm hiểu luật giao thông cho học sinh
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/hanhvigiaothong', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông">
+                2. Tìm hiểu về những hành vi học sinh không được làm khi tham gia giao thông
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tinhhuongthucte', '_blank')" tabindex="0" role="button" aria-label="Tìm hiểu về những tình huống thực tế">
+                3. Tìm hiểu về những tình huống thực tế
+            </div>
+            <div class="learning-item" onclick="window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank')" tabindex="0" role="button" aria-label="Làm các bài trắc nghiệm về giao thông">
+                4. Làm các bài trắc nghiệm về giao thông
+            </div>
+        </div>
+    </div>
+
     <!-- Footer với nền xanh và chữ trắng -->
     <div class="footer">
-        &copy; 2024 Ứng dụng Nhận Diện Biển Báo Giao Thông
+        &copy; 2024 Ứng dụng AI nhận diện biển báo và tìm hiểu Luật giao thông đường bộ cho Học Sinh THCS
     </div>
 
     <!-- Modal Hướng Dẫn -->
