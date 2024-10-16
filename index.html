@@ -784,16 +784,26 @@
         let model;
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
-        // Định nghĩa ý nghĩa của các biển báo
-        const signMeanings = {
-            "P.101": "Biển báo Đường cấm: Dùng để báo trước nơi giao nhau có điều khiển giao thông bằng tín hiệu đèn đỏ, hãy chú ý dừng lại. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "W.208": "Biển báo Giao nhau với đường ưu tiên: Các xe đi trên đường phải nhường đường cho xe đi trên đường ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "W.205": "Biển báo giao nhau với đường cùng cấp: Dùng để báo trước sắp đến nơi giao nhau với đường cùng cấp (không có đường nào ưu tiên). Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "W.207": "Biển báo giao nhau với đường không ưu tiên: Chỉ được đặt trên đường ưu tiên. Báo trước sắp đến nơi giao nhau với đường không ưu tiên. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
-            "P.103": "Biển báo cấm xe ô tô. Dùng để báo đường cấm các loại xe cơ giới kể cả xe máy 3 bánh có thùng đi qua, trừ xe máy 2 bánh, xe gắn máy và các xe được ưu tiên theo quy định. Cần chú ý quan sát, giảm tốc độ để đảm bảo an toàn khi tham gia giao thông.",
+        let signMeanings = {};
 
-            // Thêm các ý nghĩa cho các biển báo khác ở đây
-        };
+        /**
+         * Hàm tải signMeanings.json
+         */
+        async function loadSignMeanings() {
+            try {
+                const response = await fetch(MODEL_URL + "signMeanings.json");
+                if (response.ok) {
+                    signMeanings = await response.json();
+                    console.log("Đã tải thành công signMeanings.json");
+                } else {
+                    console.warn("Không thể tải signMeanings.json. Đang sử dụng signMeanings mặc định.");
+                    // Bạn có thể định nghĩa signMeanings mặc định ở đây nếu cần
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải signMeanings.json:", error);
+                // Xử lý lỗi nếu cần
+            }
+        }
 
         /**
          * Hàm khởi động camera
@@ -997,6 +1007,9 @@
                     window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                     signCount.textContent = window.labels.length;
                 }
+
+                // Tải signMeanings.json
+                await loadSignMeanings();
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
@@ -1009,6 +1022,12 @@
         async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            if (Object.keys(signMeanings).length === 0) {
+                predictionResult.textContent = "Không có dữ liệu ý nghĩa biển báo. Vui lòng thử lại sau.";
                 loadingPrediction.style.display = 'none';
                 return;
             }
