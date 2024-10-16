@@ -38,6 +38,11 @@
             --toggle-button-color: #fff;
             --traffic-sign-bg-color: linear-gradient(135deg, rgba(255, 165, 0, 0.9), rgba(255, 165, 0, 0.7)); /* Gradient sắc cam */
             --traffic-sign-font-size: 1.5em;
+            --sign-count-bg-color: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(40, 167, 69, 0.7)); /* Gradient sắc xanh lá giống khẩu hiệu */
+            --sign-count-color: #ffffff;
+            --sign-count-padding: 15px;
+            --sign-count-border-radius: 15px;
+            --sign-count-font-size: 1.2em;
         }
 
         /* Reset CSS */
@@ -64,7 +69,7 @@
             text-align: center;
         }
 
-        .slogan-container, .traffic-sign-container {
+        .slogan-container, .traffic-sign-container, .sign-count-container {
             width: 90%;
             max-width: 800px;
             background: var(--slogan-bg-color);
@@ -80,7 +85,7 @@
             position: relative;
         }
 
-        #slogan, #trafficSign {
+        #slogan, #trafficSign, #signCountDisplay {
             font-family: var(--slogan-font);
             font-size: var(--slogan-font-size);
             color: var(--slogan-color);
@@ -91,7 +96,8 @@
         }
 
         .slogan-container.active #slogan,
-        .traffic-sign-container.active #trafficSign {
+        .traffic-sign-container.active #trafficSign,
+        .sign-count-container.active #signCountDisplay {
             opacity: 1;
         }
 
@@ -203,6 +209,8 @@
             border-radius: 8px;
             margin-bottom: 20px;
             transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 1em;
+            font-weight: 700;
         }
 
         .toggle-button:hover:not(:disabled) {
@@ -231,11 +239,11 @@
                 max-width: 220px;
             }
 
-            #slogan, #trafficSign {
+            #slogan, #trafficSign, #signCountDisplay {
                 font-size: 1.2em; /* Giảm kích thước font trên thiết bị nhỏ */
             }
 
-            .slogan-container, .traffic-sign-container {
+            .slogan-container, .traffic-sign-container, .sign-count-container {
                 padding: 15px;
             }
         }
@@ -251,37 +259,56 @@
         }
 
         /* Định dạng hướng dẫn sử dụng */
-        #predictionResult h2 {
+        #instructions {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--white-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: left;
+            font-family: var(--qa-answer-font);
+            color: var(--text-color);
+        }
+
+        #instructions h2 {
             font-size: 1.5em;
             margin-bottom: 10px;
             color: var(--primary-color);
             text-align: center;
         }
 
-        #predictionResult ol {
-            text-align: left;
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
+        #instructions ol {
             padding-left: 20px;
-            font-size: 0.9em; /* Giảm kích thước font chữ */
-            color: var(--text-color);
             list-style-position: inside; /* Căn đều các dấu đầu dòng */
-            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
         }
 
-        #predictionResult li {
+        #instructions li {
             margin-bottom: 10px;
             line-height: 1.6;
         }
 
         /* Định dạng số lượng biển báo */
-        #signCount {
-            margin-top: 10px;
-            font-size: 16px;
-            color: var(--error-color); /* Màu đỏ để làm nổi bật */
+        #signCountDisplay {
+            font-family: var(--qa-question-font);
+            font-size: var(--sign-count-font-size);
+            color: var(--sign-count-color);
+            opacity: 0;
+            transition: var(--slogan-transition);
             text-align: center;
-            font-weight: bold;
+            word-wrap: break-word;
+        }
+
+        .sign-count-container.active #signCountDisplay {
+            opacity: 1;
+        }
+
+        #signCountDisplay {
+            background: var(--sign-count-bg-color);
+            padding: var(--sign-count-padding);
+            border-radius: var(--slogan-border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         #signMeaning {
@@ -292,6 +319,7 @@
             max-width: 600px;
             position: relative;
             word-wrap: break-word; /* Đảm bảo dòng dài được xuống dòng */
+            font-family: var(--qa-answer-font);
         }
 
         /* Loading Spinner Styles */
@@ -468,6 +496,11 @@
         <p id="slogan"></p>
     </div>
 
+    <!-- Phần Hiển Thị Số Lượng Biển Báo -->
+    <div class="sign-count-container">
+        <p id="signCountDisplay">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+    </div>
+
     <div class="container">
         <h1>Nhận Diện Biển Báo Giao Thông</h1>
         <div style="position: relative; width: 100%; max-width: 600px;">
@@ -508,7 +541,6 @@
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
-                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             </div>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
@@ -602,6 +634,8 @@
         const overlay = document.querySelector('.overlay');
         const trafficSignContainer = document.querySelector('.traffic-sign-section');
         const trafficSignElement = document.getElementById('trafficSign');
+        const signCountContainer = document.querySelector('.sign-count-container');
+        const signCountDisplay = document.getElementById('signCountDisplay');
         let stream = null;
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
@@ -773,7 +807,6 @@
                         <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                         <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                     </ol>
-                    <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
                 </div>
             `;
             signMeaning.textContent = "";
@@ -784,7 +817,9 @@
             video.style.opacity = 1;
             // Thêm lại event listener cho nút toggleInstructions
             const newToggleInstructions = document.getElementById('toggleInstructions');
-            newToggleInstructions.addEventListener('click', toggleInstructionsFunction);
+            if (newToggleInstructions) {
+                newToggleInstructions.addEventListener('click', toggleInstructionsFunction);
+            }
         }
 
         /**
@@ -1110,6 +1145,19 @@
             setTimeout(() => {
                 trafficSignContainer.classList.remove('active');
             }, 6000); // Hiển thị biển báo trong 6 giây
+        }
+
+        /**
+         * Phần Hiển Thị Số Lượng Biển Báo
+         */
+        function updateSignCount() {
+            if (labels.length > 0) {
+                signCountDisplay.textContent = `Số lượng biển báo có thể nhận diện: ${labels.length}`;
+                signCountContainer.classList.add('active');
+                setTimeout(() => {
+                    signCountContainer.classList.remove('active');
+                }, 6000); // Hiển thị số lượng biển báo trong 6 giây
+            }
         }
 
     </script>
