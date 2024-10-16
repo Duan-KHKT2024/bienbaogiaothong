@@ -17,7 +17,7 @@
             --dark-color: #333;
             --light-bg: #f0f4f8;
             --white-bg: #fff;
-            --text-color: #555;
+            --text-color: #ffffff; /* Đổi từ #555 thành trắng */
             --error-color: #d9534f;
             --disabled-color: #cccccc;
             --focus-outline: #ffbf47;
@@ -26,13 +26,13 @@
             --accordion-active: #ced4da;
             --qa-question-font: 'Roboto', sans-serif;
             --qa-answer-font: 'Open Sans', sans-serif;
-            --question-color: #2c3e50; /* Màu xanh đậm cho câu hỏi */
+            --question-color: #ffffff; /* Đổi từ #2c3e50 thành trắng */
             --slogan-font: 'Roboto', sans-serif;
             --slogan-color: #ffffff;
             --slogan-bg-color: var(--footer-bg-color); /* Được thay đổi để giống footer */
             --slogan-padding: 20px;
             --slogan-border-radius: 15px;
-            --slogan-font-size: 1.8em; /* Fixed font size */
+            --slogan-font-size: 1.6em; /* Giảm kích thước font */
             --slogan-transition: opacity 1s ease-in-out;
             --footer-bg-color: #007bff; /* Màu nền footer xanh */
             --footer-text-color: #ffffff; /* Màu chữ footer trắng */
@@ -53,7 +53,8 @@
             --section-title-color: #ffffff; /* Màu chữ cho tiêu đề các phần */
             --section-title-padding: 10px 20px;
             --section-title-border-radius: 8px 8px 0 0;
-            --fixed-slogan-width: 800px; /* Kích thước cố định cho khẩu hiệu */
+            --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
+            --fixed-slogan-height: 80px; /* Chiều cao cố định */
         }
 
         /* Reset CSS */
@@ -69,7 +70,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 100px 20px 20px 20px; /* Top padding để tránh nội dung bị che khuất bởi khẩu hiệu */
             min-height: 100vh;
         }
 
@@ -83,26 +84,29 @@
             border-radius: var(--section-title-border-radius);
             margin-bottom: 10px;
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.3em; /* Giảm kích thước font chữ */
             font-family: var(--qa-question-font);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         /* Phần 1: Khẩu Hiệu */
         .slogan-section {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: var(--fixed-slogan-width);
-            max-width: 100%; /* Đảm bảo không vượt quá màn hình */
+            height: var(--fixed-slogan-height);
             background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
             padding: var(--slogan-padding);
-            border-radius: var(--slogan-border-radius);
+            border-radius: 0; /* Bỏ border-radius khi cố định */
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             transition: width 0.3s ease;
+            z-index: 1000;
         }
 
         #slogan {
@@ -136,17 +140,10 @@
             margin-bottom: 30px;
         }
 
-        .recognition-section h2.section-title {
-            /* Sử dụng class section-title để làm nổi bật tiêu đề */
-            /* Không cần thêm h1 nữa */
-            /* Đảm bảo tiêu đề giống nhau giữa các phần */
-            /* Nếu cần thêm, có thể điều chỉnh thêm */
-        }
-
         .recognition-section h2 {
             color: var(--dark-color);
             margin-bottom: 20px;
-            font-size: 2em;
+            font-size: 1.8em; /* Giảm kích thước font */
             text-align: center;
             font-family: var(--qa-question-font);
         }
@@ -208,7 +205,7 @@
             flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
             max-width: 220px; /* Giới hạn kích thước tối đa */
             transition: background-color 0.3s ease, transform 0.2s ease;
-            color: #fff;
+            color: #ffffff; /* Đổi từ #fff sang trắng */
             text-align: center;
             min-height: 44px; /* Đảm bảo touch target đủ lớn */
         }
@@ -265,6 +262,12 @@
         @media (max-width: 600px) {
             .slogan-section {
                 width: 100%; /* Trên thiết bị nhỏ, chiều rộng 100% */
+                height: auto; /* Tự động điều chỉnh chiều cao */
+                padding: 10px;
+            }
+
+            body {
+                padding: 120px 10px 10px 10px; /* Điều chỉnh padding để phù hợp với thiết bị nhỏ */
             }
 
             button {
@@ -277,12 +280,20 @@
                 white-space: normal; /* Cho phép xuống dòng */
             }
 
-            .slogan-section {
-                padding: 15px;
+            .section-title {
+                font-size: 1.2em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
-            .section-title {
-                font-size: 1.2em;
+            .recognition-section h2 {
+                font-size: 1.5em; /* Giảm kích thước font chữ cho tiêu đề */
+            }
+
+            .learning-section h2 {
+                font-size: 1.5em; /* Giảm kích thước font chữ cho tiêu đề */
+            }
+
+            .qa-section h2 {
+                font-size: 1.5em; /* Giảm kích thước font chữ cho tiêu đề */
             }
         }
 
@@ -383,17 +394,10 @@
             margin-bottom: 30px;
         }
 
-        .learning-section h2.section-title {
-            /* Sử dụng class section-title để làm nổi bật tiêu đề */
-            /* Đảm bảo tiêu đề giống nhau giữa các phần */
-            /* Không cần thêm h2 nữa */
-            /* Đảm bảo font-size và style tương tự */
-        }
-
         .learning-section h2 {
             color: var(--dark-color);
             margin-bottom: 20px;
-            font-size: 2em;
+            font-size: 1.8em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: var(--qa-question-font);
         }
@@ -433,14 +437,10 @@
             margin-bottom: 30px;
         }
 
-        .qa-section h2.section-title {
-            /* Sử dụng class section-title để làm nổi bật tiêu đề */
-        }
-
         .qa-section h2 {
             color: var(--dark-color);
             margin-bottom: 20px;
-            font-size: 2em;
+            font-size: 1.8em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: var(--qa-question-font);
         }
@@ -599,6 +599,8 @@
             color: var(--footer-text-color);
             background-color: var(--footer-bg-color); /* Nền xanh */
             border-radius: 10px;
+            position: relative; /* Để không bị che khuất bởi khẩu hiệu cố định */
+            margin-top: 30px;
         }
 
         /* Nút "Làm Bài Kiểm Tra" */
