@@ -34,7 +34,51 @@
                 "Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.",
                 "Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn."
             ]
+        },
+        {
+            "id": "panel4",
+            "question": "4. Độ tuổi nào được phép đi xe máy điện?",
+            "answer": "Theo Nghị định 100/2019/NĐ-CP sửa đổi bởi Nghị định 123/2021/NĐ-CP, người từ đủ 16 tuổi trở lên được phép điều khiển xe máy điện. Người từ đủ 14 tuổi đến dưới 16 tuổi không được phép điều khiển xe máy điện và sẽ bị xử phạt nếu vi phạm.",
+            "points": []
+        },
+        {
+            "id": "panel5",
+            "question": "5. Đi xe máy điện có cần bằng lái xe không?",
+            "answer": "Không, theo khoản 2 Điều 59 Luật Giao thông đường bộ 2008, giấy phép lái xe chỉ áp dụng cho các loại xe mô tô hai bánh, xe mô tô ba bánh, xe ô tô và các loại xe tương tự. Do đó, người điều khiển xe máy điện không cần bằng lái xe để đi xe.",
+            "points": []
+        },
+        {
+            "id": "panel6",
+            "question": "6. Đi xe máy điện khi chưa đủ tuổi có bị phạt tiền không?",
+            "answer": "Có, người từ đủ 14 tuổi đến dưới 16 tuổi điều khiển xe máy điện sẽ bị phạt tiền từ 200.000 đến 600.000 đồng tùy loại xe.",
+            "points": [
+                "Xe đạp, xe đạp điện, xe máy điện: Phạt tiền từ 200.000 đến 300.000 đồng.",
+                "Xe máy: Phạt tiền từ 400.000 đến 600.000 đồng.",
+                "Xe ô tô: Phạt hành chính từ 1.000.000 đến 2.000.000 đồng và bị tước giấy phép lái xe từ 1 đến 3 tháng."
+            ]
+        },
+        {
+            "id": "panel7",
+            "question": "7. Xe máy điện được định nghĩa như thế nào theo Nghị định 100/2019/NĐ-CP?",
+            "answer": "Theo Nghị định 100/2019/NĐ-CP, xe máy điện là xe gắn máy được dẫn động bằng động cơ điện có công suất lớn nhất không lớn hơn 4 kW và có vận tốc thiết kế lớn nhất không lớn hơn 50 km/h.",
+            "points": []
+        },
+        {
+            "id": "panel8",
+            "question": "8. Xử phạt các hành vi vi phạm quy định về điều kiện của người điều khiển xe cơ giới là gì?",
+            "answer": "Ngoài việc bị phạt tiền, người điều khiển phương tiện vi phạm còn có thể bị áp dụng các hình thức xử phạt bổ sung như tịch thu giấy phép lái xe không do cơ quan có thẩm quyền cấp, tẩy xóa giấy phép lái xe hoặc tước giấy phép lái xe từ 1 đến 3 tháng đối với xe ô tô.",
+            "points": []
+        },
+        {
+            "id": "panel9",
+            "question": "9. Biển báo Đường người đi bộ cắt ngang có ý nghĩa gì?",
+            "answer": "Biển báo Đường người đi bộ cắt ngang hướng dẫn người đi bộ và những người tham gia giao thông khác biết vị trí cụ thể mà người đi bộ có thể đi ngang qua đường an toàn.",
+            "points": [
+                "Điều khiển xe chạy chậm khi tiếp cận biển báo.",
+                "Chú ý quan sát môi trường xung quanh, sẵn sàng dừng lại nếu cần thiết để nhường đường cho người đi bộ.",
+                "Ưu tiên cho người đi bộ đang chuẩn bị băng qua đường.",
+                "Chú ý chiều người đi bộ trên biển phải hướng vào đường."
+            ]
         }
-        
     ]
 }
