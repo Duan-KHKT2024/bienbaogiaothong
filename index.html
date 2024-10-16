@@ -32,7 +32,7 @@
             --slogan-bg-color: var(--footer-bg-color); /* Được thay đổi để giống footer */
             --slogan-padding: 20px;
             --slogan-border-radius: 15px;
-            --slogan-font-size: 1.6em; /* Giảm kích thước font */
+            --slogan-font-size: 1.4em; /* Giảm kích thước font */
             --slogan-transition: opacity 1s ease-in-out;
             --footer-bg-color: #007bff; /* Màu nền footer xanh */
             --footer-text-color: #ffffff; /* Màu chữ footer trắng */
@@ -50,10 +50,10 @@
             --card-hover-transform: translateY(-5px);
             --card-transition: transform 0.3s ease, background-color 0.3s ease;
             --section-title-bg: #007bff; /* Màu nền cho tiêu đề các phần */
-            --section-title-color: #654321; /* Đổi từ #ffffff thành màu nâu đậm */
+            --section-title-color: #ffffff; /* Đổi từ #654321 thành màu trắng */
             --section-title-padding: 10px 20px;
             --section-title-border-radius: 8px 8px 0 0;
-            --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
+            --fixed-slogan-width: 110%; /* Tăng lên 110% để tăng chiều rộng thêm 10% */
             --fixed-slogan-height: 80px; /* Chiều cao cố định */
         }
 
@@ -79,13 +79,14 @@
             width: 100%;
             max-width: 800px;
             background-color: var(--section-title-bg);
-            color: var(--section-title-color);
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             padding: var(--section-title-padding);
             border-radius: var(--section-title-border-radius);
             margin-bottom: 10px;
             text-align: center;
-            font-size: 1.3em; /* Giảm kích thước font chữ */
+            font-size: 1.1em; /* Giảm kích thước font chữ */
             font-family: var(--qa-question-font);
+            font-weight: normal; /* Không in đậm */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
@@ -93,8 +94,8 @@
         .slogan-section {
             position: fixed;
             top: 0;
-            left: 0;
-            width: var(--fixed-slogan-width);
+            left: -5%; /* Điều chỉnh để giữ khẩu hiệu ở giữa khi tăng chiều rộng */
+            width: var(--fixed-slogan-width); /* Đã tăng lên 110% */
             height: var(--fixed-slogan-height);
             background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
             padding: var(--slogan-padding);
@@ -111,8 +112,8 @@
 
         #slogan {
             font-family: var(--slogan-font);
-            font-size: var(--slogan-font-size);
-            color: var(--slogan-color); /* Đã thay đổi để giống footer */
+            font-size: var(--slogan-font-size); /* Đã giảm kích thước */
+            color: var(--slogan-color); /* Đã thay đổi thành màu trắng */
             opacity: 0;
             transition: var(--slogan-transition);
             text-align: center;
@@ -261,7 +262,8 @@
 
         @media (max-width: 600px) {
             .slogan-section {
-                width: 100%; /* Trên thiết bị nhỏ, chiều rộng 100% */
+                width: 110%; /* Đã tăng lên 110% */
+                left: -5%; /* Điều chỉnh để giữ khẩu hiệu ở giữa */
                 height: auto; /* Tự động điều chỉnh chiều cao */
                 padding: 10px;
             }
@@ -281,7 +283,7 @@
             }
 
             .section-title {
-                font-size: 1.2em; /* Giảm kích thước font chữ cho tiêu đề */
+                font-size: 1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
             .recognition-section h2 {
@@ -438,11 +440,12 @@
         }
 
         .qa-section h2 {
-            color: var(--section-title-color);
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             margin-bottom: 20px;
             font-size: 1.8em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: var(--qa-question-font);
+            font-weight: normal; /* Không in đậm */
         }
 
         .accordion {
