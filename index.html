@@ -34,6 +34,10 @@
             --slogan-border-radius: 15px;
             --slogan-font-size: 1.8em;
             --slogan-transition: opacity 1s ease-in-out;
+            --toggle-button-bg: var(--secondary-color);
+            --toggle-button-color: #fff;
+            --traffic-sign-bg-color: linear-gradient(135deg, rgba(255, 165, 0, 0.9), rgba(255, 165, 0, 0.7)); /* Gradient sắc cam */
+            --traffic-sign-font-size: 1.5em;
         }
 
         /* Reset CSS */
@@ -60,7 +64,7 @@
             text-align: center;
         }
 
-        .slogan-container {
+        .slogan-container, .traffic-sign-container {
             width: 90%;
             max-width: 800px;
             background: var(--slogan-bg-color);
@@ -73,9 +77,10 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            position: relative;
         }
 
-        #slogan {
+        #slogan, #trafficSign {
             font-family: var(--slogan-font);
             font-size: var(--slogan-font-size);
             color: var(--slogan-color);
@@ -85,7 +90,8 @@
             word-wrap: break-word;
         }
 
-        .slogan-container.active #slogan {
+        .slogan-container.active #slogan,
+        .traffic-sign-container.active #trafficSign {
             opacity: 1;
         }
 
@@ -189,6 +195,21 @@
             display: none; /* Initially hidden */
         }
 
+        .toggle-button {
+            background-color: var(--secondary-color);
+            color: var(--toggle-button-color);
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .toggle-button:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
         button:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
@@ -210,11 +231,11 @@
                 max-width: 220px;
             }
 
-            #slogan {
+            #slogan, #trafficSign {
                 font-size: 1.2em; /* Giảm kích thước font trên thiết bị nhỏ */
             }
 
-            .slogan-container {
+            .slogan-container, .traffic-sign-container {
                 padding: 15px;
             }
         }
@@ -407,6 +428,37 @@
             line-height: 1.6;
         }
 
+        /* Phần Danh Sách Biển Báo */
+        .traffic-sign-section {
+            width: 100%;
+            max-width: 800px;
+            background: var(--traffic-sign-bg-color);
+            padding: 20px;
+            border-radius: var(--slogan-border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #trafficSign {
+            font-family: var(--slogan-font);
+            font-size: var(--traffic-sign-font-size);
+            color: #fff;
+            opacity: 0;
+            transition: var(--slogan-transition);
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .traffic-sign-section.active #trafficSign {
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -445,16 +497,19 @@
             <div class="spinner"></div>
         </div>
         <div id="predictionResult" aria-live="polite">
-            <h2>Hướng Dẫn Sử Dụng</h2>
-            <ol>
-                <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
-                <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
-                <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
-                <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
-                <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
-            </ol>
-            <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+            <button id="toggleInstructions" class="toggle-button" aria-expanded="false">Hướng Dẫn Sử Dụng</button>
+            <div id="instructions" style="display: none;">
+                <h2>Hướng Dẫn Sử Dụng</h2>
+                <ol>
+                    <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
+                    <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
+                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+                </ol>
+                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+            </div>
         </div>
         <div id="signMeaning" aria-live="polite"></div>
 
@@ -507,6 +562,11 @@
             </div>
         </div>
 
+        <!-- Phần Danh Sách Biển Báo Nhận Diện -->
+        <div class="traffic-sign-section">
+            <p id="trafficSign"></p>
+        </div>
+
         <!-- Nút "Làm Bài Kiểm Tra" Đặt Dưới Phần Hỏi Đáp -->
         <div id="quizButton-container">
             <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
@@ -532,12 +592,16 @@
         const retakeButton = document.getElementById('retakeButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
+        const instructions = document.getElementById('instructions');
+        const toggleInstructions = document.getElementById('toggleInstructions');
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
         const signCount = document.getElementById('totalSigns');
         const quizButton = document.getElementById('quizButton');
         const overlay = document.querySelector('.overlay');
+        const trafficSignContainer = document.querySelector('.traffic-sign-section');
+        const trafficSignElement = document.getElementById('trafficSign');
         let stream = null;
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
@@ -652,6 +716,7 @@
                     retakeButton.style.display = 'inline-block';
                     // Không ẩn nút "Chụp Ảnh" để người dùng có thể chụp lại nếu cần
                     predictionResult.innerHTML = "";
+                    instructions.style.display = 'none'; // Ẩn hướng dẫn khi chụp ảnh
                     signMeaning.textContent = "";
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
@@ -698,15 +763,18 @@
             captureButton.style.display = 'inline-block';
             captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
             predictionResult.innerHTML = `
-                <h2>Hướng Dẫn Sử Dụng</h2>
-                <ol>
-                    <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
-                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
-                    <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
-                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
-                </ol>
-                <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <button id="toggleInstructions" class="toggle-button" aria-expanded="false">Hướng Dẫn Sử Dụng</button>
+                <div id="instructions" style="display: none;">
+                    <h2>Hướng Dẫn Sử Dụng</h2>
+                    <ol>
+                        <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                        <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                        <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                        <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
+                        <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+                    </ol>
+                    <p id="signCount">Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                </div>
             `;
             signMeaning.textContent = "";
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
@@ -714,6 +782,9 @@
             // Hiển thị lại video nếu nó đã bị ẩn
             video.style.display = 'block';
             video.style.opacity = 1;
+            // Thêm lại event listener cho nút toggleInstructions
+            const newToggleInstructions = document.getElementById('toggleInstructions');
+            newToggleInstructions.addEventListener('click', toggleInstructionsFunction);
         }
 
         /**
@@ -757,17 +828,26 @@
 
                         // Lưu labels vào biến toàn cục để sử dụng sau
                         window.labels = labels;
+
+                        // Start displaying traffic signs
+                        startTrafficSignRotation();
                     } else {
                         console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
                         // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
                         window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                         signCount.textContent = window.labels.length;
+
+                        // Start displaying traffic signs
+                        startTrafficSignRotation();
                     }
                 } else {
                     console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
                     // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
                     window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                     signCount.textContent = window.labels.length;
+
+                    // Start displaying traffic signs
+                    startTrafficSignRotation();
                 }
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
@@ -840,6 +920,15 @@
         }
 
         /**
+         * Hàm toggle hiển thị hướng dẫn sử dụng
+         */
+        function toggleInstructionsFunction() {
+            const isVisible = instructions.style.display === 'block';
+            instructions.style.display = isVisible ? 'none' : 'block';
+            toggleInstructions.setAttribute('aria-expanded', !isVisible);
+        }
+
+        /**
          * Event listener cho nút "Đọc"
          */
         readButton.addEventListener('click', () => {
@@ -855,6 +944,11 @@
         quizButton.addEventListener('click', () => {
             window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
         });
+
+        /**
+         * Event listener cho nút "Hướng Dẫn Sử Dụng"
+         */
+        toggleInstructions.addEventListener('click', toggleInstructionsFunction);
 
         /**
          * Cập nhật danh sách giọng nói khi chúng thay đổi
@@ -909,6 +1003,7 @@
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
+                    instructions.style.display = 'none'; // Ẩn hướng dẫn khi tải ảnh lên
                     signMeaning.textContent = "";
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
@@ -989,6 +1084,32 @@
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
             }, 7000); // Mỗi 7 giây một khẩu hiệu
+        }
+
+        /**
+         * Phần Danh Sách Biển Báo Nhận Diện
+         */
+        const trafficSigns = []; // Sẽ được cập nhật sau khi tải mô hình
+
+        function startTrafficSignRotation() {
+            if (labels.length === 0) return;
+
+            let currentSignIndex = 0;
+            showTrafficSign(currentSignIndex);
+            currentSignIndex = (currentSignIndex + 1) % labels.length;
+            setInterval(() => {
+                showTrafficSign(currentSignIndex);
+                currentSignIndex = (currentSignIndex + 1) % labels.length;
+            }, 7000); // Mỗi 7 giây một biển báo
+        }
+
+        function showTrafficSign(index) {
+            const signName = labels[index];
+            trafficSignElement.textContent = `Biển Báo: ${signName}`;
+            trafficSignContainer.classList.add('active');
+            setTimeout(() => {
+                trafficSignContainer.classList.remove('active');
+            }, 6000); // Hiển thị biển báo trong 6 giây
         }
 
     </script>
