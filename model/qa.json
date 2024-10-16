@@ -1,0 +1,40 @@
+{
+    "questions": [
+        {
+            "id": "panel1",
+            "question": "1. Những quy định tham gia giao thông của học sinh",
+            "answer": "Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:",
+            "points": [
+                "Luôn đội mũ bảo hiểm khi đi xe máy.",
+                "Đi đúng làn đường, tuân thủ tín hiệu đèn giao thông.",
+                "Không sử dụng điện thoại di động khi lái xe.",
+                "Giữ khoảng cách an toàn với các phương tiện khác.",
+                "Tuân thủ giới hạn tốc độ quy định."
+            ]
+        },
+        {
+            "id": "panel2",
+            "question": "2. Những quy tắc đội mũ bảo hiểm",
+            "answer": "Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:",
+            "points": [
+                "Chọn mũ bảo hiểm đạt tiêu chuẩn an toàn.",
+                "Điều chỉnh dây quai sao cho vừa vặn, không quá chặt hay quá lỏng.",
+                "Kiểm tra mũ bảo hiểm trước mỗi chuyến đi để đảm bảo không bị hư hỏng.",
+                "Không đội mũ bảo hiểm bị trầy xước hoặc móp méo.",
+                "Đội mũ bảo hiểm đúng cách, đảm bảo che kín trán và cằm."
+            ]
+        },
+        {
+            "id": "panel3",
+            "question": "3. Cách sử dụng đèn tín hiệu giao thông",
+            "answer": "Khi sử dụng đèn tín hiệu giao thông, học sinh cần lưu ý:",
+            "points": [
+                "Luôn quan sát đèn tín hiệu trước khi di chuyển.",
+                "Dừng lại khi đèn đỏ và chỉ đi khi đèn xanh.",
+                "Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.",
+                "Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn."
+            ]
+        }
+        
+    ]
+}
