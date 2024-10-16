@@ -7,7 +7,7 @@
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables cho dễ bảo trì */
+        /* CSS Variables và các kiểu CSS khác giữ nguyên */
         :root {
             --primary-color: #28a745;
             --secondary-color: #007bff;
@@ -380,57 +380,7 @@
             justify-content: center;
         }
 
-        /* Phần 3: Nhận Diện Biển Báo Giao Thông (Moved Up) */
-        .recognition-section {
-            /* Không cần thay đổi gì thêm ở đây */
-        }
-
-        /* Phần 4: Tìm hiểu */
-        .learning-section {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--learning-bg-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .learning-section h2 {
-            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
-            margin-bottom: 20px;
-            font-size: 1.3em; /* Giảm kích thước font chữ */
-            text-align: center;
-            font-family: var(--qa-question-font);
-            font-weight: normal; /* Không in đậm */
-        }
-
-        .learning-items {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-        }
-
-        .learning-item {
-            background-color: var(--card-bg-color);
-            border: 1px solid var(--card-border-color);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: left; /* Căn chữ sang trái */
-            cursor: pointer;
-            transition: var(--card-transition);
-            font-family: var(--qa-answer-font);
-            color: var(--text-color); /* Giống với qa-section content */
-            font-weight: bold; /* Kiểu chữ đậm */
-        }
-
-        .learning-item:hover {
-            background-color: var(--accordion-hover);
-            transform: var(--card-hover-transform);
-        }
-
-        /* Phần 5: Hỏi Đáp (QA) */
+        /* Phần 4: Hỏi Đáp (QA) */
         .qa-section {
             width: 100%;
             max-width: 800px;
@@ -686,49 +636,8 @@
     <!-- Phần 4: Hỏi Đáp (QA) -->
     <div class="qa-section">
         <h2 class="section-title">Hỏi Đáp</h2>
-
-        <!-- Câu hỏi 1 -->
-        <button class="accordion" aria-expanded="false" aria-controls="panel1">1. Những quy định tham gia giao thông của học sinh</button>
-        <div class="panel" id="panel1">
-            <p>
-                Học sinh khi tham gia giao thông cần tuân thủ các quy định sau:
-            </p>
-            <ul>
-                <li>Luôn đội mũ bảo hiểm khi đi xe máy.</li>
-                <li>Đi đúng làn đường, tuân thủ tín hiệu đèn giao thông.</li>
-                <li>Không sử dụng điện thoại di động khi lái xe.</li>
-                <li>Giữ khoảng cách an toàn với các phương tiện khác.</li>
-                <li>Tuân thủ giới hạn tốc độ quy định.</li>
-            </ul>
-        </div>
-
-        <!-- Câu hỏi 2 -->
-        <button class="accordion" aria-expanded="false" aria-controls="panel2">2. Những quy tắc đội mũ bảo hiểm</button>
-        <div class="panel" id="panel2">
-            <p>
-                Để đảm bảo an toàn khi tham gia giao thông, học sinh cần tuân thủ các quy tắc sau khi đội mũ bảo hiểm:
-            </p>
-            <ul>
-                <li>Chọn mũ bảo hiểm đạt tiêu chuẩn an toàn.</li>
-                <li>Điều chỉnh dây quai sao cho vừa vặn, không quá chặt hay quá lỏng.</li>
-                <li>Kiểm tra mũ bảo hiểm trước mỗi chuyến đi để đảm bảo không bị hư hỏng.</li>
-                <li>Không đội mũ bảo hiểm bị trầy xước hoặc móp méo.</li>
-                <li>Đội mũ bảo hiểm đúng cách, đảm bảo che kín trán và cằm.</li>
-            </ul>
-        </div>
-
-        <!-- Câu hỏi 3 -->
-        <button class="accordion" aria-expanded="false" aria-controls="panel3">3. Cách sử dụng đèn tín hiệu giao thông</button>
-        <div class="panel" id="panel3">
-            <p>
-                Khi sử dụng đèn tín hiệu giao thông, học sinh cần lưu ý:
-            </p>
-            <ul>
-                <li>Luôn quan sát đèn tín hiệu trước khi di chuyển.</li>
-                <li>Dừng lại khi đèn đỏ và chỉ đi khi đèn xanh.</li>
-                <li>Sử dụng đèn xi-nhan khi rẽ để thông báo cho các phương tiện khác.</li>
-                <li>Tránh di chuyển khi đèn chuyển đổi để đảm bảo an toàn.</li>
-            </ul>
+        <div id="qa-container">
+            <!-- Nội dung Hỏi Đáp sẽ được thêm vào đây bằng JavaScript -->
         </div>
     </div>
 
@@ -785,6 +694,7 @@
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
         let signMeanings = {};
+        let qaData = [];
 
         /**
          * Hàm tải signMeanings.json
@@ -803,6 +713,83 @@
                 console.error("Lỗi khi tải signMeanings.json:", error);
                 // Xử lý lỗi nếu cần
             }
+        }
+
+        /**
+         * Hàm tải qa.json
+         */
+        async function loadQA() {
+            try {
+                const response = await fetch(MODEL_URL + "qa.json");
+                if (response.ok) {
+                    const data = await response.json();
+                    qaData = data.questions;
+                    console.log("Đã tải thành công qa.json");
+                    buildQA();
+                } else {
+                    console.warn("Không thể tải qa.json.");
+                    // Bạn có thể định nghĩa dữ liệu QA mặc định ở đây nếu cần
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải qa.json:", error);
+                // Xử lý lỗi nếu cần
+            }
+        }
+
+        /**
+         * Hàm xây dựng phần Hỏi Đáp
+         */
+        function buildQA() {
+            const qaContainer = document.getElementById('qa-container');
+            qaContainer.innerHTML = ''; // Xóa nội dung cũ nếu có
+
+            qaData.forEach(item => {
+                // Tạo nút accordion
+                const accordionButton = document.createElement('button');
+                accordionButton.classList.add('accordion');
+                accordionButton.setAttribute('aria-expanded', 'false');
+                accordionButton.setAttribute('aria-controls', item.id);
+                accordionButton.textContent = item.question;
+
+                // Tạo panel
+                const panelDiv = document.createElement('div');
+                panelDiv.classList.add('panel');
+                panelDiv.id = item.id;
+
+                // Tạo phần nội dung câu trả lời
+                const answerPara = document.createElement('p');
+                answerPara.textContent = item.answer;
+
+                // Tạo danh sách các điểm
+                const pointsList = document.createElement('ul');
+                item.points.forEach(point => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = point;
+                    pointsList.appendChild(listItem);
+                });
+
+                panelDiv.appendChild(answerPara);
+                panelDiv.appendChild(pointsList);
+
+                // Thêm vào container
+                qaContainer.appendChild(accordionButton);
+                qaContainer.appendChild(panelDiv);
+            });
+
+            // Thêm event listeners cho các nút accordion vừa tạo
+            document.querySelectorAll('.accordion').forEach(button => {
+                button.addEventListener('click', function() {
+                    const isActive = this.classList.contains('active');
+                    this.setAttribute('aria-expanded', !isActive);
+                    this.classList.toggle('active');
+                    const panel = this.nextElementSibling;
+                    if (panel.classList.contains('show')) {
+                        panel.classList.remove('show');
+                    } else {
+                        panel.classList.add('show');
+                    }
+                });
+            });
         }
 
         /**
@@ -1010,6 +997,9 @@
 
                 // Tải signMeanings.json
                 await loadSignMeanings();
+
+                // Tải và xây dựng QA
+                await loadQA();
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
@@ -1188,24 +1178,7 @@
         });
 
         /**
-         * Xử lý accordion trong phần Hỏi Đáp (QA)
-         */
-        document.querySelectorAll('.accordion').forEach(button => {
-            button.addEventListener('click', function() {
-                const isActive = this.classList.contains('active');
-                this.setAttribute('aria-expanded', !isActive);
-                this.classList.toggle('active');
-                const panel = this.nextElementSibling;
-                if (panel.classList.contains('show')) {
-                    panel.classList.remove('show');
-                } else {
-                    panel.classList.add('show');
-                }
-            });
-        });
-
-        /**
-         * Phần 1: Khẩu Hiệu Tham Gia Giao Thông
+         * Hàm khởi động khẩu hiệu
          */
         const slogans = [
             "An toàn giao thông - Hạnh phúc cho mọi nhà!",
