@@ -7,7 +7,7 @@
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables và các kiểu CSS khác giữ nguyên */
+        /* CSS Variables và các kiểu CSS khác */
         :root {
             --primary-color: #28a745;
             --secondary-color: #007bff;
@@ -17,7 +17,7 @@
             --dark-color: #333;
             --light-bg: #f0f4f8;
             --white-bg: #fff;
-            --text-color: #ffffff; /* Màu chữ nội dung đã được điều chỉnh thành trắng */
+            --text-color: #ffffff; /* Màu chữ nội dung trong modal */
             --error-color: #d9534f;
             --disabled-color: #cccccc;
             --focus-outline: #ffbf47;
@@ -26,35 +26,35 @@
             --accordion-active: #ced4da;
             --qa-question-font: 'Roboto', sans-serif;
             --qa-answer-font: 'Open Sans', sans-serif;
-            --question-color: #ffffff; /* Màu chữ câu hỏi đã được điều chỉnh thành trắng */
+            --question-color: #ffffff; /* Màu chữ câu hỏi trong modal */
             --slogan-font: 'Roboto', sans-serif;
             --slogan-color: #ffffff;
-            --slogan-bg-color: var(--footer-bg-color); /* Được thay đổi để giống footer */
+            --slogan-bg-color: var(--footer-bg-color);
             --slogan-padding: 20px;
             --slogan-border-radius: 15px;
-            --slogan-font-size: 1.2em; /* Giảm kích thước font */
+            --slogan-font-size: 1.2em;
             --slogan-transition: opacity 1s ease-in-out;
-            --footer-bg-color: #007bff; /* Màu nền footer xanh */
-            --footer-text-color: #ffffff; /* Màu chữ footer trắng */
-            --modal-bg-color: rgba(0, 0, 0, 0.6); /* Nền modal đậm hơn */
-            --modal-content-bg: #444444; /* Nền nội dung modal chuyển thành màu tối */
-            --modal-content-border: #28a745; /* Viền nội dung modal màu xanh lá */
+            --footer-bg-color: #007bff;
+            --footer-text-color: #ffffff;
+            --modal-bg-color: rgba(0, 0, 0, 0.6);
+            --modal-content-bg: #444444; /* Nền nội dung modal màu tối */
+            --modal-content-border: #28a745;
             --modal-padding: 30px;
             --modal-border-radius: 10px;
-            --modal-title-color: var(--primary-color);
+            --modal-title-color: #ffffff; /* Màu chữ tiêu đề modal */
             --modal-text-color: #ffffff; /* Màu chữ trong modal */
-            --learning-bg-color: #f8f9fa; /* Màu nền cho phần Tìm hiểu */
-            --card-bg-color: #ffffff; /* Màu nền cho card */
-            --card-border-color: #dee2e6; /* Màu viền cho card */
-            --card-hover-bg: #e9ecef; /* Màu nền khi hover card */
+            --learning-bg-color: #f8f9fa;
+            --card-bg-color: #ffffff;
+            --card-border-color: #dee2e6;
+            --card-hover-bg: #e9ecef;
             --card-hover-transform: translateY(-5px);
             --card-transition: transform 0.3s ease, background-color 0.3s ease;
-            --section-title-bg: #007bff; /* Màu nền cho tiêu đề các phần */
-            --section-title-color: #ffffff; /* Đổi từ #654321 thành màu trắng */
+            --section-title-bg: #007bff;
+            --section-title-color: #ffffff;
             --section-title-padding: 10px 20px;
             --section-title-border-radius: 8px 8px 0 0;
-            --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
-            --fixed-slogan-height: 80px; /* Chiều cao cố định */
+            --fixed-slogan-width: 100%;
+            --fixed-slogan-height: 80px;
         }
 
         /* Reset CSS */
@@ -79,7 +79,7 @@
             width: 100%;
             max-width: 800px;
             background-color: var(--section-title-bg);
-            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
+            color: var(--section-title-color); /* Màu trắng */
             padding: var(--section-title-padding);
             border-radius: var(--section-title-border-radius);
             margin-bottom: 10px;
@@ -97,9 +97,9 @@
             left: 0;
             width: var(--fixed-slogan-width);
             height: var(--fixed-slogan-height);
-            background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
+            background: var(--slogan-bg-color);
             padding: var(--slogan-padding);
-            border-radius: 0; /* Bỏ border-radius khi cố định */
+            border-radius: 0;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             text-align: center;
             display: flex;
@@ -113,15 +113,15 @@
         #slogan {
             font-family: var(--slogan-font);
             font-size: var(--slogan-font-size);
-            color: var(--slogan-color); /* Đã thay đổi để giống footer */
+            color: var(--slogan-color);
             opacity: 0;
             transition: var(--slogan-transition);
             text-align: center;
             word-wrap: break-word;
-            font-weight: normal; /* Không in đậm */
-            white-space: nowrap; /* Không tự động co giãn */
-            overflow: hidden; /* Ẩn phần tràn */
-            text-overflow: ellipsis; /* Thêm dấu chấm lửng nếu văn bản dài */
+            font-weight: normal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .slogan-section.active #slogan {
@@ -139,18 +139,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative; /* Để overlay hoạt động đúng */
+            position: relative;
             margin-bottom: 30px;
         }
 
         .recognition-section h2 {
-            /* Đã chuyển từ var(--dark-color) sang var(--section-title-color) để giữ màu trắng */
             color: var(--section-title-color);
             margin-bottom: 20px;
-            font-size: 1.1em; /* Giảm kích thước font */
+            font-size: 1.1em;
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal; /* Không in đậm */
+            font-weight: normal;
         }
 
         .video-container {
@@ -169,7 +168,7 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             object-fit: cover;
-            display: block; /* Show by default */
+            display: block;
         }
 
         /* Video Styles */
@@ -187,11 +186,11 @@
         }
 
         #video {
-            display: none; /* Hide video initially */
+            display: none;
         }
 
         #capturedImage {
-            display: none; /* Ẩn ban đầu */
+            display: none;
             opacity: 0;
         }
 
@@ -200,15 +199,15 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
+            width: 60%;
             height: 60%;
             transform: translate(-50%, -50%);
-            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
-            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
+            border: 3px solid rgba(40, 167, 69, 0.8);
+            border-radius: 20px;
             box-sizing: border-box;
-            pointer-events: none; /* Không chặn các tương tác với video */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
-            display: none; /* Hide overlay initially */
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
         }
 
         .button-container {
@@ -226,17 +225,16 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
-            max-width: 220px; /* Giới hạn kích thước tối đa */
+            flex: 1 1 160px;
+            max-width: 220px;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            color: #ffffff; /* Đổi từ #fff sang trắng */
+            color: #ffffff;
             text-align: center;
-            min-height: 44px; /* Đảm bảo touch target đủ lớn */
+            min-height: 44px;
+            font-family: var(--qa-question-font);
         }
 
         /* Các màu sắc cho các nút */
-        /* Đã loại bỏ #instructionButton */
-
         #captureButton {
             background-color: var(--primary-color);
         }
@@ -247,12 +245,12 @@
 
         #downloadButton {
             background-color: var(--secondary-color);
-            display: none; /* Ẩn ban đầu */
+            display: none;
         }
 
         #readButton {
             background-color: var(--accent-color);
-            display: none; /* Initially hidden */
+            display: none;
         }
 
         #retakeButton {
@@ -263,7 +261,7 @@
 
         #quizButton {
             background-color: var(--purple-color);
-            display: none; /* Initially hidden */
+            display: none;
         }
 
         button:hover:not(:disabled) {
@@ -277,20 +275,19 @@
         }
 
         button:focus {
-            outline: 3px solid var(--focus-outline); /* Màu nổi bật khi focus */
+            outline: 3px solid var(--focus-outline);
             outline-offset: 2px;
         }
 
         @media (max-width: 600px) {
             .slogan-section {
-                width: 100%; /* Trên thiết bị nhỏ, chiều rộng 100% */
-                /* Đặt chiều cao cố định thay vì auto */
+                width: 100%;
                 height: var(--fixed-slogan-height);
                 padding: 10px;
             }
 
             body {
-                padding: 120px 10px 10px 10px; /* Điều chỉnh padding để phù hợp với thiết bị nhỏ */
+                padding: 120px 10px 10px 10px;
             }
 
             button {
@@ -299,37 +296,32 @@
             }
 
             #slogan {
-                font-size: 1em; /* Giảm kích thước font trên thiết bị nhỏ */
-                white-space: nowrap; /* Không cho xuống dòng */
-                overflow: hidden; /* Ẩn phần tràn */
-                text-overflow: ellipsis; /* Thêm dấu chấm lửng nếu văn bản dài */
+                font-size: 1em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .section-title {
-                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
+                font-size: 1.1em;
             }
 
             .recognition-section h2 {
-                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
+                font-size: 1.1em;
             }
 
             .learning-section h2 {
-                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
+                font-size: 1.1em;
             }
 
             .qa-section h2 {
-                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
+                font-size: 1.1em;
             }
-
-            /* Optional: Adjust slogan font size further if needed */
-            /* #slogan {
-                font-size: 0.9em;
-            } */
         }
 
         #predictionResult {
             margin-top: 20px;
-            font-size: 16px; /* Giảm kích thước font chữ */
+            font-size: 16px;
             font-weight: bold;
             color: var(--dark-color);
             min-height: 50px;
@@ -351,10 +343,10 @@
             width: 100%;
             margin: 0 auto;
             padding-left: 20px;
-            font-size: 0.9em; /* Giảm kích thước font chữ */
+            font-size: 0.9em;
             color: var(--text-color);
-            list-style-position: inside; /* Căn đều các dấu đầu dòng */
-            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
+            list-style-position: inside;
+            font-family: var(--qa-answer-font);
         }
 
         #predictionResult li {
@@ -366,26 +358,26 @@
         #signCount {
             margin-top: 10px;
             font-size: 16px;
-            color: var(--error-color); /* Màu đỏ để làm nổi bật */
+            color: var(--error-color);
             text-align: center;
             font-weight: bold;
         }
 
         #signMeaning {
-            display: none; /* Ẩn phần này ban đầu */
+            display: none;
             margin-top: 10px;
             font-size: 16px;
             color: var(--text-color);
-            text-align: left; /* Đổi từ center sang left */
+            text-align: left;
             max-width: 600px;
             width: 100%;
             padding: 15px;
-            background-color: #f8f9fa; /* Thêm nền màu nhẹ */
-            border: 1px solid var(--primary-color); /* Thêm viền màu xanh lá */
-            border-radius: 8px; /* Bo tròn các góc */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Thêm bóng đổ nhẹ */
-            line-height: 1.6; /* Tăng khoảng cách giữa các dòng */
-            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho nội dung */
+            background-color: #f8f9fa;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.6;
+            font-family: var(--qa-answer-font);
         }
 
         /* Loading Spinner Styles */
@@ -419,7 +411,7 @@
         .qa-section {
             width: 100%;
             max-width: 800px;
-            background-color: var(--white-bg); /* Nền trắng */
+            background-color: var(--white-bg);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
@@ -427,25 +419,25 @@
         }
 
         .qa-section h2 {
-            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
+            color: var(--section-title-color);
             margin-bottom: 20px;
-            font-size: 1.1em; /* Giảm kích thước font chữ */
+            font-size: 1.1em;
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal; /* Không in đậm */
+            font-weight: normal;
         }
 
         .accordion {
             background-color: var(--white-bg);
-            color: var(--question-color); /* Đổi màu sắc của câu hỏi */
+            color: var(--question-color);
             cursor: pointer;
-            padding: 20px; /* Tăng padding để làm rộng chiều dài */
+            padding: 20px;
             width: 100%;
             border: none;
             text-align: left;
             outline: none;
-            font-size: 1.1em; /* Tăng kích thước font chữ */
-            font-weight: 700; /* Tăng độ đậm của font chữ */
+            font-size: 1.1em;
+            font-weight: 700;
             transition: background-color 0.3s ease;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -509,23 +501,23 @@
 
         /* Modal Styles */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: var(--modal-bg-color); /* Nền modal đậm hơn */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-bg-color);
         }
 
         .modal-content {
-            background-color: var(--modal-content-bg); /* Nền tối cho modal */
-            margin: 5% auto; /* 5% từ trên và giữa */
+            background-color: var(--modal-content-bg);
+            margin: 5% auto;
             padding: var(--modal-padding);
             border: 2px solid var(--modal-content-border);
-            width: 80%; /* Có thể điều chỉnh tùy theo kích thước màn hình */
+            width: 80%;
             border-radius: var(--modal-border-radius);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
@@ -533,7 +525,7 @@
         }
 
         .close-button {
-            color: #ffffff; /* Đổi màu chữ nút đóng thành trắng */
+            color: var(--text-color); /* Đổi màu chữ nút đóng thành trắng */
             float: right;
             font-size: 28px;
             font-weight: bold;
@@ -545,7 +537,7 @@
 
         .close-button:hover,
         .close-button:focus {
-            color: #ffffff;
+            color: var(--text-color);
             text-decoration: none;
             cursor: pointer;
         }
@@ -553,13 +545,15 @@
         .modal-content h2.section-title {
             color: var(--modal-title-color);
             margin-bottom: 15px;
-            font-size: 1.8em;
+            font-size: 1.4em; /* Giảm kích thước font chữ */
             text-align: center;
+            font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho thân thiện và thẩm mỹ */
+            font-weight: normal;
         }
 
         #instructionModalDescription {
-            color: var(--modal-text-color); /* Màu chữ trắng */
-            font-size: 0.9em; /* Giảm kích thước font chữ */
+            color: var(--modal-text-color);
+            font-size: 0.9em;
             background-color: #333333; /* Nền tối cho phần hướng dẫn */
             padding: 15px;
             border-radius: 8px;
@@ -578,8 +572,8 @@
             width: 100%;
             margin: 0 auto;
             padding-left: 20px;
-            list-style-position: inside; /* Căn đều các dấu đầu dòng */
-            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
+            list-style-position: inside;
+            font-family: var(--qa-answer-font);
         }
 
         .modal-content li {
@@ -632,9 +626,9 @@
             padding: 20px;
             font-size: 14px;
             color: var(--footer-text-color);
-            background-color: var(--footer-bg-color); /* Nền xanh */
+            background-color: var(--footer-bg-color);
             border-radius: 10px;
-            position: relative; /* Để không bị che khuất bởi khẩu hiệu cố định */
+            position: relative;
             margin-top: 30px;
         }
 
@@ -650,7 +644,7 @@
         .learning-section {
             width: 100%;
             max-width: 800px;
-            background-color: var(--white-bg); /* Nền trắng */
+            background-color: var(--white-bg);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
@@ -658,12 +652,12 @@
         }
 
         .learning-section h2 {
-            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
+            color: var(--section-title-color);
             margin-bottom: 20px;
-            font-size: 1.1em; /* Giảm kích thước font chữ */
+            font-size: 1.1em;
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal; /* Không in đậm */
+            font-weight: normal;
         }
 
         .learning-items {
@@ -680,12 +674,13 @@
             padding: 15px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
-            flex: 1 1 calc(50% - 30px); /* Hai mục mỗi dòng, trừ đi khoảng cách */
-            text-align: left; /* Căn trái nội dung */
+            flex: 1 1 calc(50% - 30px);
+            text-align: left;
             font-size: 1em;
-            font-weight: bold; /* Kiểu chữ đậm */
-            color: var(--text-color); /* Màu chữ giống như phần Hỏi Đáp */
+            font-weight: bold;
+            color: var(--text-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: var(--qa-answer-font);
         }
 
         .learning-item:hover {
@@ -700,7 +695,7 @@
         /* Điều chỉnh cho thiết bị nhỏ */
         @media (max-width: 600px) {
             .learning-item {
-                flex: 1 1 100%; /* Một mục mỗi dòng trên thiết bị nhỏ */
+                flex: 1 1 100%;
             }
         }
     </style>
