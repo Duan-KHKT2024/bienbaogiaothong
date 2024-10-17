@@ -157,6 +157,20 @@
             max-width: 600px;
         }
 
+        /* Placeholder Image Styles */
+        #placeholderImage {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border: 4px solid var(--primary-color);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            object-fit: cover;
+            display: block; /* Show by default */
+        }
+
+        /* Video Styles */
         #video, #capturedImage {
             border: 4px solid var(--primary-color);
             border-radius: 15px;
@@ -168,6 +182,10 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: opacity 0.5s ease, transform 0.3s ease;
             object-fit: cover;
+        }
+
+        #video {
+            display: none; /* Hide video initially */
         }
 
         #capturedImage {
@@ -188,6 +206,7 @@
             box-sizing: border-box;
             pointer-events: none; /* Không chặn các tương tác với video */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
+            display: none; /* Hide overlay initially */
         }
 
         .button-container {
@@ -644,6 +663,9 @@
     <div class="recognition-section">
         <h2 class="section-title">Nhận Diện Biển Báo Giao Thông</h2>
         <div class="video-container">
+            <!-- Placeholder Image -->
+            <img id="placeholderImage" src="https://via.placeholder.com/600x400?text=Ứng+Dụng+Nhận+Diện+Biển+Báo+Giao+Thông" alt="Placeholder">
+            <!-- Video Element -->
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
             <div class="overlay"></div>
         </div>
@@ -736,6 +758,7 @@
     <script>
         // Các phần tử DOM
         const video = document.getElementById('video');
+        const placeholderImage = document.getElementById('placeholderImage');
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
         const uploadButton = document.getElementById('uploadButton');
@@ -900,6 +923,11 @@
             if (!cameraStarted) {
                 // Nếu camera chưa được khởi động, bắt đầu camera
                 try {
+                    // Hide placeholder image and show video
+                    placeholderImage.style.display = 'none';
+                    video.style.display = 'block';
+                    overlay.style.display = 'block'; // Show overlay when video is active
+
                     await startCamera();
                     cameraStarted = true;
                     captureButton.textContent = "Chụp Ảnh"; // Thay đổi nhãn nút sau khi camera đã khởi động
@@ -949,8 +977,8 @@
                     capturedImage.src = imageDataURL;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
-                    video.style.opacity = 0;
                     video.style.display = 'none';
+                    overlay.style.display = 'none';
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
@@ -958,7 +986,7 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                    overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
+
                     await predictImage();
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
@@ -992,22 +1020,28 @@
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
-            video.style.display = 'block';
-            video.style.opacity = 1;
             downloadButton.style.display = 'none';
             readButton.style.display = 'none';
             retakeButton.style.display = 'none';
             quizButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
-            captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
+            captureButton.textContent = "Bắt Đầu"; // Reset nhãn nút sau khi chụp lại
+
+            // Stop the video stream if it's active
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            cameraStarted = false; // Reset trạng thái camera
+
+            // Show placeholder image and hide video and overlay
+            placeholderImage.style.display = 'block';
+            video.style.display = 'none';
+            overlay.style.display = 'none';
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
-            overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
-            cameraStarted = false; // Reset trạng thái camera
-            // Hiển thị lại video nếu nó đã bị ẩn
-            video.style.display = 'block';
-            video.style.opacity = 1;
         }
 
         /**
@@ -1214,8 +1248,10 @@
                     capturedImage.src = e.target.result;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
-                    video.style.opacity = 0;
+                    // Hide video and placeholder image
                     video.style.display = 'none';
+                    placeholderImage.style.display = 'none';
+                    overlay.style.display = 'none';
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
@@ -1223,7 +1259,6 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                    overlay.style.display = 'none'; // Ẩn overlay sau khi tải ảnh lên
 
                     // Vẽ ảnh lên canvas để dự đoán
                     const img = new Image();
