@@ -550,7 +550,7 @@
             cursor: pointer;
         }
 
-        .modal-content h2 {
+        .modal-content h2.section-title {
             color: var(--modal-title-color);
             margin-bottom: 15px;
             font-size: 1.8em;
@@ -776,8 +776,8 @@
     <!-- Modal Hướng Dẫn (Tự động hiển thị khi mở ứng dụng) -->
     <div id="instructionModal" class="modal" aria-hidden="false" role="dialog" aria-labelledby="instructionModalTitle" aria-describedby="instructionModalDescription">
         <div class="modal-content">
-            <span class="close-button" aria-label="Đóng">×</span>
-            <h2 id="instructionModalTitle">Hướng Dẫn Sử Dụng</h2>
+            <span class="close-button" aria-label="Đóng">&times;</span>
+            <h2 class="section-title" id="instructionModalTitle">Hướng Dẫn Sử Dụng</h2>
             <div id="instructionModalDescription">
                 <ol>
                     <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
@@ -964,10 +964,10 @@
             if (!cameraStarted) {
                 // Nếu camera chưa được khởi động, bắt đầu camera
                 try {
-                    // Hide placeholder image and show video
+                    // Hide placeholder image và show video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'block'; // Show overlay when video is active
+                    overlay.style.display = 'block'; // Show overlay khi video hoạt động
 
                     await startCamera();
                     cameraStarted = true;
@@ -1075,7 +1075,7 @@
 
             cameraStarted = false; // Reset trạng thái camera
 
-            // Show placeholder image and hide video and overlay
+            // Show placeholder image và hide video và overlay
             placeholderImage.style.display = 'block';
             video.style.display = 'none';
             overlay.style.display = 'none';
@@ -1095,6 +1095,9 @@
             }
 
             const synth = window.speechSynthesis;
+            synth.cancel(); // Dừng bất kỳ giọng nói nào đang phát
+            if (text.trim() === "") return; // Không đọc nếu không có văn bản
+
             const utterThis = new SpeechSynthesisUtterance(text);
             const voices = synth.getVoices();
             const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
@@ -1215,7 +1218,7 @@
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
                 signMeaning.textContent = "";
-                signMeaning.style.display = 'none'; // Ẩn phần signMeaning
+                signMeaning.style.display = 'none'; // Ẩn signMeaning
                 readButton.style.display = 'none';
                 quizButton.style.display = 'none';
             } finally {
@@ -1289,7 +1292,7 @@
                     capturedImage.src = e.target.result;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
-                    // Hide video and placeholder image
+                    // Hide video và placeholder image
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
                     overlay.style.display = 'none';
@@ -1377,6 +1380,7 @@
             const instructionModal = document.getElementById('instructionModal');
             instructionModal.style.display = 'none';
             instructionModal.setAttribute('aria-hidden', 'true');
+            window.speechSynthesis.cancel(); // Dừng đọc hướng dẫn khi đóng modal
         }
 
         /**
