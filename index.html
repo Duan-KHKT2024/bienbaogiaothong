@@ -171,7 +171,7 @@
         }
 
         #capturedImage {
-            display: none;
+            display: none; /* Ẩn ban đầu */
             opacity: 0;
         }
 
@@ -345,6 +345,7 @@
         }
 
         #signMeaning {
+            display: none; /* Ẩn phần này ban đầu */
             margin-top: 10px;
             font-size: 16px;
             color: var(--text-color);
@@ -355,7 +356,7 @@
             background-color: #f8f9fa; /* Thêm nền màu nhẹ */
             border: 1px solid var(--primary-color); /* Thêm viền màu xanh lá */
             border-radius: 8px; /* Bo tròn các góc */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Thêm bóng đổ nhẹ */
             line-height: 1.6; /* Tăng khoảng cách giữa các dòng */
             font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho nội dung */
         }
@@ -954,6 +955,7 @@
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
                     overlay.style.display = 'none'; // Ẩn overlay sau khi chụp
@@ -1000,6 +1002,7 @@
             captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
+            signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
             overlay.style.display = 'block'; // Hiển thị lại overlay khi chụp lại
             cameraStarted = false; // Reset trạng thái camera
             // Hiển thị lại video nếu nó đã bị ẩn
@@ -1117,16 +1120,19 @@
                         if (signMeanings.hasOwnProperty(signCode)) {
                             const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                             signMeaning.textContent = meaningText;
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
                             readButton.style.display = 'inline-block';
                             quizButton.style.display = 'inline-block';
                         } else {
                             signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
                             readButton.style.display = 'inline-block';
                             quizButton.style.display = 'inline-block';
                         }
                     } else {
                         predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
                         signMeaning.textContent = "";
+                        signMeaning.style.display = 'none'; // Ẩn phần signMeaning
                         readButton.style.display = 'none';
                         quizButton.style.display = 'none';
                     }
@@ -1135,6 +1141,7 @@
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
                 signMeaning.textContent = "";
+                signMeaning.style.display = 'none'; // Ẩn phần signMeaning
                 readButton.style.display = 'none';
                 quizButton.style.display = 'none';
             } finally {
@@ -1213,6 +1220,7 @@
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
                     overlay.style.display = 'none'; // Ẩn overlay sau khi tải ảnh lên
