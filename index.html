@@ -527,17 +527,25 @@
         .close-button {
             color: var(--text-color); /* Đổi màu chữ nút đóng thành trắng */
             float: right;
-            font-size: 28px;
+            font-size: 32px; /* Tăng kích thước font chữ */
             font-weight: bold;
             position: absolute;
             top: 10px;
             right: 20px;
             cursor: pointer;
+            transition: color 0.3s ease, background-color 0.3s ease;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-button:hover,
         .close-button:focus {
-            color: var(--text-color);
+            color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.2);
             text-decoration: none;
             cursor: pointer;
         }
@@ -545,7 +553,7 @@
         .modal-content h2.section-title {
             color: var(--modal-title-color);
             margin-bottom: 15px;
-            font-size: 1.4em; /* Giảm kích thước font chữ */
+            font-size: 1.2em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: 'Open Sans', sans-serif; /* Sử dụng Open Sans cho thân thiện và thẩm mỹ */
             font-weight: normal;
@@ -553,11 +561,12 @@
 
         #instructionModalDescription {
             color: var(--modal-text-color);
-            font-size: 0.9em;
+            font-size: 0.8em; /* Giảm kích thước font chữ */
             background-color: #333333; /* Nền tối cho phần hướng dẫn */
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            line-height: 1.4; /* Điều chỉnh line-height */
         }
 
         .modal-content ol,
