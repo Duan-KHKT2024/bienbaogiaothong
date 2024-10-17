@@ -235,9 +235,7 @@
         }
 
         /* Các màu sắc cho các nút */
-        #instructionButton {
-            background-color: var(--accent-color);
-        }
+        /* Đã loại bỏ #instructionButton */
 
         #captureButton {
             background-color: var(--primary-color);
@@ -531,6 +529,7 @@
             border-radius: var(--modal-border-radius);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
         .close-button {
@@ -580,6 +579,37 @@
             margin-top: 20px;
             font-weight: bold;
             color: var(--error-color);
+        }
+
+        /* Nút "Đọc Hướng Dẫn" trong modal */
+        #readInstructionButton {
+            display: block;
+            margin: 20px auto 0 auto;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-family: var(--qa-question-font);
+        }
+
+        #readInstructionButton:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        #readInstructionButton:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+
+        /* Animation cho modal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Phần 6: Footer */
@@ -683,7 +713,7 @@
         <canvas id="canvas" style="display: none;"></canvas>
 
         <div class="button-container">
-            <button id="instructionButton" aria-label="Hướng Dẫn">Hướng Dẫn</button>
+            <!-- Đã loại bỏ nút Hướng Dẫn -->
             <button id="captureButton" aria-label="Chụp ảnh">Bắt Đầu</button>
             <button id="uploadButton" aria-label="Tải ảnh lên">Tải Ảnh Lên</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
@@ -743,10 +773,10 @@
         &copy; 2024 Ứng dụng AI nhận diện biển báo và tìm hiểu Luật giao thông đường bộ cho Học Sinh THCS
     </div>
 
-    <!-- Modal Hướng Dẫn -->
-    <div id="instructionModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="instructionModalTitle" aria-describedby="instructionModalDescription">
+    <!-- Modal Hướng Dẫn (Tự động hiển thị khi mở ứng dụng) -->
+    <div id="instructionModal" class="modal" aria-hidden="false" role="dialog" aria-labelledby="instructionModalTitle" aria-describedby="instructionModalDescription">
         <div class="modal-content">
-            <span class="close-button" aria-label="Đóng">&times;</span>
+            <span class="close-button" aria-label="Đóng">×</span>
             <h2 id="instructionModalTitle">Hướng Dẫn Sử Dụng</h2>
             <div id="instructionModalDescription">
                 <ol>
@@ -757,8 +787,9 @@
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
-                <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">7</strong></p>
             </div>
+            <button id="readInstructionButton" aria-label="Đọc hướng dẫn">Đọc Hướng Dẫn</button>
         </div>
     </div>
 
@@ -1221,7 +1252,8 @@
          */
         window.addEventListener('load', async () => {
             await loadModel();
-            // Không khởi động camera ngay khi tải trang
+            // Tự động mở modal hướng dẫn
+            openInstructionModal();
             startSloganRotation(); // Khởi động vòng quay khẩu hiệu
         });
 
@@ -1330,29 +1362,47 @@
         }
 
         /**
-         * Event Listener cho Modal Hướng Dẫn
+         * Hàm mở modal hướng dẫn
          */
-        const instructionButton = document.getElementById('instructionButton');
-        const instructionModal = document.getElementById('instructionModal');
-        const closeButton = document.querySelector('.close-button');
-
-        // Open the modal
-        instructionButton.addEventListener('click', () => {
+        function openInstructionModal() {
+            const instructionModal = document.getElementById('instructionModal');
             instructionModal.style.display = 'block';
             instructionModal.setAttribute('aria-hidden', 'false');
-        });
+        }
 
-        // Close the modal khi 'x' được nhấn
-        closeButton.addEventListener('click', () => {
+        /**
+         * Hàm đóng modal hướng dẫn
+         */
+        function closeInstructionModal() {
+            const instructionModal = document.getElementById('instructionModal');
             instructionModal.style.display = 'none';
             instructionModal.setAttribute('aria-hidden', 'true');
+        }
+
+        /**
+         * Event Listener cho Modal Hướng Dẫn
+         */
+        const instructionModal = document.getElementById('instructionModal');
+        const closeButton = document.querySelector('.close-button');
+        const readInstructionButton = document.getElementById('readInstructionButton');
+
+        // Đóng modal khi 'x' được nhấn
+        closeButton.addEventListener('click', () => {
+            closeInstructionModal();
         });
 
-        // Close the modal khi nhấn ngoài nội dung modal
+        // Đóng modal khi nhấn ngoài nội dung modal
         window.addEventListener('click', (event) => {
             if (event.target == instructionModal) {
-                instructionModal.style.display = 'none';
-                instructionModal.setAttribute('aria-hidden', 'true');
+                closeInstructionModal();
+            }
+        });
+
+        // Event listener cho nút "Đọc Hướng Dẫn" trong modal
+        readInstructionButton.addEventListener('click', () => {
+            const instructions = document.getElementById('instructionModalDescription').innerText;
+            if (instructions) {
+                speakText(instructions);
             }
         });
     </script>
