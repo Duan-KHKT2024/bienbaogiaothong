@@ -173,7 +173,7 @@
         }
 
         /* Video Styles */
-        #video {
+        #video, #capturedImage {
             border: 4px solid var(--primary-color);
             border-radius: 15px;
             width: 100%;
@@ -184,7 +184,15 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: opacity 0.5s ease, transform 0.3s ease;
             object-fit: cover;
+        }
+
+        #video {
             display: none; /* Hide video initially */
+        }
+
+        #capturedImage {
+            display: none; /* Ẩn ban đầu */
+            opacity: 0;
         }
 
         /* Cải thiện thiết kế Overlay */
@@ -671,8 +679,8 @@
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
             <div class="overlay"></div>
         </div>
-        <img id="capturedImage" alt="Ảnh đã chụp" style="display: none;"/>
-        <!-- Removed the canvas element -->
+        <img id="capturedImage" alt="Ảnh đã chụp">
+        <canvas id="canvas" style="display: none;"></canvas>
 
         <div class="button-container">
             <button id="instructionButton" aria-label="Hướng Dẫn">Hướng Dẫn</button>
@@ -761,6 +769,7 @@
         // Các phần tử DOM
         const video = document.getElementById('video');
         const placeholderImage = document.getElementById('placeholderImage');
+        const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
         const uploadButton = document.getElementById('uploadButton');
         const uploadInput = document.getElementById('uploadInput'); // Hidden file input
@@ -914,52 +923,7 @@
         }
 
         /**
-         * Hàm kiểm tra độ mờ của hình ảnh
-         * Sử dụng phương pháp Variance of Laplacian
-         * @param {HTMLImageElement} imageElement - Hình ảnh cần kiểm tra
-         * @returns {Promise<number>} - Giá trị variance
-         */
-        async function checkImageBlurriness(imageElement) {
-            return new Promise((resolve) => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const width = imageElement.width;
-                const height = imageElement.height;
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(imageElement, 0, 0, width, height);
-                const imageData = ctx.getImageData(0, 0, width, height);
-                const data = imageData.data;
-
-                // Convert to grayscale
-                let gray = [];
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    gray.push(avg);
-                }
-
-                // Calculate Laplacian
-                let laplacian = [];
-                for (let y = 1; y < height - 1; y++) {
-                    for (let x = 1; x < width - 1; x++) {
-                        const idx = y * width + x;
-                        const val = gray[idx - width - 1] + gray[idx - width] + gray[idx - width + 1]
-                                  + gray[idx - 1] - 8 * gray[idx] + gray[idx + 1]
-                                  + gray[idx + width - 1] + gray[idx + width] + gray[idx + width + 1];
-                        laplacian.push(val);
-                    }
-                }
-
-                // Calculate variance
-                const mean = laplacian.reduce((sum, val) => sum + val, 0) / laplacian.length;
-                const variance = laplacian.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / laplacian.length;
-
-                resolve(variance);
-            });
-        }
-
-        /**
-         * Hàm chụp ảnh từ video sử dụng Image Capture API
+         * Hàm chụp ảnh từ video
          */
         async function capturePhoto() {
             if (isProcessing) return;
@@ -989,43 +953,54 @@
                 loadingPrediction.style.display = 'flex';
 
                 try {
-                    const track = stream.getVideoTracks()[0];
-                    const imageCapture = new ImageCapture(track);
-                    const blob = await imageCapture.takePhoto();
-                    const imageURL = URL.createObjectURL(blob);
+                    // Kiểm tra xem video đã sẵn sàng chưa
+                    if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
+                        await new Promise((resolve) => {
+                            video.oncanplay = () => {
+                                resolve();
+                            };
+                        });
+                    }
 
-                    // Tạo hình ảnh để kiểm tra độ mờ
-                    const img = new Image();
-                    img.src = imageURL;
-                    img.onload = async () => {
-                        const variance = await checkImageBlurriness(img);
-                        const blurThreshold = 100; // Ngưỡng tùy chỉnh, có thể điều chỉnh
-                        if (variance < blurThreshold) {
-                            alert("Ảnh bị mờ. Vui lòng chụp lại với ánh sáng tốt và giữ điện thoại ổn định.");
-                            throw new Error("Ảnh bị mờ.");
-                        }
+                    const context = canvas.getContext('2d');
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
 
-                        capturedImage.src = imageURL;
-                        capturedImage.style.display = 'block';
-                        capturedImage.style.opacity = 1;
-                        video.style.display = 'none';
-                        overlay.style.display = 'none';
-                        downloadButton.style.display = 'inline-block';
-                        retakeButton.style.display = 'inline-block';
-                        predictionResult.innerHTML = "";
-                        signMeaning.textContent = "";
-                        signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
-                        readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
-                        quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+                    if (videoWidth === 0 || videoHeight === 0) {
+                        throw new Error("Video chưa sẵn sàng.");
+                    }
 
-                        await predictImage(imageURL);
-                    };
+                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                    const overlayWidth = videoWidth * 0.6;
+                    const overlayHeight = videoHeight * 0.6;
+                    const sx = (videoWidth - overlayWidth) / 2;
+                    const sy = (videoHeight - overlayHeight) / 2;
+
+                    // Cài đặt kích thước canvas theo kích thước overlay
+                    canvas.width = overlayWidth;
+                    canvas.height = overlayHeight;
+
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+
+                    const imageDataURL = canvas.toDataURL('image/png');
+                    capturedImage.src = imageDataURL;
+                    capturedImage.style.display = 'block';
+                    capturedImage.style.opacity = 1;
+                    video.style.display = 'none';
+                    overlay.style.display = 'none';
+                    downloadButton.style.display = 'inline-block';
+                    retakeButton.style.display = 'inline-block';
+                    predictionResult.innerHTML = "";
+                    signMeaning.textContent = "";
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+
+                    await predictImage();
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
-                    // Nếu lỗi là do độ mờ, không cần hiển thị thêm thông báo
-                    if (error.message !== "Ảnh bị mờ.") {
-                        alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
-                    }
+                    alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
                 } finally {
                     isProcessing = false;
                     captureButton.disabled = false;
@@ -1145,9 +1120,8 @@
 
         /**
          * Hàm thực hiện dự đoán hình ảnh
-         * @param {string} imageURL - URL của hình ảnh cần dự đoán
          */
-        async function predictImage(imageURL) {
+        async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
                 loadingPrediction.style.display = 'none';
@@ -1161,58 +1135,51 @@
             }
 
             try {
-                // Tạo một hình ảnh mới từ URL
-                const img = new Image();
-                img.src = imageURL;
-                await new Promise((resolve, reject) => {
-                    img.onload = () => resolve();
-                    img.onerror = () => reject(new Error("Không thể tải hình ảnh cho dự đoán."));
-                });
+                // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
+                tf.tidy(() => {
+                    // Chuyển đổi canvas thành tensor
+                    const img = tf.browser.fromPixels(canvas);
+                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                    const normalized = resized.div(255.0).expandDims();
 
-                // Sử dụng tf.browser.fromPixels để chuyển đổi hình ảnh thành tensor
-                const imgTensor = tf.browser.fromPixels(img)
-                    .resizeNearestNeighbor([224, 224]) // Đảm bảo kích thước phù hợp với mô hình
-                    .toFloat()
-                    .div(tf.scalar(255))
-                    .expandDims();
+                    // Thực hiện dự đoán
+                    const predictions = model.predict(normalized);
+                    const data = predictions.dataSync();
 
-                // Thực hiện dự đoán
-                const predictions = model.predict(imgTensor);
-                const data = predictions.dataSync();
-
-                // Tìm lớp có xác suất cao nhất
-                let maxProb = -1;
-                let maxIndex = -1;
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i] > maxProb) {
-                        maxProb = data[i];
-                        maxIndex = i;
+                    // Tìm lớp có xác suất cao nhất
+                    let maxProb = -1;
+                    let maxIndex = -1;
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > maxProb) {
+                            maxProb = data[i];
+                            maxIndex = i;
+                        }
                     }
-                }
 
-                if (maxIndex !== -1 && window.labels) {
-                    const predictedClass = window.labels[maxIndex];
-                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
-                    const signCode = predictedClass.substring(0, 5).toUpperCase();
-                    if (signMeanings.hasOwnProperty(signCode)) {
-                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
-                        signMeaning.textContent = meaningText;
-                        signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
+                    if (maxIndex !== -1 && window.labels) {
+                        const predictedClass = window.labels[maxIndex];
+                        predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
+                        const signCode = predictedClass.substring(0, 5).toUpperCase();
+                        if (signMeanings.hasOwnProperty(signCode)) {
+                            const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                            signMeaning.textContent = meaningText;
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        } else {
+                            signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        }
                     } else {
-                        signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
-                        signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
+                        predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
+                        signMeaning.textContent = "";
+                        signMeaning.style.display = 'none'; // Ẩn phần signMeaning
+                        readButton.style.display = 'none';
+                        quizButton.style.display = 'none';
                     }
-                } else {
-                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
-                    signMeaning.textContent = "";
-                    signMeaning.style.display = 'none'; // Ẩn phần signMeaning
-                    readButton.style.display = 'none';
-                    quizButton.style.display = 'none';
-                }
+                });
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
@@ -1282,13 +1249,14 @@
         });
 
         // Event listener cho việc chọn file từ file input
-        uploadInput.addEventListener('change', async (event) => {
+        uploadInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
+                reader.onload = function(e) {
                     capturedImage.src = e.target.result;
                     capturedImage.style.display = 'block';
+                    capturedImage.style.opacity = 1;
                     // Hide video and placeholder image
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
@@ -1301,19 +1269,24 @@
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
-                    // Tạo hình ảnh để kiểm tra độ mờ
+                    // Vẽ ảnh lên canvas để dự đoán
                     const img = new Image();
                     img.src = e.target.result;
-                    img.onload = async () => {
-                        const variance = await checkImageBlurriness(img);
-                        const blurThreshold = 100; // Ngưỡng tùy chỉnh, có thể điều chỉnh
-                        if (variance < blurThreshold) {
-                            alert("Ảnh bị mờ. Vui lòng tải lên ảnh rõ nét với ánh sáng tốt và giữ điện thoại ổn định.");
-                            retakePhoto(); // Reset lại trạng thái
-                            return;
+                    img.onload = () => {
+                        const context = canvas.getContext('2d');
+                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
+                        const aspectRatio = img.width / img.height;
+                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
+                        let canvasHeight = 224;
+                        if (aspectRatio > 1) {
+                            canvasHeight = canvasWidth / aspectRatio;
+                        } else {
+                            canvasWidth = canvasHeight * aspectRatio;
                         }
-
-                        await predictImage(e.target.result);
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasHeight;
+                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                        predictImage();
                     };
                 };
                 reader.readAsDataURL(file);
