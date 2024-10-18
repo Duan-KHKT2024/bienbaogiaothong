@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <!-- Metadata -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
-    <!-- Google Fonts -->
+    <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <!-- CSS Styles -->
     <style>
         /* CSS Variables và các kiểu CSS khác giữ nguyên */
         :root {
@@ -19,7 +17,7 @@
             --dark-color: #333;
             --light-bg: #f0f4f8;
             --white-bg: #fff;
-            --text-color: #654321;
+            --text-color: #654321; /* Màu chữ nội dung */
             --error-color: #d9534f;
             --disabled-color: #cccccc;
             --focus-outline: #ffbf47;
@@ -28,35 +26,35 @@
             --accordion-active: #ced4da;
             --qa-question-font: 'Roboto', sans-serif;
             --qa-answer-font: 'Open Sans', sans-serif;
-            --question-color: #654321;
+            --question-color: #654321; /* Màu chữ câu hỏi */
             --slogan-font: 'Roboto', sans-serif;
             --slogan-color: #ffffff;
-            --slogan-bg-color: var(--footer-bg-color);
+            --slogan-bg-color: var(--footer-bg-color); /* Được thay đổi để giống footer */
             --slogan-padding: 20px;
             --slogan-border-radius: 15px;
-            --slogan-font-size: 1.2em;
+            --slogan-font-size: 1.2em; /* Giảm kích thước font */
             --slogan-transition: opacity 1s ease-in-out;
-            --footer-bg-color: #007bff;
-            --footer-text-color: #ffffff;
-            --modal-bg-color: rgba(0, 0, 0, 0.6);
-            --modal-content-bg: #ffffff;
-            --modal-content-border: #28a745;
+            --footer-bg-color: #007bff; /* Màu nền footer xanh */
+            --footer-text-color: #ffffff; /* Màu chữ footer trắng */
+            --modal-bg-color: rgba(0, 0, 0, 0.6); /* Nền modal đậm hơn */
+            --modal-content-bg: #ffffff; /* Nền nội dung modal trắng */
+            --modal-content-border: #28a745; /* Viền nội dung modal màu xanh lá */
             --modal-padding: 30px;
             --modal-border-radius: 10px;
             --modal-title-color: var(--primary-color);
             --modal-text-color: #333;
-            --learning-bg-color: #f8f9fa;
-            --card-bg-color: #ffffff;
-            --card-border-color: #dee2e6;
-            --card-hover-bg: #e9ecef;
+            --learning-bg-color: #f8f9fa; /* Màu nền cho phần Tìm hiểu */
+            --card-bg-color: #ffffff; /* Màu nền cho card */
+            --card-border-color: #dee2e6; /* Màu viền cho card */
+            --card-hover-bg: #e9ecef; /* Màu nền khi hover card */
             --card-hover-transform: translateY(-5px);
             --card-transition: transform 0.3s ease, background-color 0.3s ease;
-            --section-title-bg: #007bff;
-            --section-title-color: #ffffff;
+            --section-title-bg: #007bff; /* Màu nền cho tiêu đề các phần */
+            --section-title-color: #ffffff; /* Đổi từ #654321 thành màu trắng */
             --section-title-padding: 10px 20px;
             --section-title-border-radius: 8px 8px 0 0;
-            --fixed-slogan-width: 100%;
-            --fixed-slogan-height: 80px;
+            --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
+            --fixed-slogan-height: 80px; /* Chiều cao cố định */
         }
 
         /* Reset CSS */
@@ -67,12 +65,12 @@
         }
 
         body {
-            font-family: var(--qa-question-font);
+            font-family: var(--qa-question-font); /* Sử dụng Roboto cho toàn bộ trang */
             background-color: var(--light-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 100px 20px 20px 20px;
+            padding: 100px 20px 20px 20px; /* Top padding để tránh nội dung bị che khuất bởi khẩu hiệu */
             min-height: 100vh;
         }
 
@@ -81,14 +79,14 @@
             width: 100%;
             max-width: 800px;
             background-color: var(--section-title-bg);
-            color: var(--section-title-color);
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             padding: var(--section-title-padding);
             border-radius: var(--section-title-border-radius);
             margin-bottom: 10px;
             text-align: center;
-            font-size: 1.1em;
+            font-size: 1.1em; /* Giảm kích thước font chữ */
             font-family: var(--qa-question-font);
-            font-weight: normal;
+            font-weight: normal; /* Không in đậm */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
@@ -99,9 +97,9 @@
             left: 0;
             width: var(--fixed-slogan-width);
             height: var(--fixed-slogan-height);
-            background: var(--slogan-bg-color);
+            background: var(--slogan-bg-color); /* Đã thay đổi để giống footer */
             padding: var(--slogan-padding);
-            border-radius: 0;
+            border-radius: 0; /* Bỏ border-radius khi cố định */
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             text-align: center;
             display: flex;
@@ -115,15 +113,15 @@
         #slogan {
             font-family: var(--slogan-font);
             font-size: var(--slogan-font-size);
-            color: var(--slogan-color);
+            color: var(--slogan-color); /* Đã thay đổi để giống footer */
             opacity: 0;
             transition: var(--slogan-transition);
             text-align: center;
             word-wrap: break-word;
-            font-weight: normal;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: normal; /* Không in đậm */
+            white-space: nowrap; /* Không tự động co giãn */
+            overflow: hidden; /* Ẩn phần tràn */
+            text-overflow: ellipsis; /* Thêm dấu chấm lửng nếu văn bản dài */
         }
 
         .slogan-section.active #slogan {
@@ -141,17 +139,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            position: relative; /* Để overlay hoạt động đúng */
             margin-bottom: 30px;
         }
 
         .recognition-section h2 {
+            /* Đã chuyển từ var(--dark-color) sang var(--section-title-color) để giữ màu trắng */
             color: var(--section-title-color);
             margin-bottom: 20px;
-            font-size: 1.1em;
+            font-size: 1.1em; /* Giảm kích thước font */
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal;
+            font-weight: normal; /* Không in đậm */
         }
 
         .video-container {
@@ -170,7 +169,7 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             object-fit: cover;
-            display: block;
+            display: block; /* Show by default */
         }
 
         /* Video Styles */
@@ -188,13 +187,12 @@
         }
 
         #video {
-            display: none;
+            display: none; /* Hide video initially */
         }
 
         #capturedImage {
-            display: none;
+            display: none; /* Ẩn ban đầu */
             opacity: 0;
-            position: relative;
         }
 
         /* Cải thiện thiết kế Overlay */
@@ -202,15 +200,15 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60%;
+            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
             height: 60%;
             transform: translate(-50%, -50%);
-            border: 3px solid rgba(40, 167, 69, 0.8);
-            border-radius: 20px;
+            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
+            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
             box-sizing: border-box;
-            pointer-events: none;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            display: none;
+            pointer-events: none; /* Không chặn các tương tác với video */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
+            display: none; /* Hide overlay initially */
         }
 
         .button-container {
@@ -228,12 +226,12 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            flex: 1 1 160px;
-            max-width: 220px;
+            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
+            max-width: 220px; /* Giới hạn kích thước tối đa */
             transition: background-color 0.3s ease, transform 0.2s ease;
-            color: #ffffff;
+            color: #ffffff; /* Đổi từ #fff sang trắng */
             text-align: center;
-            min-height: 44px;
+            min-height: 44px; /* Đảm bảo touch target đủ lớn */
         }
 
         /* Các màu sắc cho các nút */
@@ -251,12 +249,12 @@
 
         #downloadButton {
             background-color: var(--secondary-color);
-            display: none;
+            display: none; /* Ẩn ban đầu */
         }
 
         #readButton {
             background-color: var(--accent-color);
-            display: none;
+            display: none; /* Initially hidden */
         }
 
         #retakeButton {
@@ -267,7 +265,7 @@
 
         #quizButton {
             background-color: var(--purple-color);
-            display: none;
+            display: none; /* Initially hidden */
         }
 
         button:hover:not(:disabled) {
@@ -281,19 +279,20 @@
         }
 
         button:focus {
-            outline: 3px solid var(--focus-outline);
+            outline: 3px solid var(--focus-outline); /* Màu nổi bật khi focus */
             outline-offset: 2px;
         }
 
         @media (max-width: 600px) {
             .slogan-section {
-                width: 100%;
+                width: 100%; /* Trên thiết bị nhỏ, chiều rộng 100% */
+                /* Đặt chiều cao cố định thay vì auto */
                 height: var(--fixed-slogan-height);
                 padding: 10px;
             }
 
             body {
-                padding: 120px 10px 10px 10px;
+                padding: 120px 10px 10px 10px; /* Điều chỉnh padding để phù hợp với thiết bị nhỏ */
             }
 
             button {
@@ -302,32 +301,37 @@
             }
 
             #slogan {
-                font-size: 1em;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                font-size: 1em; /* Giảm kích thước font trên thiết bị nhỏ */
+                white-space: nowrap; /* Không cho xuống dòng */
+                overflow: hidden; /* Ẩn phần tràn */
+                text-overflow: ellipsis; /* Thêm dấu chấm lửng nếu văn bản dài */
             }
 
             .section-title {
-                font-size: 1.1em;
+                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
             .recognition-section h2 {
-                font-size: 1.1em;
+                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
             .learning-section h2 {
-                font-size: 1.1em;
+                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
             .qa-section h2 {
-                font-size: 1.1em;
+                font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
+
+            /* Optional: Adjust slogan font size further if needed */
+            /* #slogan {
+                font-size: 0.9em;
+            } */
         }
 
         #predictionResult {
             margin-top: 20px;
-            font-size: 16px;
+            font-size: 16px; /* Giảm kích thước font chữ */
             font-weight: bold;
             color: var(--dark-color);
             min-height: 50px;
@@ -335,29 +339,55 @@
             width: 100%;
         }
 
-        #predictionResult p {
+        /* Định dạng hướng dẫn sử dụng */
+        #predictionResult h2 {
+            font-size: 1.5em;
             margin-bottom: 10px;
+            color: var(--primary-color);
+            text-align: center;
         }
 
-        #signMeaning {
-            display: none;
-            margin-top: 10px;
-            font-size: 16px;
-            color: var(--text-color);
+        #predictionResult ol {
             text-align: left;
             max-width: 600px;
             width: 100%;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border: 1px solid var(--primary-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            line-height: 1.6;
-            font-family: var(--qa-answer-font);
+            margin: 0 auto;
+            padding-left: 20px;
+            font-size: 0.9em; /* Giảm kích thước font chữ */
+            color: var(--text-color);
+            list-style-position: inside; /* Căn đều các dấu đầu dòng */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
         }
 
-        #signMeaning p {
+        #predictionResult li {
             margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Định dạng số lượng biển báo */
+        #signCount {
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--error-color); /* Màu đỏ để làm nổi bật */
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #signMeaning {
+            display: none; /* Ẩn phần này ban đầu */
+            margin-top: 10px;
+            font-size: 16px;
+            color: var(--text-color);
+            text-align: left; /* Đổi từ center sang left */
+            max-width: 600px;
+            width: 100%;
+            padding: 15px;
+            background-color: #f8f9fa; /* Thêm nền màu nhẹ */
+            border: 1px solid var(--primary-color); /* Thêm viền màu xanh lá */
+            border-radius: 8px; /* Bo tròn các góc */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Thêm bóng đổ nhẹ */
+            line-height: 1.6; /* Tăng khoảng cách giữa các dòng */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho nội dung */
         }
 
         /* Loading Spinner Styles */
@@ -391,7 +421,7 @@
         .qa-section {
             width: 100%;
             max-width: 800px;
-            background-color: var(--white-bg);
+            background-color: var(--white-bg); /* Nền trắng */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
@@ -399,25 +429,25 @@
         }
 
         .qa-section h2 {
-            color: var(--section-title-color);
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             margin-bottom: 20px;
-            font-size: 1.1em;
+            font-size: 1.1em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal;
+            font-weight: normal; /* Không in đậm */
         }
 
         .accordion {
             background-color: var(--white-bg);
-            color: var(--question-color);
+            color: var(--question-color); /* Đổi màu sắc của câu hỏi */
             cursor: pointer;
-            padding: 20px;
+            padding: 20px; /* Tăng padding để làm rộng chiều dài */
             width: 100%;
             border: none;
             text-align: left;
             outline: none;
-            font-size: 1.1em;
-            font-weight: 700;
+            font-size: 1.1em; /* Tăng kích thước font chữ */
+            font-weight: 700; /* Tăng độ đậm của font chữ */
             transition: background-color 0.3s ease;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -436,16 +466,18 @@
             background-color: var(--accordion-active);
         }
 
+        /* Biểu tượng mũi tên cho accordion */
         .accordion::after {
-            content: '\002B';
+            content: '\002B'; /* Plus sign */
             font-size: 1.2em;
             transition: transform 0.3s ease;
         }
 
         .accordion.active::after {
-            content: '\2212';
+            content: '\2212'; /* Minus sign */
         }
 
+        /* Panel styles with smooth transition */
         .panel {
             max-height: 0;
             overflow: hidden;
@@ -459,7 +491,7 @@
         }
 
         .panel.show {
-            max-height: 500px;
+            max-height: 500px; /* Adjust as needed */
         }
 
         .panel p {
@@ -479,23 +511,23 @@
 
         /* Modal Styles */
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
             left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: var(--modal-bg-color);
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: var(--modal-bg-color); /* Nền modal đậm hơn */
         }
 
         .modal-content {
             background-color: var(--modal-content-bg);
-            margin: 5% auto;
+            margin: 5% auto; /* 5% từ trên và giữa */
             padding: var(--modal-padding);
             border: 2px solid var(--modal-content-border);
-            width: 80%;
+            width: 80%; /* Có thể điều chỉnh tùy theo kích thước màn hình */
             border-radius: var(--modal-border-radius);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
@@ -532,10 +564,10 @@
             width: 100%;
             margin: 0 auto;
             padding-left: 20px;
-            font-size: 1em;
+            font-size: 1em; /* Tăng kích thước font chữ */
             color: var(--modal-text-color);
-            list-style-position: inside;
-            font-family: var(--qa-answer-font);
+            list-style-position: inside; /* Căn đều các dấu đầu dòng */
+            font-family: var(--qa-answer-font); /* Sử dụng Open Sans cho danh sách */
         }
 
         .modal-content li {
@@ -557,9 +589,9 @@
             padding: 20px;
             font-size: 14px;
             color: var(--footer-text-color);
-            background-color: var(--footer-bg-color);
+            background-color: var(--footer-bg-color); /* Nền xanh */
             border-radius: 10px;
-            position: relative;
+            position: relative; /* Để không bị che khuất bởi khẩu hiệu cố định */
             margin-top: 30px;
         }
 
@@ -575,7 +607,7 @@
         .learning-section {
             width: 100%;
             max-width: 800px;
-            background-color: var(--white-bg);
+            background-color: var(--white-bg); /* Nền trắng */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 20px;
@@ -583,12 +615,12 @@
         }
 
         .learning-section h2 {
-            color: var(--section-title-color);
+            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
             margin-bottom: 20px;
-            font-size: 1.1em;
+            font-size: 1.1em; /* Giảm kích thước font chữ */
             text-align: center;
             font-family: var(--qa-question-font);
-            font-weight: normal;
+            font-weight: normal; /* Không in đậm */
         }
 
         .learning-items {
@@ -605,11 +637,11 @@
             padding: 15px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
-            flex: 1 1 calc(50% - 30px);
-            text-align: left;
+            flex: 1 1 calc(50% - 30px); /* Hai mục mỗi dòng, trừ đi khoảng cách */
+            text-align: left; /* Căn trái nội dung */
             font-size: 1em;
-            font-weight: bold;
-            color: var(--text-color);
+            font-weight: bold; /* Kiểu chữ đậm */
+            color: var(--text-color); /* Màu chữ giống như phần Hỏi Đáp */
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -625,7 +657,7 @@
         /* Điều chỉnh cho thiết bị nhỏ */
         @media (max-width: 600px) {
             .learning-item {
-                flex: 1 1 100%;
+                flex: 1 1 100%; /* Một mục mỗi dòng trên thiết bị nhỏ */
             }
         }
     </style>
@@ -730,11 +762,9 @@
         </div>
     </div>
 
-    <!-- Thêm TensorFlow.js và các mô hình cần thiết -->
+    <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
-    <!-- JavaScript -->
     <script>
         // Các phần tử DOM
         const video = document.getElementById('video');
@@ -742,7 +772,7 @@
         const canvas = document.getElementById('canvas');
         const captureButton = document.getElementById('captureButton');
         const uploadButton = document.getElementById('uploadButton');
-        const uploadInput = document.getElementById('uploadInput');
+        const uploadInput = document.getElementById('uploadInput'); // Hidden file input
         const downloadButton = document.getElementById('downloadButton');
         const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
@@ -756,28 +786,17 @@
         const overlay = document.querySelector('.overlay');
         let stream = null;
         let isProcessing = false;
-        let cameraStarted = false;
+        let cameraStarted = false; // Biến trạng thái camera
         const MODEL_URL = "https://duan-khkt2024.github.io/bienbaogiaothong/model/";
         let model;
-        let labels = [];
+        let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
         let signMeanings = {};
         let qaData = [];
 
-        // Thêm biến cho mô hình phát hiện đối tượng
-        let detectionModel;
-
-        // Hàm tải mô hình COCO-SSD
-        async function loadDetectionModel() {
-            try {
-                detectionModel = await cocoSsd.load();
-                console.log("Đã tải thành công mô hình phát hiện đối tượng.");
-            } catch (err) {
-                console.error("Lỗi khi tải mô hình phát hiện đối tượng:", err);
-            }
-        }
-
-        // Hàm tải signMeanings.json
+        /**
+         * Hàm tải signMeanings.json
+         */
         async function loadSignMeanings() {
             try {
                 const response = await fetch(MODEL_URL + "signMeanings.json");
@@ -785,14 +804,18 @@
                     signMeanings = await response.json();
                     console.log("Đã tải thành công signMeanings.json");
                 } else {
-                    console.warn("Không thể tải signMeanings.json.");
+                    console.warn("Không thể tải signMeanings.json. Đang sử dụng signMeanings mặc định.");
+                    // Bạn có thể định nghĩa signMeanings mặc định ở đây nếu cần
                 }
             } catch (error) {
                 console.error("Lỗi khi tải signMeanings.json:", error);
+                // Xử lý lỗi nếu cần
             }
         }
 
-        // Hàm tải qa.json
+        /**
+         * Hàm tải qa.json
+         */
         async function loadQA() {
             try {
                 const response = await fetch(MODEL_URL + "qa.json");
@@ -803,16 +826,20 @@
                     buildQA();
                 } else {
                     console.warn("Không thể tải qa.json.");
+                    // Bạn có thể định nghĩa dữ liệu QA mặc định ở đây nếu cần
                 }
             } catch (error) {
                 console.error("Lỗi khi tải qa.json:", error);
+                // Xử lý lỗi nếu cần
             }
         }
 
-        // Hàm xây dựng phần Hỏi Đáp
+        /**
+         * Hàm xây dựng phần Hỏi Đáp
+         */
         function buildQA() {
             const qaContainer = document.getElementById('qa-container');
-            qaContainer.innerHTML = '';
+            qaContainer.innerHTML = ''; // Xóa nội dung cũ nếu có
 
             qaData.forEach((item, index) => {
                 // Tạo nút accordion
@@ -865,7 +892,9 @@
             });
         }
 
-        // Hàm khởi động camera
+        /**
+         * Hàm khởi động camera
+         */
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -873,6 +902,7 @@
                         facingMode: "environment",
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
+                        // Optional: thêm các constraints khác nếu cần
                     },
                     audio: false
                 });
@@ -892,19 +922,26 @@
             }
         }
 
-        // Hàm kiểm tra độ mờ của hình ảnh
+        /**
+         * Hàm kiểm tra độ mờ của hình ảnh
+         * Sử dụng phương pháp Variance of Laplacian
+         * @param {HTMLCanvasElement} canvasElement - Canvas chứa hình ảnh
+         * @returns {Promise<number>} - Giá trị variance
+         */
         async function checkImageBlurriness(canvasElement) {
             return new Promise((resolve) => {
                 const ctx = canvasElement.getContext('2d');
                 const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
                 const data = imageData.data;
 
+                // Convert to grayscale
                 let gray = [];
                 for (let i = 0; i < data.length; i += 4) {
                     const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
                     gray.push(avg);
                 }
 
+                // Calculate Laplacian
                 let laplacian = [];
                 const width = canvasElement.width;
                 const height = canvasElement.height;
@@ -918,6 +955,7 @@
                     }
                 }
 
+                // Calculate variance
                 const mean = laplacian.reduce((sum, val) => sum + val, 0) / laplacian.length;
                 const variance = laplacian.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / laplacian.length;
 
@@ -925,21 +963,25 @@
             });
         }
 
-        // Hàm chụp ảnh từ video
+        /**
+         * Hàm chụp ảnh từ video
+         */
         async function capturePhoto() {
             if (isProcessing) return;
             isProcessing = true;
             captureButton.disabled = true;
 
             if (!cameraStarted) {
+                // Nếu camera chưa được khởi động, bắt đầu camera
                 try {
+                    // Hide placeholder image and show video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'block';
+                    overlay.style.display = 'block'; // Show overlay when video is active
 
                     await startCamera();
                     cameraStarted = true;
-                    captureButton.textContent = "Chụp Ảnh";
+                    captureButton.textContent = "Chụp Ảnh"; // Thay đổi nhãn nút sau khi camera đã khởi động
                 } catch (err) {
                     console.error("Lỗi khi khởi động camera: ", err);
                     alert("Không thể khởi động camera.");
@@ -948,10 +990,12 @@
                     captureButton.disabled = false;
                 }
             } else {
+                // Nếu camera đã được khởi động, tiến hành chụp ảnh
                 loadingPrediction.style.display = 'flex';
 
                 try {
-                    if (video.readyState < 3) {
+                    // Kiểm tra xem video đã sẵn sàng chưa
+                    if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
                         await new Promise((resolve) => {
                             video.oncanplay = () => {
                                 resolve();
@@ -960,7 +1004,8 @@
                     }
 
                     const context = canvas.getContext('2d');
-
+                    
+                    // Bật image smoothing và thiết lập chất lượng cao
                     context.imageSmoothingEnabled = true;
                     context.imageSmoothingQuality = 'high';
 
@@ -971,18 +1016,23 @@
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
+                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
                     const overlayWidth = videoWidth * 0.6;
                     const overlayHeight = videoHeight * 0.6;
                     const sx = (videoWidth - overlayWidth) / 2;
                     const sy = (videoHeight - overlayHeight) / 2;
 
-                    canvas.width = overlayWidth;
-                    canvas.height = overlayHeight;
+                    // Thiết lập kích thước canvas thành 224x224
+                    const targetSize = 224;
+                    canvas.width = targetSize;
+                    canvas.height = targetSize;
 
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước 224x224
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, targetSize, targetSize);
 
+                    // Kiểm tra độ mờ của hình ảnh
                     const variance = await checkImageBlurriness(canvas);
-                    const blurThreshold = 100;
+                    const blurThreshold = 100; // Ngưỡng tùy chỉnh, có thể điều chỉnh
                     if (variance < blurThreshold) {
                         alert("Ảnh bị mờ. Vui lòng chụp lại với ánh sáng tốt và giữ điện thoại ổn định.");
                         throw new Error("Ảnh bị mờ.");
@@ -998,13 +1048,14 @@
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
-                    signMeaning.style.display = 'none';
-                    readButton.style.display = 'none';
-                    quizButton.style.display = 'none';
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
                     await predictImage();
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
+                    // Nếu lỗi là do độ mờ, không cần hiển thị thêm thông báo
                     if (error.message !== "Ảnh bị mờ.") {
                         alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
                     }
@@ -1015,7 +1066,9 @@
             }
         }
 
-        // Hàm tải ảnh xuống
+        /**
+         * Hàm tải ảnh xuống
+         */
         function downloadPhoto() {
             if (!capturedImage.src) {
                 alert("Không có ảnh nào để tải xuống.");
@@ -1029,7 +1082,9 @@
             document.body.removeChild(link);
         }
 
-        // Hàm chụp lại ảnh
+        /**
+         * Hàm chụp lại ảnh
+         */
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
@@ -1037,24 +1092,29 @@
             readButton.style.display = 'none';
             retakeButton.style.display = 'none';
             captureButton.style.display = 'inline-block';
-            captureButton.textContent = "Bắt Đầu";
+            captureButton.textContent = "Bắt Đầu"; // Reset nhãn nút sau khi chụp lại
 
+            // Stop the video stream if it's active
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
 
-            cameraStarted = false;
+            cameraStarted = false; // Reset trạng thái camera
 
+            // Show placeholder image and hide video and overlay
             placeholderImage.style.display = 'block';
             video.style.display = 'none';
             overlay.style.display = 'none';
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
-            signMeaning.style.display = 'none';
+            signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
         }
 
-        // Hàm đọc văn bản bằng giọng nói
+        /**
+         * Hàm đọc văn bản bằng giọng nói
+         * @param {string} text - Văn bản cần đọc
+         */
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
                 console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
@@ -1073,77 +1133,55 @@
             synth.speak(utterThis);
         }
 
-        // Hàm tải mô hình
+        /**
+         * Hàm tải mô hình TensorFlow.js
+         */
         async function loadModel() {
             try {
+                // Tải mô hình từ GitHub Pages
                 model = await tf.loadLayersModel(MODEL_URL + "model.json");
                 loadingModel.style.display = 'none';
 
+                // Tải metadata.json để lấy nhãn
                 const response = await fetch(MODEL_URL + "metadata.json");
                 if (response.ok) {
                     const metadata = await response.json();
                     if (metadata.labels && Array.isArray(metadata.labels)) {
                         labels = metadata.labels;
                         signCount.textContent = labels.length;
+
+                        // Lưu labels vào biến toàn cục để sử dụng sau
                         window.labels = labels;
                     } else {
                         console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
-                        window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"];
+                        // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
+                        window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                         signCount.textContent = window.labels.length;
                     }
                 } else {
-                    console.warn("Không thể tải metadata.json.");
-                    window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"];
+                    console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
+                    // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
+                    window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                     signCount.textContent = window.labels.length;
                 }
 
+                // Tải signMeanings.json
                 await loadSignMeanings();
-                await loadQA();
-                await loadDetectionModel();
 
+                // Tải và xây dựng QA
+                await loadQA();
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
             }
         }
 
-        // Hàm vẽ bounding box lên ảnh
-        function drawBoundingBoxes(detectedObjects, imageElement) {
-            const canvasOverlay = document.createElement('canvas');
-            canvasOverlay.width = imageElement.width;
-            canvasOverlay.height = imageElement.height;
-            canvasOverlay.style.position = 'absolute';
-            canvasOverlay.style.top = imageElement.offsetTop + 'px';
-            canvasOverlay.style.left = imageElement.offsetLeft + 'px';
-            canvasOverlay.style.pointerEvents = 'none';
-
-            const ctx = canvasOverlay.getContext('2d');
-
-            detectedObjects.forEach(obj => {
-                ctx.strokeStyle = 'red';
-                ctx.lineWidth = 2;
-                ctx.font = '16px Arial';
-                ctx.fillStyle = 'red';
-
-                const [x, y, width, height] = obj.bbox;
-
-                ctx.strokeRect(x, y, width, height);
-                ctx.fillText(`${obj.class} (${(obj.score * 100).toFixed(1)}%)`, x, y > 20 ? y - 5 : y + 15);
-            });
-
-            imageElement.parentNode.appendChild(canvasOverlay);
-        }
-
-        // Hàm dự đoán hình ảnh
+        /**
+         * Hàm thực hiện dự đoán hình ảnh
+         */
         async function predictImage() {
             if (!model) {
                 predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
-                loadingPrediction.style.display = 'none';
-                return;
-            }
-
-            if (!detectionModel) {
-                predictionResult.textContent = "Mô hình phát hiện đối tượng chưa được tải. Vui lòng thử lại sau.";
                 loadingPrediction.style.display = 'none';
                 return;
             }
@@ -1155,121 +1193,99 @@
             }
 
             try {
-                const img = tf.browser.fromPixels(capturedImage);
-                const predictions = await detectionModel.detect(capturedImage);
+                // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
+                tf.tidy(() => {
+                    // Chuyển đổi canvas thành tensor
+                    const img = tf.browser.fromPixels(canvas);
+                    // Bỏ bước resize vì canvas đã được thiết lập đúng kích thước
+                    const normalized = img.div(255.0).expandDims();
 
-                const detectedObjects = predictions.filter(pred => pred.score > 0.5);
-
-                if (detectedObjects.length === 0) {
-                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Không phát hiện biển báo giao thông nào.</span>`;
-                    loadingPrediction.style.display = 'none';
-                    return;
-                }
-
-                predictionResult.innerHTML = "";
-                signMeaning.innerHTML = "";
-
-                for (let i = 0; i < detectedObjects.length; i++) {
-                    const obj = detectedObjects[i];
-                    const [x, y, width, height] = obj.bbox;
-
-                    // Điều chỉnh tỷ lệ bbox theo kích thước thực tế của ảnh
-                    const scaleX = capturedImage.width / capturedImage.naturalWidth;
-                    const scaleY = capturedImage.height / capturedImage.naturalHeight;
-
-                    const adjustedX = x / scaleX;
-                    const adjustedY = y / scaleY;
-                    const adjustedWidth = width / scaleX;
-                    const adjustedHeight = height / scaleY;
-
-                    // Cắt vùng ảnh của đối tượng
-                    const croppedImageTensor = tf.image.cropAndResize(
-                        img.expandDims(0),
-                        [[adjustedY / img.shape[0], adjustedX / img.shape[1], (adjustedY + adjustedHeight) / img.shape[0], (adjustedX + adjustedWidth) / img.shape[1]]],
-                        [0],
-                        [224, 224]
-                    );
-
-                    // Chuẩn hóa ảnh
-                    const normalized = croppedImageTensor.div(255.0);
-
-                    // Dự đoán lớp biển báo
+                    // Thực hiện dự đoán
                     const predictions = model.predict(normalized);
                     const data = predictions.dataSync();
 
                     // Tìm lớp có xác suất cao nhất
                     let maxProb = -1;
                     let maxIndex = -1;
-                    for (let j = 0; j < data.length; j++) {
-                        if (data[j] > maxProb) {
-                            maxProb = data[j];
-                            maxIndex = j;
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > maxProb) {
+                            maxProb = data[i];
+                            maxIndex = i;
                         }
                     }
 
                     if (maxIndex !== -1 && window.labels) {
                         const predictedClass = window.labels[maxIndex];
-                        predictionResult.innerHTML += `<p>Biển báo: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</p>`;
+                        predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
                         const signCode = predictedClass.substring(0, 5).toUpperCase();
                         if (signMeanings.hasOwnProperty(signCode)) {
                             const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
-                            signMeaning.innerHTML += `<p>${meaningText}</p>`;
+                            signMeaning.textContent = meaningText;
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
                         } else {
-                            signMeaning.innerHTML += `<p>Ý nghĩa: Không tìm thấy ý nghĩa của biển báo ${predictedClass}.</p>`;
+                            signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
                         }
+                    } else {
+                        predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
+                        signMeaning.textContent = "";
+                        signMeaning.style.display = 'none'; // Ẩn phần signMeaning
+                        readButton.style.display = 'none';
+                        quizButton.style.display = 'none';
                     }
-
-                    // Giải phóng bộ nhớ
-                    croppedImageTensor.dispose();
-                    normalized.dispose();
-                    predictions.dispose();
-                }
-
-                signMeaning.style.display = 'block';
-                readButton.style.display = 'inline-block';
-                quizButton.style.display = 'inline-block';
-
-                // Vẽ bounding boxes lên ảnh
-                drawBoundingBoxes(detectedObjects, capturedImage);
-
+                });
             } catch (err) {
                 console.error("Lỗi khi nhận diện hình ảnh: ", err);
                 predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
                 signMeaning.textContent = "";
-                signMeaning.style.display = 'none';
+                signMeaning.style.display = 'none'; // Ẩn phần signMeaning
                 readButton.style.display = 'none';
                 quizButton.style.display = 'none';
             } finally {
                 loadingPrediction.style.display = 'none';
-                tf.disposeVariables();
             }
         }
 
-        // Event listener cho nút "Đọc"
+        /**
+         * Event listener cho nút "Đọc"
+         */
         readButton.addEventListener('click', () => {
-            const text = signMeaning.textContent.replace(/^Ý nghĩa: /, "");
+            const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
             if (text) {
                 speakText(text);
             }
         });
 
-        // Event listener cho nút làm bài kiểm tra
+        /**
+         * Event listener cho nút làm bài kiểm tra
+         */
         quizButton.addEventListener('click', () => {
             window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
         });
 
-        // Cập nhật danh sách giọng nói
+        /**
+         * Cập nhật danh sách giọng nói khi chúng thay đổi
+         */
         window.speechSynthesis.onvoiceschanged = function() {
             window.speechSynthesis.getVoices();
         };
 
-        // Khởi động ứng dụng khi trang được tải
+        /**
+         * Khởi động ứng dụng khi trang được tải
+         */
         window.addEventListener('load', async () => {
             await loadModel();
-            startSloganRotation();
+            // Không khởi động camera ngay khi tải trang
+            startSloganRotation(); // Khởi động vòng quay khẩu hiệu
         });
 
-        // Dừng camera khi trang được đóng hoặc tải lại
+        /**
+         * Dừng camera khi trang được đóng hoặc tải lại
+         */
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -1287,7 +1303,7 @@
 
         // Event listener cho nút "Tải Ảnh Lên"
         uploadButton.addEventListener('click', () => {
-            uploadInput.click();
+            uploadInput.click(); // Trigger click on hidden file input
         });
 
         // Event listener cho việc chọn file từ file input
@@ -1299,6 +1315,7 @@
                     capturedImage.src = e.target.result;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
+                    // Hide video and placeholder image
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
                     overlay.style.display = 'none';
@@ -1306,11 +1323,59 @@
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
-                    signMeaning.style.display = 'none';
-                    readButton.style.display = 'none';
-                    quizButton.style.display = 'none';
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
-                    await predictImage();
+                    // Vẽ ảnh lên canvas để dự đoán
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = async () => {
+                        const context = canvas.getContext('2d');
+                        
+                        // Bật image smoothing và thiết lập chất lượng cao
+                        context.imageSmoothingEnabled = true;
+                        context.imageSmoothingQuality = 'high';
+
+                        // Thiết lập kích thước canvas thành 224x224
+                        const targetSize = 224;
+                        canvas.width = targetSize;
+                        canvas.height = targetSize;
+
+                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
+                        const aspectRatio = img.width / img.height;
+                        let drawWidth, drawHeight, dx, dy;
+
+                        if (aspectRatio > 1) {
+                            // Ngang hơn dọc
+                            drawWidth = targetSize;
+                            drawHeight = targetSize / aspectRatio;
+                            dx = 0;
+                            dy = (targetSize - drawHeight) / 2;
+                        } else {
+                            // Dọc hơn ngang hoặc tỉ lệ bằng
+                            drawHeight = targetSize;
+                            drawWidth = targetSize * aspectRatio;
+                            dy = 0;
+                            dx = (targetSize - drawWidth) / 2;
+                        }
+
+                        // Vẽ ảnh vào canvas với kích thước 224x224 và giữ tỷ lệ
+                        context.fillStyle = '#ffffff'; // Nền trắng nếu có khoảng trống
+                        context.fillRect(0, 0, targetSize, targetSize);
+                        context.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+                        // Kiểm tra độ mờ của hình ảnh
+                        const variance = await checkImageBlurriness(canvas);
+                        const blurThreshold = 100; // Ngưỡng tùy chỉnh, có thể điều chỉnh
+                        if (variance < blurThreshold) {
+                            alert("Ảnh bị mờ. Vui lòng tải lên ảnh rõ nét với ánh sáng tốt và giữ điện thoại ổn định.");
+                            retakePhoto(); // Reset lại trạng thái
+                            return;
+                        }
+
+                        await predictImage();
+                    };
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -1318,7 +1383,9 @@
             }
         });
 
-        // Hàm khởi động khẩu hiệu
+        /**
+         * Hàm khởi động khẩu hiệu
+         */
         const slogans = [
             "An toàn giao thông - Hạnh phúc cho mọi nhà!",
             "Đi đúng làn đường, an toàn trên mọi nẻo đường!",
@@ -1338,7 +1405,7 @@
             sloganSection.classList.add('active');
             setTimeout(() => {
                 sloganSection.classList.remove('active');
-            }, 6000);
+            }, 6000); // Hiển thị khẩu hiệu trong 6 giây để tạo khoảng trống cho hiệu ứng mờ dần
         }
 
         function startSloganRotation() {
@@ -1347,24 +1414,29 @@
             setInterval(() => {
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
-            }, 7000);
+            }, 7000); // Mỗi 7 giây một khẩu hiệu
         }
 
-        // Event Listener cho Modal Hướng Dẫn
+        /**
+         * Event Listener cho Modal Hướng Dẫn
+         */
         const instructionButton = document.getElementById('instructionButton');
         const instructionModal = document.getElementById('instructionModal');
         const closeButton = document.querySelector('.close-button');
 
+        // Open the modal
         instructionButton.addEventListener('click', () => {
             instructionModal.style.display = 'block';
             instructionModal.setAttribute('aria-hidden', 'false');
         });
 
+        // Close the modal khi 'x' được nhấn
         closeButton.addEventListener('click', () => {
             instructionModal.style.display = 'none';
             instructionModal.setAttribute('aria-hidden', 'true');
         });
 
+        // Close the modal khi nhấn ngoài nội dung modal
         window.addEventListener('click', (event) => {
             if (event.target == instructionModal) {
                 instructionModal.style.display = 'none';
