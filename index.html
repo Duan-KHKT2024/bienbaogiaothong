@@ -139,11 +139,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            position: relative; /* Để overlay hoạt động đúng */
             margin-bottom: 30px;
         }
 
         .recognition-section h2 {
+            /* Đã chuyển từ var(--dark-color) sang var(--section-title-color) để giữ màu trắng */
             color: var(--section-title-color);
             margin-bottom: 20px;
             font-size: 1.1em; /* Giảm kích thước font */
@@ -194,9 +195,20 @@
             opacity: 0;
         }
 
-        /* Ẩn overlay nếu không cần */
+        /* Cải thiện thiết kế Overlay */
         .overlay {
-            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
+            height: 60%;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
+            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
+            box-sizing: border-box;
+            pointer-events: none; /* Không chặn các tương tác với video */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
+            display: none; /* Hide overlay initially */
         }
 
         .button-container {
@@ -310,6 +322,11 @@
             .qa-section h2 {
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
+
+            /* Optional: Adjust slogan font size further if needed */
+            /* #slogan {
+                font-size: 0.9em;
+            } */
         }
 
         #predictionResult {
@@ -734,14 +751,13 @@
             <div id="instructionModalDescription">
                 <ol>
                     <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
-                    <li>Đưa biển báo giao thông vào trung tâm khung hình và đảm bảo biển báo chiếm phần lớn diện tích khung hình.</li>
-                    <li>Nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
                 <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
-                <p><strong>Lưu ý:</strong> Ứng dụng đã tích hợp chức năng Auto Focus để cải thiện chất lượng hình ảnh. Tuy nhiên, tính năng này có thể không được hỗ trợ trên tất cả các thiết bị. Nếu thiết bị của bạn không hỗ trợ, vui lòng giữ điện thoại ổn định và đảm bảo ánh sáng tốt khi chụp ảnh.</p>
             </div>
         </div>
     </div>
@@ -877,7 +893,7 @@
         }
 
         /**
-         * Hàm khởi động camera với Auto Focus
+         * Hàm khởi động camera
          */
         async function startCamera() {
             try {
@@ -885,28 +901,12 @@
                     video: {
                         facingMode: "environment",
                         width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        height: { ideal: 720 },
+                        // Optional: thêm các constraints khác nếu cần
                     },
                     audio: false
                 });
                 video.srcObject = stream;
-
-                // Lấy video track
-                let videoTrack = stream.getVideoTracks()[0];
-
-                // Kiểm tra khả năng của camera
-                let capabilities = videoTrack.getCapabilities();
-
-                // Kiểm tra và áp dụng Auto Focus nếu được hỗ trợ
-                if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-                    await videoTrack.applyConstraints({
-                        advanced: [{ focusMode: 'continuous' }]
-                    });
-                    console.log("Auto Focus đã được kích hoạt.");
-                } else {
-                    console.log("Thiết bị không hỗ trợ Auto Focus.");
-                }
-
                 return new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
                         video.play();
@@ -977,7 +977,7 @@
                     // Hide placeholder image and show video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'none'; // Ẩn overlay nếu không cần
+                    overlay.style.display = 'block'; // Show overlay when video is active
 
                     await startCamera();
                     cameraStarted = true;
@@ -1016,13 +1016,19 @@
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
+                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                    const overlayWidth = videoWidth * 0.6;
+                    const overlayHeight = videoHeight * 0.6;
+                    const sx = (videoWidth - overlayWidth) / 2;
+                    const sy = (videoHeight - overlayHeight) / 2;
+
                     // Thiết lập kích thước canvas thành 224x224
                     const targetSize = 224;
                     canvas.width = targetSize;
                     canvas.height = targetSize;
 
-                    // Vẽ toàn bộ video frame vào canvas với kích thước 224x224
-                    context.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, targetSize, targetSize);
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước 224x224
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, targetSize, targetSize);
 
                     // Kiểm tra độ mờ của hình ảnh
                     const variance = await checkImageBlurriness(canvas);
@@ -1040,8 +1046,6 @@
                     overlay.style.display = 'none';
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
-                    captureButton.style.display = 'none'; // Ẩn nút chụp ảnh sau khi chụp
-                    captureButton.textContent = "Bắt Đầu"; // Reset nhãn nút
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
@@ -1317,7 +1321,6 @@
                     overlay.style.display = 'none';
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
-                    captureButton.style.display = 'none'; // Ẩn nút chụp ảnh
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
@@ -1339,8 +1342,28 @@
                         canvas.width = targetSize;
                         canvas.height = targetSize;
 
-                        // Vẽ toàn bộ hình ảnh vào canvas với kích thước 224x224
-                        context.drawImage(img, 0, 0, img.width, img.height, 0, 0, targetSize, targetSize);
+                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
+                        const aspectRatio = img.width / img.height;
+                        let drawWidth, drawHeight, dx, dy;
+
+                        if (aspectRatio > 1) {
+                            // Ngang hơn dọc
+                            drawWidth = targetSize;
+                            drawHeight = targetSize / aspectRatio;
+                            dx = 0;
+                            dy = (targetSize - drawHeight) / 2;
+                        } else {
+                            // Dọc hơn ngang hoặc tỉ lệ bằng
+                            drawHeight = targetSize;
+                            drawWidth = targetSize * aspectRatio;
+                            dy = 0;
+                            dx = (targetSize - drawWidth) / 2;
+                        }
+
+                        // Vẽ ảnh vào canvas với kích thước 224x224 và giữ tỷ lệ
+                        context.fillStyle = '#ffffff'; // Nền trắng nếu có khoảng trống
+                        context.fillRect(0, 0, targetSize, targetSize);
+                        context.drawImage(img, dx, dy, drawWidth, drawHeight);
 
                         // Kiểm tra độ mờ của hình ảnh
                         const variance = await checkImageBlurriness(canvas);
