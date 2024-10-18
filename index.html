@@ -195,22 +195,61 @@
             opacity: 0;
         }
 
-        /* Cải thiện thiết kế Overlay */
+        /* Overlay Chọn Vùng */
         .overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
+            top: 20%;
+            left: 20%;
+            width: 60%;
             height: 60%;
-            transform: translate(-50%, -50%);
-            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
-            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            cursor: move;
+            display: none; /* Ẩn ban đầu, hiển thị khi camera hoạt động */
             box-sizing: border-box;
-            pointer-events: none; /* Không chặn các tương tác với video */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
-            display: none; /* Hide overlay initially */
+            z-index: 2;
+            background: rgba(40, 167, 69, 0.1); /* Nền mờ để dễ dàng xác định vùng chọn */
         }
 
+        /* Handles cho việc thay đổi kích thước */
+        .resize-handle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: var(--primary-color);
+            border: 1px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .top-left {
+            top: -8px;
+            left: -8px;
+        }
+
+        .top-right {
+            top: -8px;
+            right: -8px;
+        }
+
+        .bottom-left {
+            bottom: -8px;
+            left: -8px;
+        }
+
+        .bottom-right {
+            bottom: -8px;
+            right: -8px;
+        }
+
+        /* Cải thiện thiết kế Overlay */
+        .overlay {
+            /* Đã được định nghĩa ở trên */
+        }
+
+        /* Các phần CSS khác giữ nguyên... */
+
+        /* Các phần khác giữ nguyên */
         .button-container {
             display: flex;
             justify-content: center;
@@ -677,7 +716,13 @@
             <img id="placeholderImage" src="https://duan-khkt2024.github.io/bienbaogiaothong/model/h1.jpg" alt="Ứng dụng Nhận Diện Biển Báo Giao Thông">
             <!-- Video Element -->
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
-            <div class="overlay"></div>
+            <!-- Overlay Chọn Vùng -->
+            <div class="overlay" id="selectionOverlay">
+                <div class="resize-handle top-left"></div>
+                <div class="resize-handle top-right"></div>
+                <div class="resize-handle bottom-left"></div>
+                <div class="resize-handle bottom-right"></div>
+            </div>
         </div>
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
@@ -751,8 +796,9 @@
             <div id="instructionModalDescription">
                 <ol>
                     <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
-                    <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Sử dụng overlay để chọn vùng chứa biển báo giao thông bạn muốn chụp.</li>
+                    <li>Khi overlay đã được đặt đúng vị trí, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
+                    <li>Đảm bảo camera của bạn được giữ ổn định và biển báo rõ ràng trong vùng chọn.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
@@ -787,6 +833,7 @@
         const signCount = document.getElementById('totalSigns');
         const quizButton = document.getElementById('quizButton');
         const overlay = document.querySelector('.overlay');
+        const selectionOverlay = document.getElementById('selectionOverlay');
         let stream = null;
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
@@ -940,6 +987,8 @@
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
                     overlay.style.display = 'block'; // Show overlay when video is active
+                    selectionOverlay.style.display = 'block'; // Hiển thị overlay
+                    showOverlay(); // Hiển thị overlay
 
                     await startCamera();
                     cameraStarted = true;
@@ -973,13 +1022,19 @@
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
-                    // Cài đặt kích thước canvas theo kích thước overlay
-                    const overlayWidth = videoWidth * 0.6;
-                    const overlayHeight = videoHeight * 0.6;
-                    const sx = (videoWidth - overlayWidth) / 2;
-                    const sy = (videoHeight - overlayHeight) / 2;
+                    // Tính toán vị trí và kích thước overlay tương ứng với kích thước video
+                    const overlayRect = selectionOverlay.getBoundingClientRect();
+                    const videoRect = video.getBoundingClientRect();
 
-                    // Cài đặt kích thước canvas
+                    const scaleX = videoWidth / videoRect.width;
+                    const scaleY = videoHeight / videoRect.height;
+
+                    const sx = (overlayRect.left - videoRect.left) * scaleX;
+                    const sy = (overlayRect.top - videoRect.top) * scaleY;
+                    const overlayWidth = overlayRect.width * scaleX;
+                    const overlayHeight = overlayRect.height * scaleY;
+
+                    // Cài đặt kích thước canvas theo kích thước overlay
                     canvas.width = 224; // Kích thước chuẩn cho mô hình
                     canvas.height = 224;
 
@@ -1027,6 +1082,7 @@
                     capturedImage.style.opacity = 1;
                     video.style.display = 'none';
                     overlay.style.display = 'none';
+                    selectionOverlay.style.display = 'none'; // Ẩn overlay sau khi chụp
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
@@ -1082,10 +1138,11 @@
 
             cameraStarted = false; // Reset trạng thái camera
 
-            // Show placeholder image and hide video and overlay
+            // Show placeholder image and hide video, overlay
             placeholderImage.style.display = 'block';
             video.style.display = 'none';
             overlay.style.display = 'none';
+            selectionOverlay.style.display = 'none'; // Ẩn overlay
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
@@ -1307,6 +1364,7 @@
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
                     overlay.style.display = 'none';
+                    selectionOverlay.style.display = 'none'; // Ẩn overlay
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
