@@ -762,6 +762,9 @@
         </div>
     </div>
 
+    <!-- Thêm CamanJS để xử lý ảnh -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.1.2/caman.full.min.js" integrity="sha512-DP1D99lyG5xGrkLtsqvNS7cZ5W3XmP0HXeGeCr7HfGU6fhyEV4NhZylLL/ev3yK2Uyw3BLqHD74X4GYnKKYJ3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 
@@ -900,8 +903,8 @@
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
+                        width: { min: 640, ideal: 1280, max: 1920 }, // Linh hoạt hơn trong độ phân giải
+                        height: { min: 480, ideal: 720, max: 1080 },
                         // Optional: thêm các constraints khác nếu cần
                     },
                     audio: false
@@ -970,18 +973,53 @@
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
-                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                    // Cài đặt kích thước canvas theo kích thước overlay
                     const overlayWidth = videoWidth * 0.6;
                     const overlayHeight = videoHeight * 0.6;
                     const sx = (videoWidth - overlayWidth) / 2;
                     const sy = (videoHeight - overlayHeight) / 2;
 
-                    // Cài đặt kích thước canvas theo kích thước overlay
-                    canvas.width = overlayWidth;
-                    canvas.height = overlayHeight;
+                    // Cài đặt kích thước canvas
+                    canvas.width = 224; // Kích thước chuẩn cho mô hình
+                    canvas.height = 224;
 
-                    // Vẽ phần ảnh trong khu vực overlay vào canvas
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước chuẩn
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, 224, 224);
+
+                    // Áp dụng các kỹ thuật tăng cường trước khi dự đoán
+                    let img = new Image();
+                    img.src = canvas.toDataURL('image/png');
+                    await new Promise((resolve) => {
+                        img.onload = () => {
+                            // Tăng độ sáng và độ tương phản
+                            const enhancedCanvas = document.createElement('canvas');
+                            enhancedCanvas.width = img.width;
+                            enhancedCanvas.height = img.height;
+                            const enhancedCtx = enhancedCanvas.getContext('2d');
+                            enhancedCtx.drawImage(img, 0, 0);
+
+                            // Kiểm tra xem CamanJS đã được tải chưa
+                            if (typeof Caman === 'undefined') {
+                                console.error("CamanJS chưa được tải.");
+                                alert("Đã xảy ra lỗi trong việc xử lý ảnh.");
+                                resolve();
+                                return;
+                            }
+
+                            // Sử dụng CamanJS để tăng độ sáng và độ tương phản
+                            Caman(enhancedCanvas, function () {
+                                this.brightness(10);
+                                this.contrast(30);
+                                this.sharpen(5);
+                                this.render(() => {
+                                    resolve();
+                                });
+                            });
+
+                            // Vẽ kết quả lên canvas chính
+                            context.drawImage(enhancedCanvas, 0, 0, 224, 224);
+                        };
+                    });
 
                     const imageDataURL = canvas.toDataURL('image/png');
                     capturedImage.src = imageDataURL;
@@ -1060,6 +1098,7 @@
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
                 console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                alert("Trình duyệt của bạn không hỗ trợ tính năng đọc văn bản.");
                 return;
             }
 
@@ -1070,6 +1109,9 @@
 
             if (vietnameseVoices.length > 0) {
                 utterThis.voice = vietnameseVoices[0];
+            } else {
+                console.warn('Không tìm thấy giọng nói tiếng Việt. Sử dụng giọng nói mặc định.');
+                alert("Không tìm thấy giọng nói tiếng Việt. Sẽ sử dụng giọng nói mặc định.");
             }
 
             synth.speak(utterThis);
@@ -1114,7 +1156,8 @@
                 await loadQA();
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
-                loadingModel.textContent = "Không thể tải mô hình.";
+                loadingModel.textContent = "Không thể tải mô hình. Vui lòng kiểm tra kết nối mạng.";
+                alert("Không thể tải mô hình. Vui lòng kiểm tra kết nối mạng.");
             }
         }
 
@@ -1135,6 +1178,9 @@
             }
 
             try {
+                // Hiển thị loading
+                loadingPrediction.style.display = 'flex';
+
                 // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
                 tf.tidy(() => {
                     // Chuyển đổi canvas thành tensor
@@ -1253,7 +1299,7 @@
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     capturedImage.src = e.target.result;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
@@ -1283,10 +1329,36 @@
                         } else {
                             canvasWidth = canvasHeight * aspectRatio;
                         }
-                        canvas.width = canvasWidth;
-                        canvas.height = canvasHeight;
-                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-                        predictImage();
+                        canvas.width = 224;
+                        canvas.height = 224;
+                        context.drawImage(img, 0, 0, 224, 224);
+
+                        // Áp dụng các kỹ thuật tăng cường
+                        const enhancedCanvas = document.createElement('canvas');
+                        enhancedCanvas.width = 224;
+                        enhancedCanvas.height = 224;
+                        const enhancedCtx = enhancedCanvas.getContext('2d');
+                        enhancedCtx.drawImage(canvas, 0, 0);
+
+                        // Kiểm tra xem CamanJS đã được tải chưa
+                        if (typeof Caman === 'undefined') {
+                            console.error("CamanJS chưa được tải.");
+                            alert("Đã xảy ra lỗi trong việc xử lý ảnh.");
+                            predictImage();
+                            return;
+                        }
+
+                        // Sử dụng CamanJS để tăng độ sáng, độ tương phản và áp dụng sharpen
+                        Caman(enhancedCanvas, function () {
+                            this.brightness(10);
+                            this.contrast(30);
+                            this.sharpen(5);
+                            this.render(() => {
+                                // Vẽ kết quả lên canvas chính
+                                context.drawImage(enhancedCanvas, 0, 0, 224, 224);
+                                predictImage();
+                            });
+                        });
                     };
                 };
                 reader.readAsDataURL(file);
