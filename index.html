@@ -139,12 +139,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative; /* Để overlay hoạt động đúng */
+            position: relative;
             margin-bottom: 30px;
         }
 
         .recognition-section h2 {
-            /* Đã chuyển từ var(--dark-color) sang var(--section-title-color) để giữ màu trắng */
             color: var(--section-title-color);
             margin-bottom: 20px;
             font-size: 1.1em; /* Giảm kích thước font */
@@ -742,6 +741,7 @@
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
                 <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <p><strong>Lưu ý:</strong> Ứng dụng đã tích hợp chức năng Auto Focus để cải thiện chất lượng hình ảnh. Tuy nhiên, tính năng này có thể không được hỗ trợ trên tất cả các thiết bị. Nếu thiết bị của bạn không hỗ trợ, vui lòng giữ điện thoại ổn định và đảm bảo ánh sáng tốt khi chụp ảnh.</p>
             </div>
         </div>
     </div>
@@ -877,7 +877,7 @@
         }
 
         /**
-         * Hàm khởi động camera
+         * Hàm khởi động camera với Auto Focus
          */
         async function startCamera() {
             try {
@@ -885,12 +885,28 @@
                     video: {
                         facingMode: "environment",
                         width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        // Optional: thêm các constraints khác nếu cần
+                        height: { ideal: 720 }
                     },
                     audio: false
                 });
                 video.srcObject = stream;
+
+                // Lấy video track
+                let videoTrack = stream.getVideoTracks()[0];
+
+                // Kiểm tra khả năng của camera
+                let capabilities = videoTrack.getCapabilities();
+
+                // Kiểm tra và áp dụng Auto Focus nếu được hỗ trợ
+                if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+                    await videoTrack.applyConstraints({
+                        advanced: [{ focusMode: 'continuous' }]
+                    });
+                    console.log("Auto Focus đã được kích hoạt.");
+                } else {
+                    console.log("Thiết bị không hỗ trợ Auto Focus.");
+                }
+
                 return new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
                         video.play();
