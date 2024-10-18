@@ -963,6 +963,11 @@
                     }
 
                     const context = canvas.getContext('2d');
+                    
+                    // Bật image smoothing và thiết lập chất lượng cao
+                    context.imageSmoothingEnabled = true;
+                    context.imageSmoothingQuality = 'high';
+
                     const videoWidth = video.videoWidth;
                     const videoHeight = video.videoHeight;
 
@@ -976,12 +981,13 @@
                     const sx = (videoWidth - overlayWidth) / 2;
                     const sy = (videoHeight - overlayHeight) / 2;
 
-                    // Cài đặt kích thước canvas theo kích thước overlay
-                    canvas.width = overlayWidth;
-                    canvas.height = overlayHeight;
+                    // Thiết lập kích thước canvas thành 224x224
+                    const targetSize = 224;
+                    canvas.width = targetSize;
+                    canvas.height = targetSize;
 
-                    // Vẽ phần ảnh trong khu vực overlay vào canvas
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước 224x224
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, targetSize, targetSize);
 
                     const imageDataURL = canvas.toDataURL('image/png');
                     capturedImage.src = imageDataURL;
@@ -1139,8 +1145,8 @@
                 tf.tidy(() => {
                     // Chuyển đổi canvas thành tensor
                     const img = tf.browser.fromPixels(canvas);
-                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
-                    const normalized = resized.div(255.0).expandDims();
+                    // Bỏ bước resize vì canvas đã được thiết lập đúng kích thước
+                    const normalized = img.div(255.0).expandDims();
 
                     // Thực hiện dự đoán
                     const predictions = model.predict(normalized);
@@ -1274,18 +1280,39 @@
                     img.src = e.target.result;
                     img.onload = () => {
                         const context = canvas.getContext('2d');
+                        
+                        // Bật image smoothing và thiết lập chất lượng cao
+                        context.imageSmoothingEnabled = true;
+                        context.imageSmoothingQuality = 'high';
+
+                        // Thiết lập kích thước canvas thành 224x224
+                        const targetSize = 224;
+                        canvas.width = targetSize;
+                        canvas.height = targetSize;
+
                         // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
                         const aspectRatio = img.width / img.height;
-                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
-                        let canvasHeight = 224;
+                        let drawWidth, drawHeight, dx, dy;
+
                         if (aspectRatio > 1) {
-                            canvasHeight = canvasWidth / aspectRatio;
+                            // Ngang hơn dọc
+                            drawWidth = targetSize;
+                            drawHeight = targetSize / aspectRatio;
+                            dx = 0;
+                            dy = (targetSize - drawHeight) / 2;
                         } else {
-                            canvasWidth = canvasHeight * aspectRatio;
+                            // Dọc hơn ngang hoặc tỉ lệ bằng
+                            drawHeight = targetSize;
+                            drawWidth = targetSize * aspectRatio;
+                            dy = 0;
+                            dx = (targetSize - drawWidth) / 2;
                         }
-                        canvas.width = canvasWidth;
-                        canvas.height = canvasHeight;
-                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+
+                        // Vẽ ảnh vào canvas với kích thước 224x224 và giữ tỷ lệ
+                        context.fillStyle = '#ffffff'; // Nền trắng nếu có khoảng trống
+                        context.fillRect(0, 0, targetSize, targetSize);
+                        context.drawImage(img, dx, dy, drawWidth, drawHeight);
+
                         predictImage();
                     };
                 };
