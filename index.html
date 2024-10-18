@@ -157,6 +157,8 @@
             position: relative;
             width: 100%;
             max-width: 600px;
+            overflow: hidden;
+            border-radius: 15px;
         }
 
         /* Placeholder Image Styles */
@@ -179,7 +181,7 @@
             width: 100%;
             max-width: 600px;
             height: auto;
-            max-height: 400px;
+            max-height: 600px; /* Tăng chiều cao tối đa để hỗ trợ ảnh lớn hơn */
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: opacity 0.5s ease, transform 0.3s ease;
@@ -200,8 +202,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
-            height: 60%;
+            width: 80%; /* Tăng kích thước để bao quát nhiều khu vực hơn */
+            height: 80%;
             transform: translate(-50%, -50%);
             border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
             border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
@@ -758,12 +760,16 @@
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
                 <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
+                <!-- Tính năng báo lỗi -->
+                <button id="reportErrorButton" style="margin-top: 20px; padding: 10px 20px; background-color: var(--error-color); color: #fff; border: none; border-radius: 5px; cursor: pointer;">Báo Lỗi Nhận Diện</button>
             </div>
         </div>
     </div>
 
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <!-- Thêm thư viện tfjs-yolo nếu sử dụng YOLO -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script> -->
 
     <script>
         // Các phần tử DOM
@@ -793,6 +799,9 @@
 
         let signMeanings = {};
         let qaData = [];
+
+        // Web Worker for prediction
+        let predictionWorker;
 
         /**
          * Hàm tải signMeanings.json
@@ -900,8 +909,8 @@
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
+                        width: { ideal: 1920 }, // Tăng độ phân giải video
+                        height: { ideal: 1080 },
                         // Optional: thêm các constraints khác nếu cần
                     },
                     audio: false
@@ -970,18 +979,18 @@
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
-                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
-                    const overlayWidth = videoWidth * 0.6;
-                    const overlayHeight = videoHeight * 0.6;
+                    // Cài đặt kích thước canvas theo kích thước overlay tăng lên
+                    const overlayWidth = videoWidth * 0.8; // 80% kích thước video
+                    const overlayHeight = videoHeight * 0.8;
                     const sx = (videoWidth - overlayWidth) / 2;
                     const sy = (videoHeight - overlayHeight) / 2;
 
-                    // Cài đặt kích thước canvas theo kích thước overlay
-                    canvas.width = overlayWidth;
-                    canvas.height = overlayHeight;
+                    // Tăng kích thước canvas để giữ độ phân giải cao hơn
+                    canvas.width = 448; // Tăng kích thước đầu vào
+                    canvas.height = 448;
 
-                    // Vẽ phần ảnh trong khu vực overlay vào canvas
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước mới
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, canvas.width, canvas.height);
 
                     const imageDataURL = canvas.toDataURL('image/png');
                     capturedImage.src = imageDataURL;
@@ -1139,7 +1148,7 @@
                 tf.tidy(() => {
                     // Chuyển đổi canvas thành tensor
                     const img = tf.browser.fromPixels(canvas);
-                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                    const resized = tf.image.resizeBilinear(img, [448, 448]); // Tăng kích thước đầu vào
                     const normalized = resized.div(255.0).expandDims();
 
                     // Thực hiện dự đoán
@@ -1276,8 +1285,8 @@
                         const context = canvas.getContext('2d');
                         // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
                         const aspectRatio = img.width / img.height;
-                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
-                        let canvasHeight = 224;
+                        let canvasWidth = 448; // Tăng kích thước chuẩn cho mô hình
+                        let canvasHeight = 448;
                         if (aspectRatio > 1) {
                             canvasHeight = canvasWidth / aspectRatio;
                         } else {
@@ -1335,6 +1344,7 @@
         const instructionButton = document.getElementById('instructionButton');
         const instructionModal = document.getElementById('instructionModal');
         const closeButton = document.querySelector('.close-button');
+        const reportErrorButton = document.getElementById('reportErrorButton');
 
         // Open the modal
         instructionButton.addEventListener('click', () => {
@@ -1353,6 +1363,43 @@
             if (event.target == instructionModal) {
                 instructionModal.style.display = 'none';
                 instructionModal.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        // Event Listener cho nút Báo Lỗi Nhận Diện
+        reportErrorButton.addEventListener('click', () => {
+            const predicted = predictionResult.textContent;
+            if (!predicted || predicted.includes("Không có kết quả")) {
+                alert("Không có kết quả nhận diện để báo lỗi.");
+                return;
+            }
+
+            const userFeedback = prompt("Bạn có thể miêu tả lỗi nhận diện không?");
+            if (userFeedback) {
+                // Gửi phản hồi đến server hoặc lưu vào nơi nào đó
+                // Ví dụ: gửi phản hồi đến một API endpoint
+                fetch("https://duan-khkt2024.github.io/bienbaogiaothong/model/feedback.json", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        predicted: predicted,
+                        feedback: userFeedback,
+                        timestamp: new Date().toISOString()
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Cảm ơn bạn đã góp ý!");
+                    } else {
+                        alert("Gửi phản hồi không thành công. Vui lòng thử lại sau.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi khi gửi phản hồi:", error);
+                    alert("Đã xảy ra lỗi khi gửi phản hồi.");
+                });
             }
         });
     </script>
