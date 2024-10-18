@@ -6,6 +6,8 @@
     <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Thêm Interact.js -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <style>
         /* CSS Variables và các kiểu CSS khác giữ nguyên */
         :root {
@@ -200,16 +202,35 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60%; /* Giảm kích thước để tạo không gian xung quanh */
+            width: 60%;
             height: 60%;
             transform: translate(-50%, -50%);
-            border: 3px solid rgba(40, 167, 69, 0.8); /* Sử dụng màu sắc trong suốt */
-            border-radius: 20px; /* Đường viền tròn hơn để thẩm mỹ */
+            border: 3px dashed rgba(40, 167, 69, 0.8);
+            border-radius: 10px;
             box-sizing: border-box;
-            pointer-events: none; /* Không chặn các tương tác với video */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ để nổi bật */
-            display: none; /* Hide overlay initially */
+            /* pointer-events: none; */ /* Bỏ dòng này để overlay có thể tương tác */
+            z-index: 2;
+            /* Thêm transition để mượt mà khi thay đổi kích thước hoặc vị trí */
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
         }
+
+        /* Thêm các handles cho resize */
+        .resize-handle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: rgba(40, 167, 69, 0.8);
+            border: 1px solid #fff;
+            box-sizing: border-box;
+            z-index: 3;
+            border-radius: 50%;
+        }
+
+        /* Các góc để resize */
+        .resize-handle.nw { top: -7.5px; left: -7.5px; cursor: nwse-resize; }
+        .resize-handle.ne { top: -7.5px; right: -7.5px; cursor: nesw-resize; }
+        .resize-handle.sw { bottom: -7.5px; left: -7.5px; cursor: nesw-resize; }
+        .resize-handle.se { bottom: -7.5px; right: -7.5px; cursor: nwse-resize; }
 
         .button-container {
             display: flex;
@@ -677,7 +698,13 @@
             <img id="placeholderImage" src="https://duan-khkt2024.github.io/bienbaogiaothong/model/h1.jpg" alt="Ứng dụng Nhận Diện Biển Báo Giao Thông">
             <!-- Video Element -->
             <video id="video" autoplay playsinline aria-label="Video từ camera"></video>
-            <div class="overlay"></div>
+            <!-- Overlay có thể kéo thả và thay đổi kích thước -->
+            <div class="overlay" id="selectableOverlay">
+                <div class="resize-handle nw"></div>
+                <div class="resize-handle ne"></div>
+                <div class="resize-handle sw"></div>
+                <div class="resize-handle se"></div>
+            </div>
         </div>
         <img id="capturedImage" alt="Ảnh đã chụp">
         <canvas id="canvas" style="display: none;"></canvas>
@@ -752,7 +779,7 @@
                 <ol>
                     <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
                     <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
-                    <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
+                    <li>Điều chỉnh vùng overlay bằng cách kéo thả và thay đổi kích thước để bao phủ biển báo cần chụp.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
@@ -764,6 +791,8 @@
 
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <!-- Thêm thư viện MediaPipe nếu cần -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/objectron/objectron.js"></script>
 
     <script>
         // Các phần tử DOM
@@ -923,6 +952,76 @@
         }
 
         /**
+         * Hàm làm sắc nét hình ảnh
+         */
+        function sharpenImage(context, width, height) {
+            const imageData = context.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            // Đơn giản hóa bộ lọc làm sắc nét
+            const weights = [
+                0, -1, 0,
+                -1, 5, -1,
+                0, -1, 0
+            ];
+            const side = Math.round(Math.sqrt(weights.length));
+            const halfSide = Math.floor(side / 2);
+            const src = data;
+            const sw = width;
+            const sh = height;
+            const w = sw;
+            const h = sh;
+            const output = context.createImageData(w, h);
+            const dst = output.data;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let r = 0, g = 0, b = 0;
+                    for (let cy = 0; cy < side; cy++) {
+                        for (let cx = 0; cx < side; cx++) {
+                            const scy = y + cy - halfSide;
+                            const scx = x + cx - halfSide;
+                            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+                                const srcOffset = (scy * sw + scx) * 4;
+                                const wt = weights[cy * side + cx];
+                                r += src[srcOffset] * wt;
+                                g += src[srcOffset + 1] * wt;
+                                b += src[srcOffset + 2] * wt;
+                            }
+                        }
+                    }
+                    const dstOffset = (y * w + x) * 4;
+                    dst[dstOffset] = r;
+                    dst[dstOffset + 1] = g;
+                    dst[dstOffset + 2] = b;
+                    dst[dstOffset + 3] = 255; // Alpha
+                }
+            }
+            context.putImageData(output, 0, 0);
+        }
+
+        /**
+         * Hàm lấy kích thước và vị trí của overlay
+         */
+        function getOverlayDimensions() {
+            const overlay = document.getElementById('selectableOverlay');
+            const videoElement = document.getElementById('video');
+
+            const videoRect = videoElement.getBoundingClientRect();
+            const overlayRect = overlay.getBoundingClientRect();
+
+            // Tính toán tỷ lệ giữa video và stream thật
+            const scaleX = video.videoWidth / videoRect.width;
+            const scaleY = video.videoHeight / videoRect.height;
+
+            const x = (overlayRect.left - videoRect.left) * scaleX;
+            const y = (overlayRect.top - videoRect.top) * scaleY;
+            const width = overlayRect.width * scaleX;
+            const height = overlayRect.height * scaleY;
+
+            return { x, y, width, height };
+        }
+
+        /**
          * Hàm chụp ảnh từ video
          */
         async function capturePhoto() {
@@ -968,26 +1067,19 @@
                     context.imageSmoothingEnabled = true;
                     context.imageSmoothingQuality = 'high';
 
-                    const videoWidth = video.videoWidth;
-                    const videoHeight = video.videoHeight;
-
-                    if (videoWidth === 0 || videoHeight === 0) {
-                        throw new Error("Video chưa sẵn sàng.");
-                    }
-
-                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
-                    const overlayWidth = videoWidth * 0.6;
-                    const overlayHeight = videoHeight * 0.6;
-                    const sx = (videoWidth - overlayWidth) / 2;
-                    const sy = (videoHeight - overlayHeight) / 2;
-
-                    // Thiết lập kích thước canvas thành 224x224
                     const targetSize = 224;
                     canvas.width = targetSize;
                     canvas.height = targetSize;
 
-                    // Vẽ phần ảnh trong khu vực overlay vào canvas với kích thước 224x224
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, targetSize, targetSize);
+                    // Lấy kích thước và vị trí của overlay
+                    const { x, y, width, height } = getOverlayDimensions();
+
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas
+                    // Trích xuất phần ảnh cần thiết từ video
+                    context.drawImage(video, x, y, width, height, 0, 0, targetSize, targetSize);
+
+                    // Làm sắc nét hình ảnh
+                    sharpenImage(context, targetSize, targetSize);
 
                     const imageDataURL = canvas.toDataURL('image/png');
                     capturedImage.src = imageDataURL;
@@ -1229,6 +1321,8 @@
             await loadModel();
             // Không khởi động camera ngay khi tải trang
             startSloganRotation(); // Khởi động vòng quay khẩu hiệu
+            // Khởi tạo Interact.js cho overlay
+            initOverlay();
         });
 
         /**
@@ -1266,7 +1360,7 @@
                     // Hide video and placeholder image
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
-                    overlay.style.display = 'none';
+                    showOverlayOnImage(); // Hiển thị overlay trên ảnh đã tải lên
                     downloadButton.style.display = 'inline-block';
                     retakeButton.style.display = 'inline-block';
                     predictionResult.innerHTML = "";
@@ -1290,28 +1384,14 @@
                         canvas.width = targetSize;
                         canvas.height = targetSize;
 
-                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
-                        const aspectRatio = img.width / img.height;
-                        let drawWidth, drawHeight, dx, dy;
+                        // Lấy kích thước và vị trí của overlay
+                        const { x, y, width, height } = getOverlayDimensions();
 
-                        if (aspectRatio > 1) {
-                            // Ngang hơn dọc
-                            drawWidth = targetSize;
-                            drawHeight = targetSize / aspectRatio;
-                            dx = 0;
-                            dy = (targetSize - drawHeight) / 2;
-                        } else {
-                            // Dọc hơn ngang hoặc tỉ lệ bằng
-                            drawHeight = targetSize;
-                            drawWidth = targetSize * aspectRatio;
-                            dy = 0;
-                            dx = (targetSize - drawWidth) / 2;
-                        }
+                        // Vẽ phần ảnh trong khu vực overlay vào canvas
+                        context.drawImage(img, x, y, width, height, 0, 0, targetSize, targetSize);
 
-                        // Vẽ ảnh vào canvas với kích thước 224x224 và giữ tỷ lệ
-                        context.fillStyle = '#ffffff'; // Nền trắng nếu có khoảng trống
-                        context.fillRect(0, 0, targetSize, targetSize);
-                        context.drawImage(img, dx, dy, drawWidth, drawHeight);
+                        // Làm sắc nét hình ảnh
+                        sharpenImage(context, targetSize, targetSize);
 
                         predictImage();
                     };
@@ -1382,6 +1462,84 @@
                 instructionModal.setAttribute('aria-hidden', 'true');
             }
         });
+
+        /**
+         * Hàm khởi tạo Interact.js cho Overlay
+         */
+        function initOverlay() {
+            interact('#selectableOverlay')
+                .draggable({
+                    // Restrict the drag within the video container or image container
+                    modifiers: [
+                        interact.modifiers.restrictRect({
+                            restriction: '.video-container, .recognition-section',
+                            endOnly: true
+                        })
+                    ],
+                    listeners: {
+                        move(event) {
+                            const target = event.target;
+                            // Keep the dragged position in the data-x/data-y attributes
+                            let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                            let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                            // Translate the element
+                            target.style.transform = `translate(${x}px, ${y}px)`;
+
+                            // Update the position attributes
+                            target.setAttribute('data-x', x);
+                            target.setAttribute('data-y', y);
+                        }
+                    }
+                })
+                .resizable({
+                    edges: { left: true, right: true, bottom: true, top: true },
+                    modifiers: [
+                        interact.modifiers.restrictEdges({
+                            outer: '.video-container, .recognition-section',
+                            endOnly: true
+                        }),
+                        interact.modifiers.restrictSize({
+                            min: { width: 100, height: 100 }
+                        })
+                    ],
+                    listeners: {
+                        move(event) {
+                            const target = event.target;
+                            let x = parseFloat(target.getAttribute('data-x')) || 0;
+                            let y = parseFloat(target.getAttribute('data-y')) || 0;
+
+                            // Update the element's style
+                            target.style.width = `${event.rect.width}px`;
+                            target.style.height = `${event.rect.height}px`;
+
+                            // Translate when resizing from top or left edges
+                            x += event.deltaRect.left;
+                            y += event.deltaRect.top;
+
+                            target.style.transform = `translate(${x}px, ${y}px)`;
+
+                            target.setAttribute('data-x', x);
+                            target.setAttribute('data-y', y);
+                        }
+                    }
+                });
+        }
+
+        /**
+         * Hàm hiển thị overlay trên ảnh đã tải lên
+         */
+        function showOverlayOnImage() {
+            if (capturedImage.style.display === 'block') {
+                overlay.style.display = 'block';
+                // Reset vị trí và kích thước của overlay nếu cần
+                overlay.style.transform = 'translate(-50%, -50%)';
+                overlay.setAttribute('data-x', 0);
+                overlay.setAttribute('data-y', 0);
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
     </script>
 
 </body>
