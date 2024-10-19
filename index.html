@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
-    <!-- Thêm Google Fonts -->
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" integrity="sha512-ZV1G38+vjFhVZG+/Z7k/1S5phF5dnL3Z+pK4p/YRpsYlBOiBBcQthY3VxE4iYV/VZx3cTvCoPP0YTPjXHHZmyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Custom CSS -->
     <style>
         /* CSS Variables và các kiểu CSS khác giữ nguyên */
         :root {
@@ -193,6 +200,8 @@
         #capturedImage {
             display: none; /* Ẩn ban đầu */
             opacity: 0;
+            max-width: 100%;
+            height: auto;
         }
 
         /* Cải thiện thiết kế Overlay */
@@ -268,6 +277,12 @@
             display: none; /* Initially hidden */
         }
 
+        /* Thêm CSS cho nút "Cắt và Nhận Diện" */
+        #cropButton {
+            background-color: var(--primary-color);
+            display: none; /* Ẩn ban đầu */
+        }
+
         button:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
@@ -322,11 +337,6 @@
             .qa-section h2 {
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
-
-            /* Optional: Adjust slogan font size further if needed */
-            /* #slogan {
-                font-size: 0.9em;
-            } */
         }
 
         #predictionResult {
@@ -687,6 +697,7 @@
             <button id="captureButton" aria-label="Chụp ảnh">Bắt Đầu</button>
             <button id="uploadButton" aria-label="Tải ảnh lên">Tải Ảnh Lên</button>
             <button id="downloadButton" aria-label="Tải ảnh xuống">Tải Ảnh Xuống</button>
+            <button id="cropButton" aria-label="Cắt và Nhận Diện">Cắt và Nhận Diện</button>
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại">Chụp Lại</button>
         </div>
@@ -753,7 +764,8 @@
                     <li>Nhấn nút <strong>"Bắt Đầu"</strong> để khởi động camera.</li>
                     <li>Khi camera đã khởi động, nhấn nút <strong>"Chụp Ảnh"</strong> để bắt đầu quá trình chụp hình biển báo giao thông.</li>
                     <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
-                    <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
+                    <li>Sau khi chụp, sử dụng công cụ cắt ảnh để chọn vùng biển báo cần nhận diện.</li>
+                    <li>Nhấn nút <strong>"Cắt và Nhận Diện"</strong> để hệ thống nhận diện biển báo và hiển thị kết quả.</li>
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
                     <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
                 </ol>
@@ -765,6 +777,10 @@
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 
+    <!-- Cropper.js JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-5ToV4HNoX6I0rPjE/ojqAdNQYcixLFlFV/8fn2I2Ti/42QAfYvSzFO0E4hpxqJZ6iIsRHRd/IkzZlJcJeyRZXQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Custom JavaScript -->
     <script>
         // Các phần tử DOM
         const video = document.getElementById('video');
@@ -776,6 +792,7 @@
         const downloadButton = document.getElementById('downloadButton');
         const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
+        const cropButton = document.getElementById('cropButton');
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
         const signMeaning = document.getElementById('signMeaning');
@@ -793,6 +810,7 @@
 
         let signMeanings = {};
         let qaData = [];
+        let cropper = null; // Biến để lưu trữ đối tượng Cropper
 
         /**
          * Hàm tải signMeanings.json
@@ -950,8 +968,6 @@
                 }
             } else {
                 // Nếu camera đã được khởi động, tiến hành chụp ảnh
-                loadingPrediction.style.display = 'flex';
-
                 try {
                     // Kiểm tra xem video đã sẵn sàng chưa
                     if (video.readyState < 3) { // HAVE_CURRENT_DATA = 2, HAVE_FUTURE_DATA = 3
@@ -963,25 +979,12 @@
                     }
 
                     const context = canvas.getContext('2d');
-                    const videoWidth = video.videoWidth;
-                    const videoHeight = video.videoHeight;
+                    const targetWidth = video.videoWidth;
+                    const targetHeight = video.videoHeight;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
 
-                    if (videoWidth === 0 || videoHeight === 0) {
-                        throw new Error("Video chưa sẵn sàng.");
-                    }
-
-                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
-                    const overlayWidth = videoWidth * 0.6;
-                    const overlayHeight = videoHeight * 0.6;
-                    const sx = (videoWidth - overlayWidth) / 2;
-                    const sy = (videoHeight - overlayHeight) / 2;
-
-                    // Cài đặt kích thước canvas theo kích thước overlay
-                    canvas.width = overlayWidth;
-                    canvas.height = overlayHeight;
-
-                    // Vẽ phần ảnh trong khu vực overlay vào canvas
-                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
+                    context.drawImage(video, 0, 0, targetWidth, targetHeight);
 
                     const imageDataURL = canvas.toDataURL('image/png');
                     capturedImage.src = imageDataURL;
@@ -997,7 +1000,18 @@
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
-                    await predictImage();
+                    // Khởi tạo Cropper.js trên ảnh đã chụp
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    cropper = new Cropper(capturedImage, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                    });
+
+                    cropButton.style.display = 'inline-block'; // Hiển thị nút "Cắt và Nhận Diện"
+
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
                     alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
@@ -1044,6 +1058,13 @@
 
             cameraStarted = false; // Reset trạng thái camera
 
+            // Destroy Cropper if exists
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            cropButton.style.display = 'none';
+
             // Show placeholder image and hide video and overlay
             placeholderImage.style.display = 'block';
             video.style.display = 'none';
@@ -1055,7 +1076,6 @@
 
         /**
          * Hàm đọc văn bản bằng giọng nói
-         * @param {string} text - Văn bản cần đọc
          */
         function speakText(text) {
             if (!('speechSynthesis' in window)) {
@@ -1134,12 +1154,15 @@
                 return;
             }
 
+            loadingPrediction.style.display = 'flex';
+
             try {
                 // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
                 tf.tidy(() => {
                     // Chuyển đổi canvas thành tensor
                     const img = tf.browser.fromPixels(canvas);
-                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                    // Resize ảnh về 224x224 nếu cần
+                    const resized = tf.image.resizeBilinear(img, [224, 224]);
                     const normalized = resized.div(255.0).expandDims();
 
                     // Thực hiện dự đoán
@@ -1269,29 +1292,57 @@
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
-                    // Vẽ ảnh lên canvas để dự đoán
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const context = canvas.getContext('2d');
-                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
-                        const aspectRatio = img.width / img.height;
-                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
-                        let canvasHeight = 224;
-                        if (aspectRatio > 1) {
-                            canvasHeight = canvasWidth / aspectRatio;
-                        } else {
-                            canvasWidth = canvasHeight * aspectRatio;
-                        }
-                        canvas.width = canvasWidth;
-                        canvas.height = canvasHeight;
-                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-                        predictImage();
-                    };
+                    // Khởi tạo Cropper.js trên ảnh đã tải lên
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    cropper = new Cropper(capturedImage, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                    });
+
+                    cropButton.style.display = 'inline-block'; // Hiển thị nút "Cắt và Nhận Diện"
                 };
                 reader.readAsDataURL(file);
             } else {
                 alert("Vui lòng chọn một tệp ảnh hợp lệ.");
+            }
+        });
+
+        /**
+         * Sự kiện khi người dùng nhấn nút "Cắt và Nhận Diện"
+         */
+        cropButton.addEventListener('click', () => {
+            if (cropper) {
+                // Lấy canvas từ vùng đã cắt
+                const croppedCanvas = cropper.getCroppedCanvas({
+                    width: 224,
+                    height: 224,
+                });
+
+                // Chuyển canvas đã cắt thành DataURL
+                const croppedImageDataURL = croppedCanvas.toDataURL('image/png');
+
+                // Hiển thị ảnh đã cắt
+                capturedImage.src = croppedImageDataURL;
+
+                // Cập nhật canvas chính để sử dụng cho dự đoán
+                canvas.width = 224;
+                canvas.height = 224;
+                const context = canvas.getContext('2d');
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(croppedCanvas, 0, 0);
+
+                // Hủy Cropper.js
+                cropper.destroy();
+                cropper = null;
+
+                // Ẩn nút "Cắt và Nhận Diện"
+                cropButton.style.display = 'none';
+
+                // Tiến hành dự đoán
+                predictImage();
             }
         });
 
