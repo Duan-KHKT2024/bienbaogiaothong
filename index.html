@@ -6,9 +6,6 @@
     <title>Ứng dụng Nhận Diện Biển Báo Giao Thông</title>
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Thêm TensorFlow.js và COCO-SSD -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <style>
         /* CSS Variables và các kiểu CSS khác giữ nguyên */
         :root {
@@ -325,6 +322,11 @@
             .qa-section h2 {
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
+
+            /* Optional: Adjust slogan font size further if needed */
+            /* #slogan {
+                font-size: 0.9em;
+            } */
         }
 
         #predictionResult {
@@ -760,6 +762,9 @@
         </div>
     </div>
 
+    <!-- TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+
     <script>
         // Các phần tử DOM
         const video = document.getElementById('video');
@@ -783,8 +788,7 @@
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
         const MODEL_URL = "https://duan-khkt2024.github.io/bienbaogiaothong/model/";
-        let recognitionModel; // Mô hình nhận diện biển báo
-        let cocoModel; // Mô hình COCO-SSD để phát hiện đối tượng
+        let model;
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
         let signMeanings = {};
@@ -905,7 +909,6 @@
                 video.srcObject = stream;
                 return new Promise((resolve, reject) => {
                     video.onloadedmetadata = () => {
-                        console.log(`Độ phân giải camera: ${video.videoWidth}x${video.videoHeight}`);
                         video.play();
                         resolve();
                     };
@@ -920,7 +923,7 @@
         }
 
         /**
-         * Hàm chụp ảnh từ video và xử lý nhận diện
+         * Hàm chụp ảnh từ video
          */
         async function capturePhoto() {
             if (isProcessing) return;
@@ -930,10 +933,10 @@
             if (!cameraStarted) {
                 // Nếu camera chưa được khởi động, bắt đầu camera
                 try {
-                    // Ẩn hình ảnh chỗ trống và hiển thị video
+                    // Hide placeholder image and show video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'block'; // Show overlay khi video đang hoạt động
+                    overlay.style.display = 'block'; // Show overlay when video is active
 
                     await startCamera();
                     cameraStarted = true;
@@ -946,7 +949,7 @@
                     captureButton.disabled = false;
                 }
             } else {
-                // Nếu camera đã được khởi động, tiến hành chụp ảnh và nhận diện
+                // Nếu camera đã được khởi động, tiến hành chụp ảnh
                 loadingPrediction.style.display = 'flex';
 
                 try {
@@ -960,70 +963,28 @@
                     }
 
                     const context = canvas.getContext('2d');
-                    context.imageSmoothingEnabled = true;
-                    context.imageSmoothingQuality = 'high'; // Bật thay đổi kích thước chất lượng cao
-
-                    // Lấy kích thước video
                     const videoWidth = video.videoWidth;
                     const videoHeight = video.videoHeight;
+
                     if (videoWidth === 0 || videoHeight === 0) {
                         throw new Error("Video chưa sẵn sàng.");
                     }
 
-                    // Vẽ khung hình video lên canvas với kích thước gốc
-                    canvas.width = videoWidth;
-                    canvas.height = videoHeight;
-                    context.drawImage(video, 0, 0, videoWidth, videoHeight);
+                    // Kích thước và vị trí của overlay (60% chiều rộng và chiều cao)
+                    const overlayWidth = videoWidth * 0.6;
+                    const overlayHeight = videoHeight * 0.6;
+                    const sx = (videoWidth - overlayWidth) / 2;
+                    const sy = (videoHeight - overlayHeight) / 2;
 
-                    // Chuyển đổi canvas thành tensor và phát hiện đối tượng
-                    const imgTensor = tf.browser.fromPixels(canvas);
-                    const predictions = await cocoModel.detect(imgTensor);
-                    imgTensor.dispose(); // Giải phóng bộ nhớ
+                    // Cài đặt kích thước canvas theo kích thước overlay
+                    canvas.width = overlayWidth;
+                    canvas.height = overlayHeight;
 
-                    if (predictions.length === 0) {
-                        throw new Error("Không phát hiện biển báo giao thông trong hình ảnh. Vui lòng chụp lại.");
-                    }
+                    // Vẽ phần ảnh trong khu vực overlay vào canvas
+                    context.drawImage(video, sx, sy, overlayWidth, overlayHeight, 0, 0, overlayWidth, overlayHeight);
 
-                    // Tìm biển báo giao thông trong các dự đoán
-                    // Lọc các lớp liên quan đến biển báo giao thông
-                    const trafficSignClasses = ['stop sign', 'traffic light']; // Thêm các lớp khác nếu cần
-                    const trafficSigns = predictions.filter(pred => trafficSignClasses.includes(pred.class.toLowerCase()) && pred.score > 0.5);
-
-                    if (trafficSigns.length === 0) {
-                        throw new Error("Không phát hiện biển báo giao thông trong hình ảnh. Vui lòng chụp lại.");
-                    }
-
-                    // Chọn biển báo có độ chính xác cao nhất
-                    const bestSign = trafficSigns.reduce((prev, current) => (prev.score > current.score) ? prev : current);
-
-                    // Lấy bounding box của biển báo
-                    const [x, y, width, height] = bestSign.bbox;
-
-                    // Vẽ bounding box lên canvas (tuỳ chọn)
-                    /*
-                    context.strokeStyle = 'red';
-                    context.lineWidth = 4;
-                    context.strokeRect(x, y, width, height);
-                    */
-
-                    // Cắt vùng chứa biển báo
-                    const signCanvas = document.createElement('canvas');
-                    signCanvas.width = width;
-                    signCanvas.height = height;
-                    const signContext = signCanvas.getContext('2d');
-                    signContext.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-
-                    // Thay đổi kích thước vùng chứa biển báo về 224x224
-                    const resizedSignCanvas = document.createElement('canvas');
-                    resizedSignCanvas.width = 224;
-                    resizedSignCanvas.height = 224;
-                    const resizedContext = resizedSignCanvas.getContext('2d');
-                    resizedContext.imageSmoothingEnabled = true;
-                    resizedContext.imageSmoothingQuality = 'high';
-                    resizedContext.drawImage(signCanvas, 0, 0, 224, 224);
-
-                    const signDataURL = resizedSignCanvas.toDataURL('image/png');
-                    capturedImage.src = signDataURL;
+                    const imageDataURL = canvas.toDataURL('image/png');
+                    capturedImage.src = imageDataURL;
                     capturedImage.style.display = 'block';
                     capturedImage.style.opacity = 1;
                     video.style.display = 'none';
@@ -1036,405 +997,365 @@
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
 
-                    // Thêm hình ảnh đã cắt vào canvas để nhận diện
-                    const finalContext = canvas.getContext('2d');
-                    finalContext.clearRect(0, 0, canvas.width, canvas.height);
-                    finalContext.drawImage(resizedSignCanvas, 0, 0, 224, 224);
-
                     await predictImage();
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
-                    alert(error.message);
+                    alert("Đã xảy ra lỗi khi chụp ảnh. Vui lòng thử lại.");
                 } finally {
                     isProcessing = false;
                     captureButton.disabled = false;
                 }
             }
+        }
 
-            /**
-             * Hàm tải ảnh xuống
-             */
-            function downloadPhoto() {
-                if (!capturedImage.src) {
-                    alert("Không có ảnh nào để tải xuống.");
-                    return;
-                }
-                const link = document.createElement('a');
-                link.href = capturedImage.src;
-                link.download = 'anh-chup.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+        /**
+         * Hàm tải ảnh xuống
+         */
+        function downloadPhoto() {
+            if (!capturedImage.src) {
+                alert("Không có ảnh nào để tải xuống.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = capturedImage.src;
+            link.download = 'anh-chup.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * Hàm chụp lại ảnh
+         */
+        function retakePhoto() {
+            capturedImage.style.display = 'none';
+            capturedImage.style.opacity = 0;
+            downloadButton.style.display = 'none';
+            readButton.style.display = 'none';
+            retakeButton.style.display = 'none';
+            captureButton.style.display = 'inline-block';
+            captureButton.textContent = "Bắt Đầu"; // Reset nhãn nút sau khi chụp lại
+
+            // Stop the video stream if it's active
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
 
-            /**
-             * Hàm chụp lại ảnh
-             */
-            function retakePhoto() {
-                capturedImage.style.display = 'none';
-                capturedImage.style.opacity = 0;
-                downloadButton.style.display = 'none';
-                readButton.style.display = 'none';
-                retakeButton.style.display = 'none';
-                captureButton.style.display = 'inline-block';
-                captureButton.textContent = "Bắt Đầu"; // Reset nhãn nút sau khi chụp lại
+            cameraStarted = false; // Reset trạng thái camera
 
-                // Stop the video stream if it's active
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                }
+            // Show placeholder image and hide video and overlay
+            placeholderImage.style.display = 'block';
+            video.style.display = 'none';
+            overlay.style.display = 'none';
+            predictionResult.innerHTML = "";
+            signMeaning.textContent = "";
+            signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+        }
 
-                cameraStarted = false; // Reset trạng thái camera
-
-                // Show placeholder image and hide video and overlay
-                placeholderImage.style.display = 'block';
-                video.style.display = 'none';
-                overlay.style.display = 'none';
-                predictionResult.innerHTML = "";
-                signMeaning.textContent = "";
-                signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+        /**
+         * Hàm đọc văn bản bằng giọng nói
+         * @param {string} text - Văn bản cần đọc
+         */
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
+                return;
             }
 
-            /**
-             * Hàm đọc văn bản bằng giọng nói
-             * @param {string} text - Văn bản cần đọc
-             */
-            function speakText(text) {
-                if (!('speechSynthesis' in window)) {
-                    console.warn('Trình duyệt của bạn không hỗ trợ Speech Synthesis.');
-                    return;
-                }
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(text);
+            const voices = synth.getVoices();
+            const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
 
-                const synth = window.speechSynthesis;
-                const utterThis = new SpeechSynthesisUtterance(text);
-                const voices = synth.getVoices();
-                const vietnameseVoices = voices.filter(voice => voice.lang.startsWith('vi'));
-
-                if (vietnameseVoices.length > 0) {
-                    utterThis.voice = vietnameseVoices[0];
-                }
-
-                synth.speak(utterThis);
+            if (vietnameseVoices.length > 0) {
+                utterThis.voice = vietnameseVoices[0];
             }
 
-            /**
-             * Hàm tải mô hình TensorFlow.js
-             */
-            async function loadModel() {
-                try {
-                    // Tải mô hình nhận diện biển báo
-                    recognitionModel = await tf.loadLayersModel(MODEL_URL + "model.json");
-                    // Tải mô hình COCO-SSD
-                    cocoModel = await cocoSsd.load();
-                    console.log("Đã tải thành công cả mô hình nhận diện và mô hình COCO-SSD");
+            synth.speak(utterThis);
+        }
 
-                    loadingModel.style.display = 'none';
+        /**
+         * Hàm tải mô hình TensorFlow.js
+         */
+        async function loadModel() {
+            try {
+                // Tải mô hình từ GitHub Pages
+                model = await tf.loadLayersModel(MODEL_URL + "model.json");
+                loadingModel.style.display = 'none';
 
-                    // Tải metadata.json để lấy nhãn
-                    const response = await fetch(MODEL_URL + "metadata.json");
-                    if (response.ok) {
-                        const metadata = await response.json();
-                        if (metadata.labels && Array.isArray(metadata.labels)) {
-                            labels = metadata.labels;
-                            signCount.textContent = labels.length;
+                // Tải metadata.json để lấy nhãn
+                const response = await fetch(MODEL_URL + "metadata.json");
+                if (response.ok) {
+                    const metadata = await response.json();
+                    if (metadata.labels && Array.isArray(metadata.labels)) {
+                        labels = metadata.labels;
+                        signCount.textContent = labels.length;
 
-                            // Lưu labels vào biến toàn cục để sử dụng sau
-                            window.labels = labels;
-                        } else {
-                            console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
-                            // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
-                            window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
-                            signCount.textContent = window.labels.length;
-                        }
+                        // Lưu labels vào biến toàn cục để sử dụng sau
+                        window.labels = labels;
                     } else {
-                        console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
-                        // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
+                        console.warn("metadata.json không chứa trường 'labels' hoặc không phải là một mảng.");
+                        // Nếu không có labels trong metadata.json, bạn có thể định nghĩa nhãn trực tiếp ở đây
                         window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
                         signCount.textContent = window.labels.length;
                     }
-
-                    // Tải signMeanings.json
-                    await loadSignMeanings();
-
-                    // Tải và xây dựng QA
-                    await loadQA();
-                } catch (err) {
-                    console.error("Lỗi khi tải mô hình: ", err);
-                    loadingModel.textContent = "Không thể tải mô hình.";
-                }
-            }
-
-            /**
-             * Hàm thực hiện dự đoán hình ảnh
-             */
-            async function predictImage() {
-                if (!recognitionModel) {
-                    predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
-                    loadingPrediction.style.display = 'none';
-                    return;
-                }
-
-                if (Object.keys(signMeanings).length === 0) {
-                    predictionResult.textContent = "Không có dữ liệu ý nghĩa biển báo. Vui lòng thử lại sau.";
-                    loadingPrediction.style.display = 'none';
-                    return;
-                }
-
-                try {
-                    // Lấy dữ liệu từ canvas
-                    const imgTensor = tf.browser.fromPixels(canvas);
-                    const normalized = imgTensor.div(255.0).expandDims();
-                    const predictions = recognitionModel.predict(normalized);
-                    const data = predictions.dataSync();
-                    const topClass = data.indexOf(Math.max(...data));
-                    const predictedClass = labels[topClass];
-                    const probability = data[topClass];
-
-                    imgTensor.dispose();
-                    normalized.dispose();
-                    predictions.dispose();
-
-                    predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(probability * 100).toFixed(2)}%)</span>`;
-                    const signCode = predictedClass.substring(0, 5).toUpperCase();
-                    if (signMeanings.hasOwnProperty(signCode)) {
-                        const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
-                        signMeaning.textContent = meaningText;
-                        signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
-                    } else {
-                        signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
-                        signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                        readButton.style.display = 'inline-block';
-                        quizButton.style.display = 'inline-block';
-                    }
-                } catch (err) {
-                    console.error("Lỗi khi nhận diện hình ảnh: ", err);
-                    predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
-                    signMeaning.textContent = "";
-                    signMeaning.style.display = 'none'; // Ẩn phần signMeaning
-                    readButton.style.display = 'none';
-                    quizButton.style.display = 'none';
-                } finally {
-                    loadingPrediction.style.display = 'none';
-                }
-            }
-
-            /**
-             * Event listener cho nút "Đọc"
-             */
-            readButton.addEventListener('click', () => {
-                const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
-                if (text) {
-                    speakText(text);
-                }
-            });
-
-            /**
-             * Event listener cho nút làm bài kiểm tra
-             */
-            quizButton.addEventListener('click', () => {
-                window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
-            });
-
-            /**
-             * Cập nhật danh sách giọng nói khi chúng thay đổi
-             */
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
-
-            /**
-             * Khởi động ứng dụng khi trang được tải
-             */
-            window.addEventListener('load', async () => {
-                await loadModel();
-                // Không khởi động camera ngay khi tải trang
-                startSloganRotation(); // Khởi động vòng quay khẩu hiệu
-            });
-
-            /**
-             * Dừng camera khi trang được đóng hoặc tải lại
-             */
-            window.addEventListener('beforeunload', () => {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
-            });
-
-            // Event listener cho nút "Chụp Ảnh"
-            captureButton.addEventListener('click', capturePhoto);
-
-            // Event listener cho nút "Chụp Lại"
-            retakeButton.addEventListener('click', retakePhoto);
-
-            // Thêm sự kiện cho nút "Tải Ảnh Xuống"
-            downloadButton.addEventListener('click', downloadPhoto);
-
-            // Event listener cho nút "Tải Ảnh Lên"
-            uploadButton.addEventListener('click', () => {
-                uploadInput.click(); // Trigger click on hidden file input
-            });
-
-            // Event listener cho việc chọn file từ file input
-            uploadInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = async function(e) {
-                        capturedImage.src = e.target.result;
-                        capturedImage.style.display = 'block';
-                        capturedImage.style.opacity = 1;
-                        // Hide video and placeholder image
-                        video.style.display = 'none';
-                        placeholderImage.style.display = 'none';
-                        overlay.style.display = 'none';
-                        downloadButton.style.display = 'inline-block';
-                        retakeButton.style.display = 'inline-block';
-                        predictionResult.innerHTML = "";
-                        signMeaning.textContent = "";
-                        signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
-                        readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
-                        quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-
-                        // Vẽ ảnh lên canvas để phát hiện đối tượng
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = async () => {
-                            const context = canvas.getContext('2d');
-                            // Vẽ hình ảnh với kích thước gốc
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            context.drawImage(img, 0, 0, img.width, img.height);
-
-                            // Phát hiện đối tượng
-                            const predictions = await cocoModel.detect(canvas);
-                            if (predictions.length === 0) {
-                                alert("Không phát hiện biển báo giao thông trong hình ảnh. Vui lòng chụp lại hoặc tải ảnh khác.");
-                                return;
-                            }
-
-                            // Lọc các lớp liên quan đến biển báo giao thông
-                            const trafficSignClasses = ['stop sign', 'traffic light']; // Thêm các lớp khác nếu cần
-                            const trafficSigns = predictions.filter(pred => trafficSignClasses.includes(pred.class.toLowerCase()) && pred.score > 0.5);
-
-                            if (trafficSigns.length === 0) {
-                                alert("Không phát hiện biển báo giao thông trong hình ảnh. Vui lòng chụp lại hoặc tải ảnh khác.");
-                                return;
-                            }
-
-                            // Chọn biển báo có độ chính xác cao nhất
-                            const bestSign = trafficSigns.reduce((prev, current) => (prev.score > current.score) ? prev : current);
-
-                            // Lấy bounding box của biển báo
-                            const [x, y, width, height] = bestSign.bbox;
-
-                            // Cắt vùng chứa biển báo
-                            const signCanvas = document.createElement('canvas');
-                            signCanvas.width = width;
-                            signCanvas.height = height;
-                            const signContext = signCanvas.getContext('2d');
-                            signContext.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-
-                            // Thay đổi kích thước vùng chứa biển báo về 224x224
-                            const resizedSignCanvas = document.createElement('canvas');
-                            resizedSignCanvas.width = 224;
-                            resizedSignCanvas.height = 224;
-                            const resizedContext = resizedSignCanvas.getContext('2d');
-                            resizedContext.imageSmoothingEnabled = true;
-                            resizedContext.imageSmoothingQuality = 'high';
-                            resizedContext.drawImage(signCanvas, 0, 0, 224, 224);
-
-                            const signDataURL = resizedSignCanvas.toDataURL('image/png');
-                            capturedImage.src = signDataURL;
-                            capturedImage.style.display = 'block';
-                            capturedImage.style.opacity = 1;
-                            video.style.display = 'none';
-                            overlay.style.display = 'none';
-                            downloadButton.style.display = 'inline-block';
-                            retakeButton.style.display = 'inline-block';
-                            predictionResult.innerHTML = "";
-                            signMeaning.textContent = "";
-                            signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
-                            readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
-                            quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-
-                            // Vẽ ảnh đã cắt vào canvas để nhận diện
-                            const finalContext = canvas.getContext('2d');
-                            finalContext.clearRect(0, 0, canvas.width, canvas.height);
-                            finalContext.drawImage(resizedSignCanvas, 0, 0, 224, 224);
-
-                            await predictImage();
-                        };
-                    };
-                    reader.readAsDataURL(file);
                 } else {
-                    alert("Vui lòng chọn một tệp ảnh hợp lệ.");
+                    console.warn("Không thể tải metadata.json. Sử dụng nhãn từ mã JavaScript hoặc định nghĩa trong metadata.json.");
+                    // Nếu không thể tải metadata.json, định nghĩa nhãn trực tiếp trong mã JavaScript
+                    window.labels = ["P.101", "W.208", "W.205", "W.207", "P.103"]; // Thay đổi theo nhu cầu
+                    signCount.textContent = window.labels.length;
                 }
-            });
 
-            /**
-             * Hàm khởi động khẩu hiệu
-             */
-            const slogans = [
-                "An toàn giao thông - Hạnh phúc cho mọi nhà!",
-                "Đi đúng làn đường, an toàn trên mọi nẻo đường!",
-                "Đội mũ bảo hiểm - Vẹn tròn tương lai!",
-                "Đi bộ trên vỉa hè - An toàn cho bạn và mọi người!",
-                "Tuân thủ luật giao thông - Bảo vệ chính mình!",
-                "Không phóng nhanh, vượt ẩu - An toàn là trên hết!",
-                "Chậm mà chắc - Về nhà an toàn!"
-            ];
+                // Tải signMeanings.json
+                await loadSignMeanings();
 
-            let currentSloganIndex = 0;
-            const sloganElement = document.getElementById('slogan');
-            const sloganSection = document.querySelector('.slogan-section');
+                // Tải và xây dựng QA
+                await loadQA();
+            } catch (err) {
+                console.error("Lỗi khi tải mô hình: ", err);
+                loadingModel.textContent = "Không thể tải mô hình.";
+            }
+        }
 
-            function showSlogan(index) {
-                sloganElement.textContent = slogans[index];
-                sloganSection.classList.add('active');
-                setTimeout(() => {
-                    sloganSection.classList.remove('active');
-                }, 6000); // Hiển thị khẩu hiệu trong 6 giây để tạo khoảng trống cho hiệu ứng mờ dần
+        /**
+         * Hàm thực hiện dự đoán hình ảnh
+         */
+        async function predictImage() {
+            if (!model) {
+                predictionResult.textContent = "Mô hình chưa được tải. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
             }
 
-            function startSloganRotation() {
+            if (Object.keys(signMeanings).length === 0) {
+                predictionResult.textContent = "Không có dữ liệu ý nghĩa biển báo. Vui lòng thử lại sau.";
+                loadingPrediction.style.display = 'none';
+                return;
+            }
+
+            try {
+                // Sử dụng tf.tidy để giải phóng bộ nhớ sau khi thực hiện dự đoán
+                tf.tidy(() => {
+                    // Chuyển đổi canvas thành tensor
+                    const img = tf.browser.fromPixels(canvas);
+                    const resized = tf.image.resizeBilinear(img, [224, 224]); // Thay đổi kích thước theo mô hình của bạn
+                    const normalized = resized.div(255.0).expandDims();
+
+                    // Thực hiện dự đoán
+                    const predictions = model.predict(normalized);
+                    const data = predictions.dataSync();
+
+                    // Tìm lớp có xác suất cao nhất
+                    let maxProb = -1;
+                    let maxIndex = -1;
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > maxProb) {
+                            maxProb = data[i];
+                            maxIndex = i;
+                        }
+                    }
+
+                    if (maxIndex !== -1 && window.labels) {
+                        const predictedClass = window.labels[maxIndex];
+                        predictionResult.innerHTML = `<span style="color: var(--primary-color);">Kết quả: ${predictedClass} (${(maxProb * 100).toFixed(2)}%)</span>`;
+                        const signCode = predictedClass.substring(0, 5).toUpperCase();
+                        if (signMeanings.hasOwnProperty(signCode)) {
+                            const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
+                            signMeaning.textContent = meaningText;
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        } else {
+                            signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
+                            signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
+                            readButton.style.display = 'inline-block';
+                            quizButton.style.display = 'inline-block';
+                        }
+                    } else {
+                        predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
+                        signMeaning.textContent = "";
+                        signMeaning.style.display = 'none'; // Ẩn phần signMeaning
+                        readButton.style.display = 'none';
+                        quizButton.style.display = 'none';
+                    }
+                });
+            } catch (err) {
+                console.error("Lỗi khi nhận diện hình ảnh: ", err);
+                predictionResult.innerHTML = `<span style="color: var(--error-color);">Lỗi khi nhận diện hình ảnh.</span>`;
+                signMeaning.textContent = "";
+                signMeaning.style.display = 'none'; // Ẩn phần signMeaning
+                readButton.style.display = 'none';
+                quizButton.style.display = 'none';
+            } finally {
+                loadingPrediction.style.display = 'none';
+            }
+        }
+
+        /**
+         * Event listener cho nút "Đọc"
+         */
+        readButton.addEventListener('click', () => {
+            const text = signMeaning.textContent.replace(/^Ý nghĩa: /, ""); // Loại bỏ tiền tố "Ý nghĩa: " nếu cần
+            if (text) {
+                speakText(text);
+            }
+        });
+
+        /**
+         * Event listener cho nút làm bài kiểm tra
+         */
+        quizButton.addEventListener('click', () => {
+            window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
+        });
+
+        /**
+         * Cập nhật danh sách giọng nói khi chúng thay đổi
+         */
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+
+        /**
+         * Khởi động ứng dụng khi trang được tải
+         */
+        window.addEventListener('load', async () => {
+            await loadModel();
+            // Không khởi động camera ngay khi tải trang
+            startSloganRotation(); // Khởi động vòng quay khẩu hiệu
+        });
+
+        /**
+         * Dừng camera khi trang được đóng hoặc tải lại
+         */
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Event listener cho nút "Chụp Ảnh"
+        captureButton.addEventListener('click', capturePhoto);
+
+        // Event listener cho nút "Chụp Lại"
+        retakeButton.addEventListener('click', retakePhoto);
+
+        // Thêm sự kiện cho nút "Tải Ảnh Xuống"
+        downloadButton.addEventListener('click', downloadPhoto);
+
+        // Event listener cho nút "Tải Ảnh Lên"
+        uploadButton.addEventListener('click', () => {
+            uploadInput.click(); // Trigger click on hidden file input
+        });
+
+        // Event listener cho việc chọn file từ file input
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    capturedImage.src = e.target.result;
+                    capturedImage.style.display = 'block';
+                    capturedImage.style.opacity = 1;
+                    // Hide video and placeholder image
+                    video.style.display = 'none';
+                    placeholderImage.style.display = 'none';
+                    overlay.style.display = 'none';
+                    downloadButton.style.display = 'inline-block';
+                    retakeButton.style.display = 'inline-block';
+                    predictionResult.innerHTML = "";
+                    signMeaning.textContent = "";
+                    signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
+                    readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
+                    quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+
+                    // Vẽ ảnh lên canvas để dự đoán
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const context = canvas.getContext('2d');
+                        // Tính toán tỷ lệ để giữ nguyên tỉ lệ ảnh khi vẽ vào canvas
+                        const aspectRatio = img.width / img.height;
+                        let canvasWidth = 224; // Kích thước chuẩn cho mô hình
+                        let canvasHeight = 224;
+                        if (aspectRatio > 1) {
+                            canvasHeight = canvasWidth / aspectRatio;
+                        } else {
+                            canvasWidth = canvasHeight * aspectRatio;
+                        }
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasHeight;
+                        context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                        predictImage();
+                    };
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Vui lòng chọn một tệp ảnh hợp lệ.");
+            }
+        });
+
+        /**
+         * Hàm khởi động khẩu hiệu
+         */
+        const slogans = [
+            "An toàn giao thông - Hạnh phúc cho mọi nhà!",
+            "Đi đúng làn đường, an toàn trên mọi nẻo đường!",
+            "Đội mũ bảo hiểm - Vẹn tròn tương lai!",
+            "Đi bộ trên vỉa hè - An toàn cho bạn và mọi người!",
+            "Tuân thủ luật giao thông - Bảo vệ chính mình!",
+            "Không phóng nhanh, vượt ẩu - An toàn là trên hết!",
+            "Chậm mà chắc - Về nhà an toàn!"
+        ];
+
+        let currentSloganIndex = 0;
+        const sloganElement = document.getElementById('slogan');
+        const sloganSection = document.querySelector('.slogan-section');
+
+        function showSlogan(index) {
+            sloganElement.textContent = slogans[index];
+            sloganSection.classList.add('active');
+            setTimeout(() => {
+                sloganSection.classList.remove('active');
+            }, 6000); // Hiển thị khẩu hiệu trong 6 giây để tạo khoảng trống cho hiệu ứng mờ dần
+        }
+
+        function startSloganRotation() {
+            showSlogan(currentSloganIndex);
+            currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
+            setInterval(() => {
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
-                setInterval(() => {
-                    showSlogan(currentSloganIndex);
-                    currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
-                }, 7000); // Mỗi 7 giây một khẩu hiệu
-            }
+            }, 7000); // Mỗi 7 giây một khẩu hiệu
+        }
 
-            /**
-             * Event Listener cho Modal Hướng Dẫn
-             */
-            const instructionButton = document.getElementById('instructionButton');
-            const instructionModal = document.getElementById('instructionModal');
-            const closeButton = document.querySelector('.close-button');
+        /**
+         * Event Listener cho Modal Hướng Dẫn
+         */
+        const instructionButton = document.getElementById('instructionButton');
+        const instructionModal = document.getElementById('instructionModal');
+        const closeButton = document.querySelector('.close-button');
 
-            // Open the modal
-            instructionButton.addEventListener('click', () => {
-                instructionModal.style.display = 'block';
-                instructionModal.setAttribute('aria-hidden', 'false');
-            });
+        // Open the modal
+        instructionButton.addEventListener('click', () => {
+            instructionModal.style.display = 'block';
+            instructionModal.setAttribute('aria-hidden', 'false');
+        });
 
-            // Close the modal khi 'x' được nhấn
-            closeButton.addEventListener('click', () => {
+        // Close the modal khi 'x' được nhấn
+        closeButton.addEventListener('click', () => {
+            instructionModal.style.display = 'none';
+            instructionModal.setAttribute('aria-hidden', 'true');
+        });
+
+        // Close the modal khi nhấn ngoài nội dung modal
+        window.addEventListener('click', (event) => {
+            if (event.target == instructionModal) {
                 instructionModal.style.display = 'none';
                 instructionModal.setAttribute('aria-hidden', 'true');
-            });
-
-            // Close the modal khi nhấn ngoài nội dung modal
-            window.addEventListener('click', (event) => {
-                if (event.target == instructionModal) {
-                    instructionModal.style.display = 'none';
-                    instructionModal.setAttribute('aria-hidden', 'true');
-                }
-            });
-        </script>
+            }
+        });
+    </script>
 
 </body>
 </html>
