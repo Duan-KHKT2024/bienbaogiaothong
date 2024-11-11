@@ -929,10 +929,10 @@
             if (!cameraStarted) {
                 // Nếu camera chưa được khởi động, bắt đầu camera
                 try {
-                    // Hide placeholder image and show video
+                    // Ẩn hình ảnh chỗ trống và hiển thị video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'block'; // Show overlay when video is active
+                    overlay.style.display = 'block'; // Show overlay khi video đang hoạt động
 
                     await startCamera();
                     cameraStarted = true;
