@@ -60,7 +60,7 @@
             --carousel-bg-color: #ffffff;
             --carousel-border-color: #dee2e6;
             --carousel-height: 150px;
-            --carousel-animation-duration: 20s; /* Thời gian để hoàn thành một vòng quay */
+            --carousel-animation-duration: 40s; /* Thời gian để hoàn thành một vòng quay, giảm tốc độ */
         }
 
         /* Reset CSS */
@@ -140,16 +140,17 @@
             max-width: 800px;
             background-color: var(--carousel-bg-color);
             padding: 20px 0;
-            margin-top: var(--fixed-slogan-height); /* Để tránh bị che bởi khẩu hiệu cố định */
+            margin-top: 30px; /* Giảm margin-top từ var(--fixed-slogan-height) */
             overflow: hidden;
             border: 1px solid var(--carousel-border-color);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative; /* To position the selectedSign div */
         }
 
         .carousel {
             display: flex;
-            width: calc(150px * 10); /* Giả sử có 10 hình, thay đổi nếu cần */
+            width: calc(150px * 10 * 2); /* Lặp lại 10 hình để tạo hiệu ứng vô hạn */
             animation: scrollCarousel var(--carousel-animation-duration) linear infinite;
         }
 
@@ -160,6 +161,7 @@
             margin-right: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer; /* Indicate clickable */
         }
 
         /* Keyframes cho hoạt ảnh cuộn carousel */
@@ -168,7 +170,7 @@
                 transform: translateX(0);
             }
             100% {
-                transform: translateX(-100%);
+                transform: translateX(-50%);
             }
         }
 
@@ -182,6 +184,15 @@
             content: "";
             display: flex;
             flex-direction: row;
+        }
+
+        /* Style for selected sign display */
+        .selected-sign {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         /* Reset phần khác giữ nguyên */
@@ -373,11 +384,6 @@
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
-            /* Optional: Adjust slogan font size further if needed */
-            /* #slogan {
-                font-size: 0.9em;
-            } */
-
             /* Điều chỉnh Carousel cho thiết bị nhỏ */
             .carousel-section {
                 padding: 10px 0;
@@ -390,7 +396,7 @@
             }
 
             .carousel-section .carousel {
-                animation-duration: 15s; /* Điều chỉnh tốc độ animation */
+                animation-duration: 30s; /* Điều chỉnh tốc độ animation cho thiết bị nhỏ */
             }
         }
 
@@ -703,6 +709,8 @@
             <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/9.jpg" alt="Biển báo 9">
             <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/10.jpg" alt="Biển báo 10">
         </div>
+        <!-- New div to display selected sign name -->
+        <div id="selectedSign" class="selected-sign" aria-live="polite"></div>
     </div>
 
     <!-- Phần 2: Nhận Diện Biển Báo Giao Thông -->
@@ -801,6 +809,7 @@
         const signCount = document.getElementById('totalSigns');
         const quizButton = document.getElementById('quizButton');
         const overlay = document.querySelector('.overlay');
+        const selectedSignDiv = document.getElementById('selectedSign'); // Div to display selected sign
         let stream = null;
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
@@ -1013,6 +1022,7 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+                    selectedSignDiv.textContent = ""; // Reset selected sign display
 
                     await predictImage();
                 } catch (error) {
@@ -1068,6 +1078,7 @@
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+            selectedSignDiv.textContent = ""; // Reset selected sign display
         }
 
         /**
@@ -1240,6 +1251,7 @@
             await loadModel();
             // Không khởi động camera ngay khi tải trang
             startSloganRotation(); // Khởi động vòng quay khẩu hiệu
+            setupCarouselInteractions(); // Thiết lập các tương tác cho carousel
         });
 
         /**
@@ -1285,6 +1297,7 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
+                    selectedSignDiv.textContent = ""; // Reset selected sign display
 
                     // Vẽ ảnh lên canvas để dự đoán
                     const img = new Image();
@@ -1344,6 +1357,27 @@
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
             }, 7000); // Mỗi 7 giây một khẩu hiệu
+        }
+
+        /**
+         * Thiết lập các tương tác cho carousel
+         */
+        function setupCarouselInteractions() {
+            const carouselImages = document.querySelectorAll('.carousel img');
+            const carousel = document.querySelector('.carousel');
+
+            carouselImages.forEach(img => {
+                img.addEventListener('click', () => {
+                    // Pause the carousel animation
+                    carousel.style.animationPlayState = 'paused';
+
+                    // Get the sign name from alt attribute
+                    const signName = img.alt;
+
+                    // Display the sign name
+                    selectedSignDiv.textContent = signName;
+                });
+            });
         }
 
         /**
