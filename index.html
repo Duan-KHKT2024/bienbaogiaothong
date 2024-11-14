@@ -55,6 +55,12 @@
             --section-title-border-radius: 8px 8px 0 0;
             --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
             --fixed-slogan-height: 80px; /* Chiều cao cố định */
+
+            /* Thêm CSS Variables cho Carousel */
+            --carousel-bg-color: #ffffff;
+            --carousel-border-color: #dee2e6;
+            --carousel-height: 150px;
+            --carousel-animation-duration: 20s; /* Thời gian để hoàn thành một vòng quay */
         }
 
         /* Reset CSS */
@@ -127,6 +133,58 @@
         .slogan-section.active #slogan {
             opacity: 1;
         }
+
+        /* Thêm Phần 1.1: Carousel Biển Báo Giao Thông */
+        .carousel-section {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--carousel-bg-color);
+            padding: 20px 0;
+            margin-top: var(--fixed-slogan-height); /* Để tránh bị che bởi khẩu hiệu cố định */
+            overflow: hidden;
+            border: 1px solid var(--carousel-border-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .carousel {
+            display: flex;
+            width: calc(150px * 10); /* Giả sử có 10 hình, thay đổi nếu cần */
+            animation: scrollCarousel var(--carousel-animation-duration) linear infinite;
+        }
+
+        .carousel img {
+            width: 150px;
+            height: var(--carousel-height);
+            object-fit: cover;
+            margin-right: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Keyframes cho hoạt ảnh cuộn carousel */
+        @keyframes scrollCarousel {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Điều chỉnh tốc độ animation cho mượt mà hơn */
+        .carousel-section .carousel {
+            animation-duration: var(--carousel-animation-duration);
+        }
+
+        /* Tạo hiệu ứng lặp lại hình ảnh để carousel chạy liền mạch */
+        .carousel-section .carousel::after {
+            content: "";
+            display: flex;
+            flex-direction: row;
+        }
+
+        /* Reset phần khác giữ nguyên */
 
         /* Phần 2: Nhận Diện Biển Báo Giao Thông */
         .recognition-section {
@@ -319,6 +377,21 @@
             /* #slogan {
                 font-size: 0.9em;
             } */
+
+            /* Điều chỉnh Carousel cho thiết bị nhỏ */
+            .carousel-section {
+                padding: 10px 0;
+            }
+
+            .carousel img {
+                width: 100px;
+                height: 100px;
+                margin-right: 5px;
+            }
+
+            .carousel-section .carousel {
+                animation-duration: 15s; /* Điều chỉnh tốc độ animation */
+            }
         }
 
         #predictionResult {
@@ -602,6 +675,34 @@
     <!-- Phần 1: Khẩu Hiệu Tham Gia Giao Thông -->
     <div class="slogan-section active">
         <p id="slogan">Đi bộ trên vỉa hè - An toàn cho bạn và mọi người!</p>
+    </div>
+
+    <!-- Phần 1.1: Carousel Biển Báo Giao Thông -->
+    <div class="carousel-section">
+        <div class="carousel">
+            <!-- Các hình ảnh biển báo từ thư mục 'hinh' -->
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/1.jpg" alt="Biển báo 1">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/2.jpg" alt="Biển báo 2">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/3.jpg" alt="Biển báo 3">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/4.jpg" alt="Biển báo 4">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/5.jpg" alt="Biển báo 5">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/6.jpg" alt="Biển báo 6">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/7.jpg" alt="Biển báo 7">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/8.jpg" alt="Biển báo 8">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/9.jpg" alt="Biển báo 9">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/10.jpg" alt="Biển báo 10">
+            <!-- Lặp lại hình ảnh để tạo hiệu ứng vô hạn -->
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/1.jpg" alt="Biển báo 1">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/2.jpg" alt="Biển báo 2">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/3.jpg" alt="Biển báo 3">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/4.jpg" alt="Biển báo 4">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/5.jpg" alt="Biển báo 5">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/6.jpg" alt="Biển báo 6">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/7.jpg" alt="Biển báo 7">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/8.jpg" alt="Biển báo 8">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/9.jpg" alt="Biển báo 9">
+            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/10.jpg" alt="Biển báo 10">
+        </div>
     </div>
 
     <!-- Phần 2: Nhận Diện Biển Báo Giao Thông -->
