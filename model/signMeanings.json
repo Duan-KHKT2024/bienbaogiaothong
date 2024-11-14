@@ -19,17 +19,21 @@
 
     "P.130": "Biển báo cấm dừng xe và đỗ xe có ý nghĩa: Cấm tất cả các loại xe cơ giới dừng và đỗ ở phía đường có đặt biển, trừ các xe được ưu tiên theo quy định của pháp luật.",
 
-    "P.102": "Biển báo cấm xe đạp có ý nghĩa: Thông báo đoạn đường phía trước cấm xe đạp lưu thông, nhằm đảm bảo an toàn và trật tự giao thông. Lưu ý biển báo này chỉ cấm người điều khiển xe đạp đi vào; người dắt xe đạp vẫn được phép qua lại",
-    "L.408": "Biển báo nơi để xe có ý nghĩa: Thông báo cho người lái xe biết khu vực được phép đỗ xe, giúp giảm thiểu tình trạng đỗ xe không đúng nơi quy định",
+    "P.102": "Biển báo cấm xe đạp có ý nghĩa: Thông báo đoạn đường phía trước cấm xe đạp lưu thông, nhằm đảm bảo an toàn và trật tự giao thông. Lưu ý biển báo này chỉ cấm người điều khiển xe đạp đi vào; người dắt xe đạp vẫn được phép qua lại.",
+
+    "L.408": "Biển báo nơi để xe có ý nghĩa: Thông báo cho người lái xe biết khu vực được phép đỗ xe, giúp giảm thiểu tình trạng đỗ xe không đúng nơi quy định.",
+
     "P.123": "Biển báo cấm rẽ trái có ý nghĩa: Thông báo người điều khiển phương tiện không được phép rẽ trái ở khu vực có đặt biển này.",
-    "P.124": "Biển báo cấm rẽ trái có ý nghĩa: Thông báo người điều khiển phương tiện không được phép phải trái ở khu vực có đặt biển này.",
-    "W.244": "Biển báo đường người đi xe đạp cắt ngang có ý nghĩa: Cảnh báo người tham gia giao thông về việc sắp đến đoạn đường có xe đạp băng qua. Nhắc nhở người lái xe chú ý quan sát, giảm tốc độ và sẵn sàng nhường đường cho xe đạp tại khu vực có biển",
+
+    "P.124": "Biển báo cấm rẽ phải có ý nghĩa: Thông báo người điều khiển phương tiện không được phép rẽ phải ở khu vực có đặt biển này.",
+
+    "W.244": "Biển báo đường người đi xe đạp cắt ngang có ý nghĩa: Cảnh báo người tham gia giao thông về việc sắp đến đoạn đường có xe đạp băng qua. Nhắc nhở người lái xe chú ý quan sát, giảm tốc độ và sẵn sàng nhường đường cho xe đạp tại khu vực có biển.",
 
     "R.301": "Biển báo các xe chỉ được rẽ trái có ý nghĩa: Yêu cầu các phương tiện chỉ được phép rẽ trái không được phép đi thẳng hoặc rẽ phải tại vị trí có biển báo.",
-    "R.302": "Biển báo các xe chỉ được rẽ phải có ý nghĩa: Yêu cầu các phương tiện chỉ được phép rẽ phải không được phép đi thẳng hoặc rẽ trái tại vị trí có biển. ",
 
-    "R.305":  "Biển báo dành cho người đi bộ có ý nghĩa: Biển này được đặt để hướng dẫn người đi bộ đi đúng làn đường quy định. Chỉ ra khu vực dành riêng cho người đi bộ, nơi người điều khiển phương tiện không được đi vào.",
+    "R.302": "Biển báo các xe chỉ được rẽ phải có ý nghĩa: Yêu cầu các phương tiện chỉ được phép rẽ phải không được phép đi thẳng hoặc rẽ trái tại vị trí có biển.",
 
-    "W.436":  "Biển báo trạm cảnh sát giao thông có ý nghĩa: thông báo cho người tham gia giao thông biết vị trí có trạm cảnh sát giao thông phía trước, nhằm nhắc nhở họ tuân thủ luật lệ và đảm bảo an toàn khi di chuyển qua khu vực này.",
+    "R.305": "Biển báo dành cho người đi bộ có ý nghĩa: Biển này được đặt để hướng dẫn người đi bộ đi đúng làn đường quy định. Chỉ ra khu vực dành riêng cho người đi bộ, nơi người điều khiển phương tiện không được đi vào.",
 
+    "W.436": "Biển báo trạm cảnh sát giao thông có ý nghĩa: Thông báo cho người tham gia giao thông biết vị trí có trạm cảnh sát giao thông phía trước, nhằm nhắc nhở họ tuân thủ luật lệ và đảm bảo an toàn khi di chuyển qua khu vực này."
 }
