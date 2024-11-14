@@ -55,12 +55,6 @@
             --section-title-border-radius: 8px 8px 0 0;
             --fixed-slogan-width: 100%; /* Cố định chiều rộng 100% */
             --fixed-slogan-height: 80px; /* Chiều cao cố định */
-
-            /* Thêm CSS Variables cho Carousel */
-            --carousel-bg-color: #ffffff;
-            --carousel-border-color: #dee2e6;
-            --carousel-height: 150px;
-            --carousel-animation-duration: 40s; /* Thời gian để hoàn thành một vòng quay, giảm tốc độ */
         }
 
         /* Reset CSS */
@@ -133,69 +127,6 @@
         .slogan-section.active #slogan {
             opacity: 1;
         }
-
-        /* Thêm Phần 1.1: Carousel Biển Báo Giao Thông */
-        .carousel-section {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--carousel-bg-color);
-            padding: 20px 0;
-            margin-top: 30px; /* Giảm margin-top từ var(--fixed-slogan-height) */
-            overflow: hidden;
-            border: 1px solid var(--carousel-border-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            position: relative; /* To position the selectedSign div */
-        }
-
-        .carousel {
-            display: flex;
-            width: calc(150px * 10 * 2); /* Lặp lại 10 hình để tạo hiệu ứng vô hạn */
-            animation: scrollCarousel var(--carousel-animation-duration) linear infinite;
-        }
-
-        .carousel img {
-            width: 150px;
-            height: var(--carousel-height);
-            object-fit: cover;
-            margin-right: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: pointer; /* Indicate clickable */
-        }
-
-        /* Keyframes cho hoạt ảnh cuộn carousel */
-        @keyframes scrollCarousel {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-
-        /* Điều chỉnh tốc độ animation cho mượt mà hơn */
-        .carousel-section .carousel {
-            animation-duration: var(--carousel-animation-duration);
-        }
-
-        /* Tạo hiệu ứng lặp lại hình ảnh để carousel chạy liền mạch */
-        .carousel-section .carousel::after {
-            content: "";
-            display: flex;
-            flex-direction: row;
-        }
-
-        /* Style for selected sign display */
-        .selected-sign {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        /* Reset phần khác giữ nguyên */
 
         /* Phần 2: Nhận Diện Biển Báo Giao Thông */
         .recognition-section {
@@ -384,20 +315,10 @@
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
 
-            /* Điều chỉnh Carousel cho thiết bị nhỏ */
-            .carousel-section {
-                padding: 10px 0;
-            }
-
-            .carousel img {
-                width: 100px;
-                height: 100px;
-                margin-right: 5px;
-            }
-
-            .carousel-section .carousel {
-                animation-duration: 30s; /* Điều chỉnh tốc độ animation cho thiết bị nhỏ */
-            }
+            /* Optional: Adjust slogan font size further if needed */
+            /* #slogan {
+                font-size: 0.9em;
+            } */
         }
 
         #predictionResult {
@@ -683,36 +604,6 @@
         <p id="slogan">Đi bộ trên vỉa hè - An toàn cho bạn và mọi người!</p>
     </div>
 
-    <!-- Phần 1.1: Carousel Biển Báo Giao Thông -->
-    <div class="carousel-section">
-        <div class="carousel">
-            <!-- Các hình ảnh biển báo từ thư mục 'hinh' -->
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/1.jpg" alt="Biển báo 1">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/2.jpg" alt="Biển báo 2">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/3.jpg" alt="Biển báo 3">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/4.jpg" alt="Biển báo 4">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/5.jpg" alt="Biển báo 5">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/6.jpg" alt="Biển báo 6">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/7.jpg" alt="Biển báo 7">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/8.jpg" alt="Biển báo 8">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/9.jpg" alt="Biển báo 9">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/10.jpg" alt="Biển báo 10">
-            <!-- Lặp lại hình ảnh để tạo hiệu ứng vô hạn -->
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/1.jpg" alt="Biển báo 1">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/2.jpg" alt="Biển báo 2">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/3.jpg" alt="Biển báo 3">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/4.jpg" alt="Biển báo 4">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/5.jpg" alt="Biển báo 5">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/6.jpg" alt="Biển báo 6">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/7.jpg" alt="Biển báo 7">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/8.jpg" alt="Biển báo 8">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/9.jpg" alt="Biển báo 9">
-            <img src="https://duan-khkt2024.github.io/bienbaogiaothong/hinh/10.jpg" alt="Biển báo 10">
-        </div>
-        <!-- New div to display selected sign name -->
-        <div id="selectedSign" class="selected-sign" aria-live="polite"></div>
-    </div>
-
     <!-- Phần 2: Nhận Diện Biển Báo Giao Thông -->
     <div class="recognition-section">
         <h2 class="section-title">Nhận Diện Biển Báo Giao Thông</h2>
@@ -809,7 +700,6 @@
         const signCount = document.getElementById('totalSigns');
         const quizButton = document.getElementById('quizButton');
         const overlay = document.querySelector('.overlay');
-        const selectedSignDiv = document.getElementById('selectedSign'); // Div to display selected sign
         let stream = null;
         let isProcessing = false;
         let cameraStarted = false; // Biến trạng thái camera
@@ -1022,7 +912,6 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                    selectedSignDiv.textContent = ""; // Reset selected sign display
 
                     await predictImage();
                 } catch (error) {
@@ -1078,7 +967,6 @@
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
-            selectedSignDiv.textContent = ""; // Reset selected sign display
         }
 
         /**
@@ -1251,7 +1139,6 @@
             await loadModel();
             // Không khởi động camera ngay khi tải trang
             startSloganRotation(); // Khởi động vòng quay khẩu hiệu
-            setupCarouselInteractions(); // Thiết lập các tương tác cho carousel
         });
 
         /**
@@ -1297,7 +1184,6 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
                     readButton.style.display = 'none'; // Ẩn nút đọc ban đầu
                     quizButton.style.display = 'none'; // Ẩn nút kiểm tra ban đầu
-                    selectedSignDiv.textContent = ""; // Reset selected sign display
 
                     // Vẽ ảnh lên canvas để dự đoán
                     const img = new Image();
@@ -1357,27 +1243,6 @@
                 showSlogan(currentSloganIndex);
                 currentSloganIndex = (currentSloganIndex + 1) % slogans.length;
             }, 7000); // Mỗi 7 giây một khẩu hiệu
-        }
-
-        /**
-         * Thiết lập các tương tác cho carousel
-         */
-        function setupCarouselInteractions() {
-            const carouselImages = document.querySelectorAll('.carousel img');
-            const carousel = document.querySelector('.carousel');
-
-            carouselImages.forEach(img => {
-                img.addEventListener('click', () => {
-                    // Pause the carousel animation
-                    carousel.style.animationPlayState = 'paused';
-
-                    // Get the sign name from alt attribute
-                    const signName = img.alt;
-
-                    // Display the sign name
-                    selectedSignDiv.textContent = signName;
-                });
-            });
         }
 
         /**
