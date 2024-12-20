@@ -269,6 +269,23 @@
             display: none; /* Ẩn ban đầu */
         }
 
+        #homeButton {
+            background-color: var(--secondary-color); /* Hoặc chọn màu phù hợp */
+            display: none; /* Ẩn ban đầu */
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%; /* Đảm bảo nút chiếm toàn bộ chiều rộng container nếu cần */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: #ffffff; /* Đổi từ #fff sang trắng */
+            text-align: center;
+            min-height: 44px; /* Đảm bảo touch target đủ lớn */
+            margin-top: 15px; /* Khoảng cách với phần signMeaning */
+            max-width: 600px; /* Giới hạn chiều rộng giống như các phần tử khác */
+        }
+
         button:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
@@ -549,10 +566,8 @@
         <div id="predictionResult" aria-live="polite"></div>
         <div id="signMeaning" aria-live="polite"></div>
 
-        <!-- Nút "Trang Chủ" -->
-        <div id="quizButton-container" style="display: none;">
-            <button id="quizButton" aria-label="Trang Chủ" title="Trang Chủ">Trang Chủ</button>
-        </div>
+        <!-- Nút "Trang Chủ" - Thêm ở đây -->
+        <button id="homeButton" aria-label="Trang Chủ" style="display: none; margin-top: 15px;">Trang Chủ</button>
     </div>
 
     <!-- Footer với nền xanh và chữ trắng -->
@@ -594,13 +609,13 @@
         const retakeButton = document.getElementById('retakeButton');
         const viewResultButton = document.getElementById('viewResultButton'); // Nút "Kết Quả"
         const downloadButton = document.getElementById('downloadButton'); // Nút "Tải Ảnh Xuống"
+        const homeButton = document.getElementById('homeButton'); // Nút "Trang Chủ"
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
         const signMeaning = document.getElementById('signMeaning');
         const loadingModel = document.getElementById('loadingModel');
         const loadingPrediction = document.getElementById('loadingPrediction');
         const signCount = document.getElementById('totalSigns');
-        const quizButton = document.getElementById('quizButton');
         const overlay = document.querySelector('.overlay');
         const instructionButton = document.getElementById('instructionButton');
         const instructionModal = document.getElementById('instructionModal');
@@ -639,6 +654,12 @@
          */
         async function startCamera() {
             try {
+                // Nếu đã có stream, dừng nó trước khi khởi động mới
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: "environment",
@@ -734,8 +755,9 @@
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
 
                     // Hiển thị các nút kết quả
-                    viewResultButton.style.display = 'inline-block';
-                    downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
+                    viewResultButton.style.display = 'block';
+                    downloadButton.style.display = 'block'; // Hiển thị nút "Tải Ảnh Xuống"
+                    homeButton.style.display = 'none'; // Ẩn nút "Trang Chủ" trước khi nhận diện
 
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
@@ -757,7 +779,8 @@
             retakeButton.style.display = 'none';
             viewResultButton.style.display = 'none';
             downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
-            captureButton.style.display = 'inline-block';
+            homeButton.style.display = 'none'; // Ẩn nút "Trang Chủ"
+            captureButton.style.display = 'block';
             captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
 
             // Stop the video stream nếu nó đang hoạt động
@@ -777,9 +800,9 @@
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
 
             // Hiển thị lại các nút ban đầu
-            instructionButton.style.display = 'inline-block';
-            uploadButton.style.display = 'inline-block';
-            captureButton.style.display = 'inline-block';
+            instructionButton.style.display = 'block';
+            uploadButton.style.display = 'block';
+            captureButton.style.display = 'block';
         }
 
         /**
@@ -894,15 +917,17 @@
                             const meaningText = `Ý nghĩa: ${signMeanings[signCode]}`;
                             signMeaning.textContent = meaningText;
                             signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                            readButton.style.display = 'inline-block';
-                            retakeButton.style.display = 'inline-block';
-                            downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
+                            readButton.style.display = 'block';
+                            retakeButton.style.display = 'block';
+                            downloadButton.style.display = 'block'; // Hiển thị nút "Tải Ảnh Xuống"
+                            homeButton.style.display = 'block'; // Hiển thị nút "Trang Chủ"
                         } else {
                             signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
                             signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
-                            readButton.style.display = 'inline-block';
-                            retakeButton.style.display = 'inline-block';
-                            downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
+                            readButton.style.display = 'block';
+                            retakeButton.style.display = 'block';
+                            downloadButton.style.display = 'block'; // Hiển thị nút "Tải Ảnh Xuống"
+                            homeButton.style.display = 'block'; // Hiển thị nút "Trang Chủ"
                         }
                     } else {
                         predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
@@ -911,6 +936,7 @@
                         readButton.style.display = 'none';
                         retakeButton.style.display = 'none';
                         downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
+                        homeButton.style.display = 'none'; // Ẩn nút "Trang Chủ"
                     }
                 });
             } catch (err) {
@@ -921,6 +947,7 @@
                 readButton.style.display = 'none';
                 retakeButton.style.display = 'none';
                 downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
+                homeButton.style.display = 'none'; // Ẩn nút "Trang Chủ"
             } finally {
                 loadingPrediction.style.display = 'none';
             }
@@ -955,8 +982,8 @@
         /**
          * Event listener cho nút "Trang Chủ"
          */
-        quizButton.addEventListener('click', () => {
-            window.open('https://sites.google.com/view/tracnghiemgiaothong', '_blank');
+        homeButton.addEventListener('click', () => {
+            window.open('https://www.giaothongthcs.fun', '_blank');
         });
 
         /**
@@ -1027,9 +1054,9 @@
                     overlay.style.display = 'none';
                     readButton.style.display = 'none';
                     retakeButton.style.display = 'none';
-                    viewResultButton.style.display = 'inline-block';
-                    downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
-                    quizButton.style.display = 'none';
+                    viewResultButton.style.display = 'block';
+                    downloadButton.style.display = 'block'; // Hiển thị nút "Tải Ảnh Xuống"
+                    homeButton.style.display = 'none'; // Ẩn nút "Trang Chủ" trước khi nhận diện
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi tải ảnh lên
