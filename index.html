@@ -213,11 +213,13 @@
 
         .button-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Đặt các nút theo chiều dọc */
+            align-items: center;
             gap: 15px;
             flex-wrap: wrap;
             margin-bottom: 20px;
             width: 100%;
+            max-width: 220px; /* Giới hạn chiều rộng */
         }
 
         button {
@@ -226,8 +228,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            flex: 1 1 160px; /* Đảm bảo nút có cùng kích thước */
-            max-width: 220px; /* Giới hạn kích thước tối đa */
+            width: 100%; /* Đảm bảo nút chiếm toàn bộ chiều rộng container */
             transition: background-color 0.3s ease, transform 0.2s ease;
             color: #ffffff; /* Đổi từ #fff sang trắng */
             text-align: center;
@@ -296,8 +297,7 @@
             }
 
             button {
-                width: 100%;
-                max-width: 220px;
+                font-size: 14px; /* Giảm kích thước font chữ cho thiết bị nhỏ */
             }
 
             #slogan {
@@ -314,11 +314,6 @@
             .recognition-section h2 {
                 font-size: 1.1em; /* Giảm kích thước font chữ cho tiêu đề */
             }
-
-            /* Optional: Adjust slogan font size further if needed */
-            /* #slogan {
-                font-size: 0.9em;
-            } */
         }
 
         #predictionResult {
