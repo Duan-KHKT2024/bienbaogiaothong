@@ -495,7 +495,7 @@
             margin-top: 30px;
         }
 
-        /* Nút "Làm Bài Kiểm Tra" */
+        /* Nút "Trang Chủ" */
         #quizButton-container {
             margin-top: 20px;
             width: 100%;
@@ -548,9 +548,9 @@
         <div id="predictionResult" aria-live="polite"></div>
         <div id="signMeaning" aria-live="polite"></div>
 
-        <!-- Nút "Làm Bài Kiểm Tra" -->
+        <!-- Nút "Trang Chủ" -->
         <div id="quizButton-container">
-            <button id="quizButton" aria-label="Làm bài kiểm tra" title="Làm bài kiểm tra giao thông">Làm Bài Kiểm Tra</button>
+            <button id="quizButton" aria-label="Trang Chủ" title="Trang Chủ">Trang Chủ</button>
         </div>
     </div>
 
@@ -571,7 +571,7 @@
                     <li>Đảm bảo camera của bạn được đặt sao cho biển báo rõ ràng và trung tâm trong khung hình.</li>
                     <li>Sau khi chụp, hệ thống sẽ tự động nhận diện biển báo và hiển thị kết quả.</li>
                     <li>Nhấn nút <strong>"Đọc"</strong> để nghe lại ý nghĩa của biển báo đã nhận diện.</li>
-                    <li>Chọn nút <strong>"Làm Bài Kiểm Tra"</strong> để thực hiện bài kiểm tra giao thông.</li>
+                    <li>Chọn nút <strong>"Trang Chủ"</strong> để quay lại trang chủ.</li>
                 </ol>
                 <p>Số lượng biển báo có thể nhận diện: <strong id="totalSigns">0</strong></p>
             </div>
@@ -672,7 +672,7 @@
                     // Hide placeholder image and show video
                     placeholderImage.style.display = 'none';
                     video.style.display = 'block';
-                    overlay.style.display = 'block'; // Show overlay when video is active
+                    overlay.style.display = 'block'; // Show overlay khi video đang hoạt động
 
                     await startCamera();
                     cameraStarted = true;
