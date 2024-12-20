@@ -247,8 +247,8 @@
             background-color: var(--secondary-color);
         }
 
-        #downloadButton {
-            background-color: var(--secondary-color);
+        #viewResultButton {
+            background-color: var(--secondary-color); /* Hoặc chọn màu phù hợp */
             display: none; /* Ẩn ban đầu */
         }
 
@@ -261,11 +261,6 @@
             background-color: var(--warning-color);
             display: none;
             color: var(--dark-color);
-        }
-
-        #viewResultButton {
-            background-color: var(--secondary-color); /* Hoặc chọn màu phù hợp */
-            display: none; /* Ẩn ban đầu */
         }
 
         button:hover:not(:disabled) {
@@ -594,7 +589,6 @@
         const captureButton = document.getElementById('captureButton');
         const uploadButton = document.getElementById('uploadButton');
         const uploadInput = document.getElementById('uploadInput'); // Hidden file input
-        const downloadButton = document.getElementById('downloadButton');
         const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
         const viewResultButton = document.getElementById('viewResultButton'); // Nút "Kết Quả"
@@ -751,28 +745,11 @@
         }
 
         /**
-         * Hàm tải ảnh xuống
-         */
-        function downloadPhoto() {
-            if (!capturedImage.src) {
-                alert("Không có ảnh nào để tải xuống.");
-                return;
-            }
-            const link = document.createElement('a');
-            link.href = capturedImage.src;
-            link.download = 'anh-chup.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        /**
          * Hàm chụp lại ảnh
          */
         function retakePhoto() {
             capturedImage.style.display = 'none';
             capturedImage.style.opacity = 0;
-            downloadButton.style.display = 'none';
             readButton.style.display = 'none';
             retakeButton.style.display = 'none';
             viewResultButton.style.display = 'none';
@@ -794,6 +771,11 @@
             predictionResult.innerHTML = "";
             signMeaning.textContent = "";
             signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
+
+            // Hiển thị lại các nút ban đầu
+            instructionButton.style.display = 'inline-block';
+            uploadButton.style.display = 'inline-block';
+            captureButton.style.display = 'inline-block';
         }
 
         /**
@@ -962,8 +944,7 @@
 
             // Ẩn nút "Kết Quả" và hiển thị các nút khác
             viewResultButton.style.display = 'none';
-            readButton.style.display = 'inline-block';
-            retakeButton.style.display = 'inline-block';
+            // readButton và retakeButton đã được hiển thị trong hàm predictImage()
         });
 
         /**
@@ -1015,7 +996,6 @@
                     video.style.display = 'none';
                     placeholderImage.style.display = 'none';
                     overlay.style.display = 'none';
-                    downloadButton.style.display = 'none';
                     readButton.style.display = 'none';
                     retakeButton.style.display = 'none';
                     viewResultButton.style.display = 'inline-block';
