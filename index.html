@@ -409,98 +409,6 @@
             justify-content: center;
         }
 
-        /* Phần 4: Hỏi Đáp (QA) */
-        .qa-section {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--white-bg); /* Nền trắng */
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .qa-section h2 {
-            color: var(--section-title-color); /* Đã thay đổi thành màu trắng */
-            margin-bottom: 20px;
-            font-size: 1.1em; /* Giảm kích thước font chữ */
-            text-align: center;
-            font-family: var(--qa-question-font);
-            font-weight: normal; /* Không in đậm */
-        }
-
-        .accordion {
-            background-color: var(--white-bg);
-            color: var(--question-color); /* Đổi màu sắc của câu hỏi */
-            cursor: pointer;
-            padding: 20px; /* Tăng padding để làm rộng chiều dài */
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 1.1em; /* Tăng kích thước font chữ */
-            font-weight: 700; /* Tăng độ đậm của font chữ */
-            transition: background-color 0.3s ease;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-family: var(--qa-question-font);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .accordion:hover {
-            background-color: var(--accordion-hover);
-        }
-
-        .accordion.active {
-            background-color: var(--accordion-active);
-        }
-
-        /* Biểu tượng mũi tên cho accordion */
-        .accordion::after {
-            content: '\002B'; /* Plus sign */
-            font-size: 1.2em;
-            transition: transform 0.3s ease;
-        }
-
-        .accordion.active::after {
-            content: '\2212'; /* Minus sign */
-        }
-
-        /* Panel styles with smooth transition */
-        .panel {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background-color: var(--white-bg);
-            border-left: 3px solid var(--primary-color);
-            border-right: 3px solid var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            border-radius: 0 0 5px 5px;
-            margin-bottom: 15px;
-        }
-
-        .panel.show {
-            max-height: 500px; /* Adjust as needed */
-        }
-
-        .panel p {
-            padding: 10px 15px;
-            color: var(--text-color);
-            font-family: var(--qa-answer-font);
-            line-height: 1.6;
-        }
-
-        .panel ul {
-            list-style-type: disc;
-            padding-left: 30px;
-            font-family: var(--qa-answer-font);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
         /* Modal Styles */
         .modal {
             display: none; /* Hidden by default */
@@ -646,14 +554,6 @@
         </div>
     </div>
 
-    <!-- Phần 4: Hỏi Đáp (QA) -->
-    <div class="qa-section">
-        <h2 class="section-title">Hỏi Đáp</h2>
-        <div id="qa-container">
-            <!-- Nội dung Hỏi Đáp sẽ được thêm vào đây bằng JavaScript -->
-        </div>
-    </div>
-
     <!-- Footer với nền xanh và chữ trắng -->
     <div class="footer">
         &copy; 2024 Ứng dụng AI nhận diện biển báo và tìm hiểu Luật giao thông đường bộ cho Học Sinh THCS
@@ -708,7 +608,6 @@
         let labels = []; // Danh sách nhãn sẽ được tải từ metadata.json
 
         let signMeanings = {};
-        let qaData = [];
 
         /**
          * Hàm tải signMeanings.json
@@ -727,85 +626,6 @@
                 console.error("Lỗi khi tải signMeanings.json:", error);
                 // Xử lý lỗi nếu cần
             }
-        }
-
-        /**
-         * Hàm tải qa.json
-         */
-        async function loadQA() {
-            try {
-                const response = await fetch(MODEL_URL + "qa.json");
-                if (response.ok) {
-                    const data = await response.json();
-                    qaData = data.questions;
-                    console.log("Đã tải thành công qa.json");
-                    buildQA();
-                } else {
-                    console.warn("Không thể tải qa.json.");
-                    // Bạn có thể định nghĩa dữ liệu QA mặc định ở đây nếu cần
-                }
-            } catch (error) {
-                console.error("Lỗi khi tải qa.json:", error);
-                // Xử lý lỗi nếu cần
-            }
-        }
-
-        /**
-         * Hàm xây dựng phần Hỏi Đáp
-         */
-        function buildQA() {
-            const qaContainer = document.getElementById('qa-container');
-            qaContainer.innerHTML = ''; // Xóa nội dung cũ nếu có
-
-            qaData.forEach((item, index) => {
-                // Tạo nút accordion
-                const accordionButton = document.createElement('button');
-                accordionButton.classList.add('accordion');
-                accordionButton.setAttribute('aria-expanded', 'false');
-                accordionButton.setAttribute('aria-controls', `qa-panel-${index}`);
-                accordionButton.textContent = item.question;
-
-                // Tạo panel
-                const panelDiv = document.createElement('div');
-                panelDiv.classList.add('panel');
-                panelDiv.id = `qa-panel-${index}`;
-
-                // Tạo phần nội dung câu trả lời
-                const answerPara = document.createElement('p');
-                answerPara.textContent = item.answer;
-
-                // Tạo danh sách các điểm
-                const pointsList = document.createElement('ul');
-                item.points.forEach(point => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = point;
-                    pointsList.appendChild(listItem);
-                });
-
-                panelDiv.appendChild(answerPara);
-                panelDiv.appendChild(pointsList);
-
-                // Thêm vào container
-                qaContainer.appendChild(accordionButton);
-                qaContainer.appendChild(panelDiv);
-            });
-
-            // Thêm event listeners cho các nút accordion vừa tạo
-            document.querySelectorAll('.accordion').forEach(button => {
-                button.addEventListener('click', function() {
-                    const isActive = this.classList.contains('active');
-                    this.setAttribute('aria-expanded', !isActive);
-                    this.classList.toggle('active');
-                    const panel = this.nextElementSibling;
-                    if (panel.classList.contains('show')) {
-                        panel.classList.remove('show');
-                        panel.style.maxHeight = null;
-                    } else {
-                        panel.classList.add('show');
-                        panel.style.maxHeight = panel.scrollHeight + "px";
-                    }
-                });
-            });
         }
 
         /**
@@ -1026,8 +846,6 @@
                 // Tải signMeanings.json
                 await loadSignMeanings();
 
-                // Tải và xây dựng QA
-                await loadQA();
             } catch (err) {
                 console.error("Lỗi khi tải mô hình: ", err);
                 loadingModel.textContent = "Không thể tải mô hình.";
