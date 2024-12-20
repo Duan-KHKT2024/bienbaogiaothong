@@ -263,6 +263,11 @@
             color: var(--dark-color);
         }
 
+        #downloadButton {
+            background-color: var(--purple-color); /* Chọn màu phù hợp cho nút tải xuống */
+            display: none; /* Ẩn ban đầu */
+        }
+
         button:hover:not(:disabled) {
             opacity: 0.9;
             transform: scale(1.05);
@@ -529,9 +534,10 @@
             <!-- Nút sau khi chụp hoặc tải ảnh: Kết Quả -->
             <button id="viewResultButton" aria-label="Kết Quả" style="display: none;">Kết Quả</button>
 
-            <!-- Các nút xuất hiện sau khi nhận diện: Đọc, Chụp Lại -->
+            <!-- Các nút xuất hiện sau khi nhận diện: Đọc, Chụp Lại, Tải Ảnh Xuống -->
             <button id="readButton" aria-label="Đọc ý nghĩa biển báo" style="display: none;">Đọc</button>
             <button id="retakeButton" aria-label="Chụp lại" style="display: none;">Chụp Lại</button>
+            <button id="downloadButton" aria-label="Tải ảnh xuống" style="display: none;">Tải Ảnh Xuống</button>
         </div>
 
         <!-- Hidden file input for uploading images -->
@@ -592,6 +598,7 @@
         const readButton = document.getElementById('readButton');
         const retakeButton = document.getElementById('retakeButton');
         const viewResultButton = document.getElementById('viewResultButton'); // Nút "Kết Quả"
+        const downloadButton = document.getElementById('downloadButton'); // Nút "Tải Ảnh Xuống"
         const capturedImage = document.getElementById('capturedImage');
         const predictionResult = document.getElementById('predictionResult');
         const signMeaning = document.getElementById('signMeaning');
@@ -731,8 +738,9 @@
                     signMeaning.textContent = "";
                     signMeaning.style.display = 'none'; // Ẩn signMeaning khi chụp lại
 
-                    // Hiển thị nút "Kết Quả"
+                    // Hiển thị các nút kết quả
                     viewResultButton.style.display = 'inline-block';
+                    downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
 
                 } catch (error) {
                     console.error("Lỗi khi chụp ảnh: ", error);
@@ -753,6 +761,7 @@
             readButton.style.display = 'none';
             retakeButton.style.display = 'none';
             viewResultButton.style.display = 'none';
+            downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
             captureButton.style.display = 'inline-block';
             captureButton.textContent = "Chụp Ảnh"; // Reset nhãn nút sau khi chụp lại
 
@@ -892,11 +901,13 @@
                             signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
                             readButton.style.display = 'inline-block';
                             retakeButton.style.display = 'inline-block';
+                            downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
                         } else {
                             signMeaning.textContent = "Ý nghĩa: Đây là một hình ảnh không phải là hình biển báo giao thông. Bạn hãy nhấn vào nút Chụp lại hoặc nút Tải ảnh lên để kiểm tra. Lưu ý để kết quả nhận diện đúng cần đảm bảo chất lượng ảnh chụp rõ nét, đảm bảo kích thước.";
                             signMeaning.style.display = 'block'; // Hiển thị phần signMeaning
                             readButton.style.display = 'inline-block';
                             retakeButton.style.display = 'inline-block';
+                            downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
                         }
                     } else {
                         predictionResult.innerHTML = `<span style="color: var(--error-color);">Không có kết quả nhận diện.</span>`;
@@ -904,6 +915,7 @@
                         signMeaning.style.display = 'none'; // Ẩn phần signMeaning
                         readButton.style.display = 'none';
                         retakeButton.style.display = 'none';
+                        downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
                     }
                 });
             } catch (err) {
@@ -913,9 +925,26 @@
                 signMeaning.style.display = 'none'; // Ẩn phần signMeaning
                 readButton.style.display = 'none';
                 retakeButton.style.display = 'none';
+                downloadButton.style.display = 'none'; // Ẩn nút "Tải Ảnh Xuống"
             } finally {
                 loadingPrediction.style.display = 'none';
             }
+        }
+
+        /**
+         * Hàm xử lý tải ảnh xuống
+         */
+        function downloadImage() {
+            if (!capturedImage.src) {
+                alert("Không có ảnh nào để tải xuống.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = capturedImage.src;
+            link.download = 'anh-chup.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         /**
@@ -942,10 +971,15 @@
             // Hiển thị kết quả nhận diện
             await predictImage();
 
-            // Ẩn nút "Kết Quả" và hiển thị các nút khác
+            // Ẩn nút "Kết Quả"
             viewResultButton.style.display = 'none';
-            // readButton và retakeButton đã được hiển thị trong hàm predictImage()
+            // downloadButton đã được hiển thị trong hàm predictImage()
         });
+
+        /**
+         * Event listener cho nút "Tải Ảnh Xuống"
+         */
+        downloadButton.addEventListener('click', downloadImage);
 
         /**
          * Cập nhật danh sách giọng nói khi chúng thay đổi
@@ -999,6 +1033,7 @@
                     readButton.style.display = 'none';
                     retakeButton.style.display = 'none';
                     viewResultButton.style.display = 'inline-block';
+                    downloadButton.style.display = 'inline-block'; // Hiển thị nút "Tải Ảnh Xuống"
                     quizButton.style.display = 'none';
                     predictionResult.innerHTML = "";
                     signMeaning.textContent = "";
